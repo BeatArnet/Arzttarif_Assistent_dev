@@ -12,12 +12,12 @@ let data_tabellen = [];
 
 // Pfade zu den lokalen JSON-Daten
 const DATA_PATHS = {
-    leistungskatalog: 'data/tblLeistungskatalog.json',
-    pauschaleLP: 'data/tblPauschaleLeistungsposition.json',
-    pauschalen: 'data/tblPauschalen.json',
-    pauschaleBedingungen: 'data/tblPauschaleBedingungen.json',
-    tardocGesamt: 'data/TARDOCGesamt_optimiert_Tarifpositionen.json',
-    tabellen: 'data/tblTabellen.json'
+    leistungskatalog: 'data/LKAAT_Leistungskatalog.json',
+    pauschaleLP: 'data/PAUSCHALEN_Leistungspositionen.json',
+    pauschalen: 'data/PAUSCHALEN_Pauschalen.json',
+    pauschaleBedingungen: 'data/PAUSCHALEN_Bedingungen.json',
+    tardocGesamt: 'data/TARDOC_Tarifpositionen.json',
+    tabellen: 'data/PAUSCHALEN_Tabellen.json'
 };
 
 // Referenz zum Mouse Spinner
@@ -595,7 +595,7 @@ function displayTardocTable(tardocLeistungen, ruleResultsDetailsList = []) {
 // Hilfsfunktion: Sucht TARDOC-Details lokal
 function processTardocLookup(lkn) {
     let result = { applicable: false, data: null, al: 0, ipl: 0, leistungsname: 'N/A', regeln: '' };
-    // Schlüssel anpassen, falls nötig (aus TARDOCGesamt...)
+    // Schlüssel anpassen, falls nötig (aus TARDOC_Tarifpositionen...)
     const TARDOC_LKN_KEY = 'LKN';
     const AL_KEY = 'AL_(normiert)';
     const IPL_KEY = 'IPL_(normiert)';
