@@ -29,7 +29,6 @@ GEMINI_MODEL = os.getenv('GEMINI_MODEL', "gemini-1.5-flash-latest")
 # GEMINI_MODEL = os.getenv('GEMINI_MODEL', "gemini-2.0-flash")
 DATA_DIR = Path("data")
 LEISTUNGSKATALOG_PATH = DATA_DIR / "LKAAT_Leistungskatalog.json"
-REGELWERK_PATH = DATA_DIR / "strukturierte_regeln_komplett.json" # Prüfe diesen Pfad!
 TARDOC_TARIF_PATH = DATA_DIR / "TARDOC_Tarifpositionen.json"
 TARDOC_INTERP_PATH = DATA_DIR / "TARDOC_Interpretationen.json"
 PAUSCHALE_LP_PATH = DATA_DIR / "PAUSCHALEN_Leistungspositionen.json"
@@ -272,28 +271,16 @@ def load_data() -> bool:
              all_loaded_successfully = False
              traceback.print_exc()
 
-    # Lade Regelwerk LKN
+    # Regelwerk direkt aus TARDOC_Tarifpositionen extrahieren
     try:
-        print(f"  Versuche Regelwerk (LKN) von {REGELWERK_PATH} zu laden...")
-        # rp_lkn_module wurde oben importiert
-        if rp_lkn_module and hasattr(rp_lkn_module, 'lade_regelwerk'):
-            if REGELWERK_PATH.is_file():
-                regelwerk_dict.clear()
-                regelwerk_dict_loaded = rp_lkn_module.lade_regelwerk(str(REGELWERK_PATH))
-                if regelwerk_dict_loaded: # Annahme: Gibt Dict[str, List[Regel]] zurück
-                    regelwerk_dict.update(regelwerk_dict_loaded)
-                    print(f"  ✓ Regelwerk (LKN) '{REGELWERK_PATH}' geladen ({len(regelwerk_dict)} LKNs).")
-                else:
-                    print(f"  FEHLER: LKN-Regelwerk konnte nicht geladen werden (Funktion gab leeres Dict zurück).")
-                    all_loaded_successfully = False
-            else:
-                print(f"  FEHLER: Regelwerk (LKN) nicht gefunden: {REGELWERK_PATH}")
-                regelwerk_dict.clear(); all_loaded_successfully = False
-        else:
-            print("  ℹ️ Regelprüfung (LKN) nicht verfügbar oder lade_regelwerk fehlt im Modul regelpruefer.")
-            regelwerk_dict.clear()
+        regelwerk_dict.clear()
+        for lkn, info in tardoc_tarif_dict.items():
+            rules = info.get("Regeln")
+            if rules:
+                regelwerk_dict[lkn] = rules
+        print(f"  ✓ Regelwerk aus TARDOC geladen ({len(regelwerk_dict)} LKNs mit Regeln).")
     except Exception as e:
-        print(f"  FEHLER beim Laden des LKN-Regelwerks: {e}")
+        print(f"  FEHLER beim Extrahieren des Regelwerks aus TARDOC: {e}")
         traceback.print_exc(); regelwerk_dict.clear(); all_loaded_successfully = False
 
     print("--- Daten laden abgeschlossen ---")

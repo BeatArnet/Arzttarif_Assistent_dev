@@ -27,7 +27,7 @@ Das Frontend zeigt das Ergebnis übersichtlich an, mit Details zur initialen KI-
 2.  **Backend (Python/Flask - `server.py`):**
     *   Empfängt Anfragen vom Frontend.
     *   **LLM Stufe 1 (`call_gemini_stage1`):** Identifiziert LKNs und extrahiert Kontext aus dem Benutzertest mithilfe von Google Gemini und dem lokalen `LKAAT_Leistungskatalog.json`. Validiert LKNs gegen den lokalen Katalog.
-    *   **Regelprüfung LKN (`regelpruefer.py`):** Prüft die identifizierten LKNs auf Konformität mit TARDOC-Regeln (Menge, Kumulation etc.) basierend auf `strukturierte_regeln_komplett.json`.
+    *   **Regelprüfung LKN (`regelpruefer.py`):** Prüft die identifizierten LKNs auf Konformität mit TARDOC-Regeln (Menge, Kumulation etc.) basierend auf den im TARDOC-Datensatz eingebetteten Regeldefinitionen.
     *   **Pauschalenpotenzial-Prüfung:** Stellt frühzeitig fest, ob aufgrund der von LLM Stufe 1 gefundenen LKN-Typen überhaupt eine Pauschale in Frage kommt.
     *   **Kontextanreicherung (LKN-Mapping - `call_gemini_stage2_mapping`):**
         *   Wird nur ausgeführt, wenn Pauschalenpotenzial besteht und TARDOC E/EZ-LKNs vorhanden sind, die potenziell durch Pauschalen-Komponenten abgedeckt sein könnten.
@@ -46,8 +46,7 @@ Das Frontend zeigt das Ergebnis übersichtlich an, mit Details zur initialen KI-
     *   `PAUSCHALEN_Pauschalen.json`: Pauschalendefinitionen.
     *   `PAUSCHALEN_Bedingungen.json`: Strukturierte Bedingungen für Pauschalen.
     *   `PAUSCHALEN_Tabellen.json`: Nachschlagetabellen für Codes in Bedingungen.
-    *   `TARDOC_Tarifpositionen.json`: Details für TARDOC-Einzelleistungen.
-    *   `strukturierte_regeln_komplett.json`: TARDOC-Regelwerk.
+    *   `TARDOC_Tarifpositionen.json`: Details und Regeldefinitionen für TARDOC-Einzelleistungen.
 
 ## Technologie-Stack
 
@@ -129,7 +128,6 @@ Das Frontend zeigt das Ergebnis übersichtlich an, mit Details zur initialen KI-
 │   ├── PAUSCHALEN_Bedingungen.json
 │   ├── TARDOC_Tarifpositionen.json
 │   ├── PAUSCHALEN_Tabellen.json
-│   └── strukturierte_regeln_komplett.json
 ├── server.py              # Flask Backend Logik
 ├── calculator.js          # Frontend JavaScript Logik
 ├── index.html             # Haupt-HTML-Datei
