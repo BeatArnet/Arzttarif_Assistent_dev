@@ -11,7 +11,7 @@ Hinweise:
    - PAUSCHALEN_Bedingungen: Enthält **strukturierte** Bedingungen (ICD, GTIN, LKN in Liste/Tabelle, Alter, Geschlecht etc.) für spezifische Pauschalen, **inklusive `Gruppe` und `Operator` (UND/ODER)**. Entscheidend für die korrekte *logische Auswertung* der Anwendbarkeit einer Pauschale und eine weitere Methode, um potenzielle Pauschalen basierend auf enthaltenen LKNs (in Liste/Tabelle) zu finden.
    - PAUSCHALEN_Tabellen: Nachschlagetabelle für Codes (ICD, GTIN, LKN), die in `PAUSCHALEN_Bedingungen` über Tabellenreferenzen (z.B. "CAP08", "C08.50") verlinkt sind. Wird genutzt, um Bedingungen des Typs "... IN TABELLE" aufzulösen. **Case-Insensitive Behandlung** der Tabellennamen ist wichtig.
    - TARDOC_Interpretationen.json und TARDOC_Tarifpositionen.json: Enthält Details zu TARDOC-Einzelleistungen (AL, IPL, Regeln). Wird für die TARDOC-Abrechnung genutzt, *falls keine Pauschale anwendbar ist*.
-   - strukturierte_regeln_komplett.json (oder ähnlich): Enthält TARDOC-spezifische Regeln (Menge, Kumulation, Alter etc.) für die lokale Regelprüfung von Einzelleistungen.
+   - Die Regeldefinitionen für TARDOC-Einzelleistungen sind direkt im File `TARDOC_Tarifpositionen.json` enthalten.
 
 2. Strukturierte Vorgehensweise (Backend - server.py)
    Schritt 1: Identifikation der Leistungspositionen (LLM Stufe 1 & Validierung)
