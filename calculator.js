@@ -86,6 +86,7 @@ function getChapterInfo(kapitelCode) {
     const info = { name: '', interpretation: '' };
     const pos = data_tardocGesamt.find(item => item.KapitelNummer === kapitelCode);
     if (pos) info.name = pos.Kapitel || '';
+
     info.interpretation = getInterpretation(kapitelCode);
     return info;
 }
@@ -254,7 +255,6 @@ async function loadData() {
         if (!Array.isArray(data_pauschaleBedingungen) || data_pauschaleBedingungen.length === 0) missingDataErrors.push("Pauschalen-Bedingungen");
         if (!Array.isArray(data_tabellen) || data_tabellen.length === 0) missingDataErrors.push("Referenz-Tabellen");
         if (!interpretationMap || Object.keys(interpretationMap).length === 0) missingDataErrors.push("Interpretationen");
-
         if (missingDataErrors.length > 0) {
              throw new Error(`Folgende kritische Daten fehlen oder konnten nicht geladen werden: ${missingDataErrors.join(', ')}.`);
         }
