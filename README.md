@@ -84,14 +84,22 @@ Das Frontend zeigt das Ergebnis übersichtlich an, mit Details zur initialen KI-
     ```bash
     pip install -r requirements.txt
     ```
-6.  **API-Schlüssel konfigurieren:**
+6.  **(Optional) JSON-Daten bereinigen:**
+    Einige Datendateien enthalten Steuerzeichen, die beim Parsen Fehler
+    verursachen können. Bereinige eine Datei mit:
+    ```bash
+    python clean_json.py data/TARDOC_Interpretationen.json
+    ```
+    Es entsteht eine `*.clean.json`-Datei, die zum Testen verwendet werden kann.
+
+7.  **API-Schlüssel konfigurieren:**
     *   Erstelle eine Datei namens `.env` im Hauptverzeichnis.
     *   Füge deinen Google Gemini API-Schlüssel hinzu:
         ```env
         GEMINI_API_KEY="DEIN_API_SCHLUESSEL_HIER"
         # Optional: GEMINI_MODEL="gemini-1.5-pro-latest"
         ```
-7.  **Anwendung starten:**
+8.  **Anwendung starten:**
     ```bash
     python server.py
     ```
