@@ -9,7 +9,8 @@ let data_pauschalen = [];
 let data_pauschaleBedingungen = [];
 let data_tardocGesamt = [];
 let data_tabellen = [];
-let data_interpretationen = [];
+let data_interpretationen = {};
+let interpretationMap = {};
 let groupInfoMap = {};
 
 // Pfade zu den lokalen JSON-Daten
@@ -75,18 +76,18 @@ function findTardocPosition(lkn) {
     return data_tardocGesamt.find(item => item && item.LKN && String(item.LKN).toUpperCase() === lkn.toUpperCase());
 }
 
+function getInterpretation(code) {
+    if (!interpretationMap) return '';
+    const entry = interpretationMap[code] || interpretationMap[code.split('.')[0]];
+    return entry ? entry.Interpretation || '' : '';
+}
+
 function getChapterInfo(kapitelCode) {
     const info = { name: '', interpretation: '' };
     const pos = data_tardocGesamt.find(item => item.KapitelNummer === kapitelCode);
     if (pos) info.name = pos.Kapitel || '';
-    if (Array.isArray(data_interpretationen)) {
-        let entry = data_interpretationen.find(e => e.KNR === kapitelCode);
-        if (!entry) {
-            const base = kapitelCode.split('.')[0];
-            entry = data_interpretationen.find(e => e.KNR === base);
-        }
-        if (entry) info.interpretation = entry.Interpretation || '';
-    }
+
+    info.interpretation = getInterpretation(kapitelCode);
     return info;
 }
 
@@ -98,9 +99,11 @@ function buildLknInfoHtml(pos) {
         groups = pos.Leistungsgruppen.map(g => `${createInfoLink(g.Gruppe,'group')}: ${escapeHtml(g.Text || '')}`).join('<br>');
     }
     const rules = formatRules(pos.Regeln);
+    const interp = getInterpretation(String(pos.LKN));
     return `
         <h3>${escapeHtml(pos.LKN)} - ${escapeHtml(pos.Bezeichnung || '')}</h3>
         ${pos['Medizinische Interpretation'] ? `<p>${escapeHtml(pos['Medizinische Interpretation'])}</p>` : ''}
+        ${interp ? `<p>${escapeHtml(interp)}</p>` : ''}
         <p><b>AL:</b> ${pos['AL_(normiert)']} <b>IPL:</b> ${pos['IPL_(normiert)']}</p>
         ${dign ? `<p><b>Dignitäten:</b> ${dign}</p>` : ''}
         ${groups ? `<p><b>Leistungsgruppen:</b><br>${groups}</p>` : ''}
@@ -224,14 +227,34 @@ async function loadData() {
           data_pauschaleBedingungen, data_tardocGesamt, data_tabellen,
           data_interpretationen ] = loadedDataArray;
 
+        interpretationMap = {};
+        if (data_interpretationen) {
+            const all = [];
+            if (Array.isArray(data_interpretationen)) {
+                all.push(...data_interpretationen);
+            } else {
+                if (Array.isArray(data_interpretationen.Kapitelinterpretationen)) {
+                    all.push(...data_interpretationen.Kapitelinterpretationen);
+                }
+                if (Array.isArray(data_interpretationen.GenerelleInterpretationen)) {
+                    all.push(...data_interpretationen.GenerelleInterpretationen);
+                }
+                if (Array.isArray(data_interpretationen.AllgemeineDefinitionen)) {
+                    all.push(...data_interpretationen.AllgemeineDefinitionen);
+                }
+            }
+            all.forEach(entry => {
+                if (entry && entry.KNR) interpretationMap[entry.KNR] = entry;
+            });
+        }
+
         let missingDataErrors = [];
         if (!Array.isArray(data_leistungskatalog) || data_leistungskatalog.length === 0) missingDataErrors.push("Leistungskatalog");
         if (!Array.isArray(data_tardocGesamt) || data_tardocGesamt.length === 0) missingDataErrors.push("TARDOC-Daten");
         if (!Array.isArray(data_pauschalen) || data_pauschalen.length === 0) missingDataErrors.push("Pauschalen");
         if (!Array.isArray(data_pauschaleBedingungen) || data_pauschaleBedingungen.length === 0) missingDataErrors.push("Pauschalen-Bedingungen");
         if (!Array.isArray(data_tabellen) || data_tabellen.length === 0) missingDataErrors.push("Referenz-Tabellen");
-        if (!Array.isArray(data_interpretationen) || data_interpretationen.length === 0) missingDataErrors.push("Interpretationen");
-
+        if (!interpretationMap || Object.keys(interpretationMap).length === 0) missingDataErrors.push("Interpretationen");
         if (missingDataErrors.length > 0) {
              throw new Error(`Folgende kritische Daten fehlen oder konnten nicht geladen werden: ${missingDataErrors.join(', ')}.`);
         }
@@ -276,7 +299,11 @@ document.addEventListener("DOMContentLoaded", () => {
     loadData();
 
     const modalClose = $('infoModalClose');
+    const modalOverlay = $('infoModal');
     if (modalClose) modalClose.addEventListener('click', hideInfoModal);
+    if (modalOverlay) modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) hideInfoModal();
+    });
 
     document.addEventListener('click', (e) => {
         const target = e.target;
