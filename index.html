@@ -281,13 +281,20 @@
             background: rgba(0,0,0,0.5); display:none;
             justify-content: center; align-items: center; z-index: 10000;
         }
-        .info-modal {
-            background:#fff; padding:20px; max-width:600px; max-height:80vh;
-            overflow-y:auto; border-radius:4px; box-shadow:0 2px 8px rgba(0,0,0,0.3);
-        }
-        .modal-close { float:right; background:none; border:none; font-size:1.2em; cursor:pointer; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
+    .info-modal {
+        background:#fff; padding:20px; max-width:600px; max-height:80vh;
+        overflow-y:auto; border-radius:4px; box-shadow:0 2px 8px rgba(0,0,0,0.3);
+    }
+    .modal-close { float:right; background:none; border:none; font-size:1.2em; cursor:pointer; }
+    .version-info {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 0.75em;
+        color: #555;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+</style>
 </head>
 <body>
     <!-- === SVG Sprite Definition (versteckt) === -->
@@ -307,6 +314,12 @@
             <button id="infoModalClose" class="modal-close">&times;</button>
             <div id="infoModalContent"></div>
         </div>
+    </div>
+
+    <div class="version-info">
+        V1.0, Arnet Konsilium,
+        <a href="https://www.arkons.ch/" target="_blank">https://www.arkons.ch/</a>,
+        2025
     </div>
 
     <h1>Neuer Arzttarif Schweiz: TARDOC und Pauschalen</h1>
