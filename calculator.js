@@ -85,6 +85,41 @@ function findCatalogEntry(lkn) {
     return data_leistungskatalog.find(item => item && item.LKN && String(item.LKN).toUpperCase() === code);
 }
 
+function formatRules(ruleData) {
+    if (!ruleData) return '';
+    if (!Array.isArray(ruleData)) {
+        return typeof ruleData === 'string' ? escapeHtml(ruleData) : JSON.stringify(ruleData);
+    }
+    const parts = ruleData.map(rule => {
+        let txt = escapeHtml(rule.Typ || '');
+        if (rule.MaxMenge !== undefined) {
+            txt += ` max. ${rule.MaxMenge}`;
+            if (rule.Zeitraum) txt += ` ${escapeHtml(rule.Zeitraum)}`;
+        }
+        const items = [];
+        if (rule.LKN) items.push(createInfoLink(rule.LKN, 'lkn'));
+        if (Array.isArray(rule.LKNs)) {
+            rule.LKNs.forEach(item => {
+                if (typeof item !== 'string') return;
+                if (item.startsWith('Kapitel ')) {
+                    const code = item.replace('Kapitel ', '').trim();
+                    items.push('Kapitel ' + createInfoLink(code, 'chapter'));
+                } else if (item.startsWith('Leistungsgruppe ')) {
+                    const code = item.replace('Leistungsgruppe ', '').trim();
+                    items.push('Leistungsgruppe ' + createInfoLink(code, 'group'));
+                } else {
+                    items.push(createInfoLink(item, 'lkn'));
+                }
+            });
+        }
+        if (rule.Gruppe) items.push(createInfoLink(rule.Gruppe, 'group'));
+        if (items.length > 0) txt += ' ' + items.join(', ');
+        if (rule.Hinweis) txt += ` ${escapeHtml(rule.Hinweis)}`;
+        return txt.trim();
+    });
+    return parts.join('; ');
+}
+
 function buildLknInfoHtmlFromCode(code) {
     const pos = findTardocPosition(code);
     if (pos) return buildLknInfoHtml(pos);
@@ -763,41 +798,6 @@ function processTardocLookup(lkn) {
     const IPL_KEY = 'IPL_(normiert)';
     const DESC_KEY_1 = 'Bezeichnung';
     const RULES_KEY_1 = 'Regeln';
-
-    function formatRules(ruleData) {
-        if (!ruleData) return '';
-        if (!Array.isArray(ruleData)) {
-            return typeof ruleData === 'string' ? escapeHtml(ruleData) : JSON.stringify(ruleData);
-        }
-        const parts = ruleData.map(rule => {
-            let txt = escapeHtml(rule.Typ || '');
-            if (rule.MaxMenge !== undefined) {
-                txt += ` max. ${rule.MaxMenge}`;
-                if (rule.Zeitraum) txt += ` ${escapeHtml(rule.Zeitraum)}`;
-            }
-            const items = [];
-            if (rule.LKN) items.push(createInfoLink(rule.LKN, 'lkn'));
-            if (Array.isArray(rule.LKNs)) {
-                rule.LKNs.forEach(item => {
-                    if (typeof item !== 'string') return;
-                    if (item.startsWith('Kapitel ')) {
-                        const code = item.replace('Kapitel ', '').trim();
-                        items.push('Kapitel ' + createInfoLink(code, 'chapter'));
-                    } else if (item.startsWith('Leistungsgruppe ')) {
-                        const code = item.replace('Leistungsgruppe ', '').trim();
-                        items.push('Leistungsgruppe ' + createInfoLink(code, 'group'));
-                    } else {
-                        items.push(createInfoLink(item, 'lkn'));
-                    }
-                });
-            }
-            if (rule.Gruppe) items.push(createInfoLink(rule.Gruppe, 'group'));
-            if (items.length > 0) txt += ' ' + items.join(', ');
-            if (rule.Hinweis) txt += ` ${escapeHtml(rule.Hinweis)}`;
-            return txt.trim();
-        });
-        return parts.join('; ');
-    }
 
     if (!Array.isArray(data_tardocGesamt) || data_tardocGesamt.length === 0) {
         console.warn(`TARDOC-Daten nicht geladen oder leer für LKN ${lkn}.`);
