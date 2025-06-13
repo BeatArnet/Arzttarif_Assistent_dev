@@ -78,6 +78,27 @@ function findTardocPosition(lkn) {
     return data_tardocGesamt.find(item => item && item.LKN && String(item.LKN).toUpperCase() === code);
 }
 
+function findCatalogEntry(lkn) {
+    if (!Array.isArray(data_leistungskatalog)) return null;
+    if (typeof lkn !== 'string') return null;
+    const code = lkn.trim().toUpperCase();
+    return data_leistungskatalog.find(item => item && item.LKN && String(item.LKN).toUpperCase() === code);
+}
+
+function buildLknInfoHtmlFromCode(code) {
+    const pos = findTardocPosition(code);
+    if (pos) return buildLknInfoHtml(pos);
+
+    const cat = findCatalogEntry(code);
+    if (cat) {
+        return `
+            <h3>${escapeHtml(cat.LKN)} - ${escapeHtml(cat.Beschreibung || '')}</h3>
+            ${cat.MedizinischeInterpretation ? `<p>${escapeHtml(cat.MedizinischeInterpretation)}</p>` : ''}
+        `;
+    }
+    return `<p>Keine Daten vorhanden.</p>`;
+}
+
 function getInterpretation(code) {
     if (!interpretationMap) return '';
     const entry = interpretationMap[code] || interpretationMap[code.split('.')[0]];
@@ -315,7 +336,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const code = (link.dataset.code || '').trim();
             const type = link.dataset.type;
             let html = '';
-            if (type === 'lkn') html = buildLknInfoHtml(findTardocPosition(code));
+            if (type === 'lkn') html = buildLknInfoHtmlFromCode(code);
             else if (type === 'chapter') html = buildChapterInfoHtml(code);
             else if (type === 'group') html = buildGroupInfoHtml(code);
             showInfoModal(html);
