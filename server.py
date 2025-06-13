@@ -972,14 +972,34 @@ def analyze_billing():
                         fehler_liste_regel = regel_ergebnis_dict.get("fehler", [])
                         mengen_reduktions_fehler = next((f for f in fehler_liste_regel if "Menge auf" in f and "reduziert" in f), None)
                         if mengen_reduktions_fehler:
-                            match_menge = re.search(r'Menge auf (\d+)', mengen_reduktions_fehler)
+                            match_menge = re.search(r"Menge auf (\d+)", mengen_reduktions_fehler)
                             if match_menge:
                                 try:
                                     finale_menge_nach_regeln = int(match_menge.group(1))
                                     regel_ergebnis_dict["abrechnungsfaehig"] = True
                                     print(f"INFO: Menge für LKN {lkn_code} durch Regelprüfer auf {finale_menge_nach_regeln} angepasst.")
-                                except ValueError: finale_menge_nach_regeln = 0 # Fallback
-                        if finale_menge_nach_regeln == 0: print(f"INFO: LKN {lkn_code} nicht abrechnungsfähig wegen Regel(n): {regel_ergebnis_dict.get('fehler', [])}")
+                                except ValueError:
+                                    finale_menge_nach_regeln = 0  # Fallback
+                        else:
+                            mengenbesch_fehler = next((f for f in fehler_liste_regel if "Mengenbeschränkung überschritten" in f and "max." in f), None)
+                            if mengenbesch_fehler:
+                                match_max = re.search(r"max\.\s*(\d+)", mengenbesch_fehler)
+                                if match_max:
+                                    try:
+                                        finale_menge_nach_regeln = int(match_max.group(1))
+                                        regel_ergebnis_dict["abrechnungsfaehig"] = True
+                                        regel_ergebnis_dict.setdefault("fehler", []).append(
+                                            f"Menge auf {finale_menge_nach_regeln} reduziert (Mengenbeschränkung)"
+                                        )
+                                        print(
+                                            f"INFO: Menge für LKN {lkn_code} automatisch auf {finale_menge_nach_regeln} reduziert wegen Mengenbeschränkung."
+                                        )
+                                    except ValueError:
+                                        finale_menge_nach_regeln = 0
+                        if finale_menge_nach_regeln == 0:
+                            print(
+                                f"INFO: LKN {lkn_code} nicht abrechnungsfähig wegen Regel(n): {regel_ergebnis_dict.get('fehler', [])}"
+                            )
                 except Exception as e_rule: print(f"FEHLER bei Regelprüfung für LKN {lkn_code}: {e_rule}"); traceback.print_exc(); regel_ergebnis_dict = {"abrechnungsfaehig": False, "fehler": [f"Interner Fehler bei Regelprüfung: {e_rule}"]}
             else: print(f"WARNUNG: Keine Regelprüfung für LKN {lkn_code} durchgeführt (Regelprüfer oder Regelwerk fehlt)."); regel_ergebnis_dict = {"abrechnungsfaehig": False, "fehler": ["Regelprüfung nicht verfügbar."]}
             
