@@ -600,7 +600,26 @@ function processTardocLookup(lkn) {
     const AL_KEY = 'AL_(normiert)';
     const IPL_KEY = 'IPL_(normiert)';
     const DESC_KEY_1 = 'Bezeichnung';
-    const RULES_KEY_1 = 'Regeln_bezogen_auf_die_Tarifmechanik';
+    const RULES_KEY_1 = 'Regeln';
+
+    function formatRules(ruleData) {
+        if (!ruleData) return '';
+        if (!Array.isArray(ruleData)) {
+            return typeof ruleData === 'string' ? ruleData : JSON.stringify(ruleData);
+        }
+        const parts = ruleData.map(rule => {
+            let txt = rule.Typ || '';
+            if (rule.MaxMenge !== undefined) {
+                txt += ` max. ${rule.MaxMenge}`;
+                if (rule.Zeitraum) txt += ` ${rule.Zeitraum}`;
+            }
+            if (rule.LKN) txt += ` ${rule.LKN}`;
+            if (Array.isArray(rule.LKNs)) txt += ` ${rule.LKNs.join(', ')}`;
+            if (rule.Hinweis) txt += ` ${rule.Hinweis}`;
+            return txt.trim();
+        });
+        return parts.join('; ');
+    }
 
     if (!Array.isArray(data_tardocGesamt) || data_tardocGesamt.length === 0) {
         console.warn(`TARDOC-Daten nicht geladen oder leer für LKN ${lkn}.`);
@@ -622,7 +641,7 @@ function processTardocLookup(lkn) {
     result.al = parseGermanFloat(tardocPosition[AL_KEY]);
     result.ipl = parseGermanFloat(tardocPosition[IPL_KEY]);
     result.leistungsname = tardocPosition[DESC_KEY_1] || 'N/A';
-    result.regeln = tardocPosition[RULES_KEY_1] || '';
+    result.regeln = formatRules(tardocPosition[RULES_KEY_1]);
     return result;
 }
 
