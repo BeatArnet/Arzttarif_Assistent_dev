@@ -28,13 +28,13 @@ GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 GEMINI_MODEL = os.getenv('GEMINI_MODEL', "gemini-1.5-flash-latest")
 # GEMINI_MODEL = os.getenv('GEMINI_MODEL', "gemini-2.0-flash")
 DATA_DIR = Path("data")
-LEISTUNGSKATALOG_PATH = DATA_DIR / "tblLeistungskatalog.json"
-REGELWERK_PATH = DATA_DIR / "strukturierte_regeln_komplett.json" # Prüfe diesen Pfad!
-TARDOC_PATH = DATA_DIR / "TARDOCGesamt_optimiert_Tarifpositionen.json"
-PAUSCHALE_LP_PATH = DATA_DIR / "tblPauschaleLeistungsposition.json"
-PAUSCHALEN_PATH = DATA_DIR / "tblPauschalen.json"
-PAUSCHALE_BED_PATH = DATA_DIR / "tblPauschaleBedingungen.json"
-TABELLEN_PATH = DATA_DIR / "tblTabellen.json"
+LEISTUNGSKATALOG_PATH = DATA_DIR / "LKAAT_Leistungskatalog.json"
+TARDOC_TARIF_PATH = DATA_DIR / "TARDOC_Tarifpositionen.json"
+TARDOC_INTERP_PATH = DATA_DIR / "TARDOC_Interpretationen.json"
+PAUSCHALE_LP_PATH = DATA_DIR / "PAUSCHALEN_Leistungspositionen.json"
+PAUSCHALEN_PATH = DATA_DIR / "PAUSCHALEN_Pauschalen.json"
+PAUSCHALE_BED_PATH = DATA_DIR / "PAUSCHALEN_Bedingungen.json"
+TABELLEN_PATH = DATA_DIR / "PAUSCHALEN_Tabellen.json"
 
 # --- Typ-Aliase für Klarheit ---
 EvaluateStructuredConditionsType = Callable[[str, Dict[Any, Any], List[Dict[Any, Any]], Dict[str, List[Dict[Any, Any]]]], bool]
@@ -166,7 +166,8 @@ app = Flask(__name__, static_folder='.', static_url_path='') # Flask App Instanz
 leistungskatalog_data: list[dict] = []
 leistungskatalog_dict: dict[str, dict] = {}
 regelwerk_dict: dict[str, list] = {} # Annahme: lade_regelwerk gibt List[RegelDict] pro LKN
-tardoc_data_dict: dict[str, dict] = {}
+tardoc_tarif_dict: dict[str, dict] = {}
+tardoc_interp_dict: dict[str, dict] = {}
 pauschale_lp_data: list[dict] = []
 pauschalen_data: list[dict] = []
 pauschalen_dict: dict[str, dict] = {}
@@ -195,14 +196,14 @@ def create_app() -> Flask:
 
 # --- Daten laden Funktion ---
 def load_data() -> bool:
-    global leistungskatalog_data, leistungskatalog_dict, regelwerk_dict, tardoc_data_dict
+    global leistungskatalog_data, leistungskatalog_dict, regelwerk_dict, tardoc_tarif_dict, tardoc_interp_dict
     global pauschale_lp_data, pauschalen_data, pauschalen_dict, pauschale_bedingungen_data, tabellen_data
     global tabellen_dict_by_table, daten_geladen
 
     all_loaded_successfully = True
     print("--- Lade Daten ---")
     # Reset all data containers
-    leistungskatalog_data.clear(); leistungskatalog_dict.clear(); regelwerk_dict.clear(); tardoc_data_dict.clear()
+    leistungskatalog_data.clear(); leistungskatalog_dict.clear(); regelwerk_dict.clear(); tardoc_tarif_dict.clear(); tardoc_interp_dict.clear()
     pauschale_lp_data.clear(); pauschalen_data.clear(); pauschalen_dict.clear(); pauschale_bedingungen_data.clear(); tabellen_data.clear()
     tabellen_dict_by_table.clear()
 
@@ -211,8 +212,9 @@ def load_data() -> bool:
         "PauschaleLP": (PAUSCHALE_LP_PATH, pauschale_lp_data, None, None),
         "Pauschalen": (PAUSCHALEN_PATH, pauschalen_data, 'Pauschale', pauschalen_dict),
         "PauschaleBedingungen": (PAUSCHALE_BED_PATH, pauschale_bedingungen_data, None, None),
-        "TARDOC": (TARDOC_PATH, [], 'LKN', tardoc_data_dict), # TARDOC nur ins Dict
-        "Tabellen": (TABELLEN_PATH, tabellen_data, None, None) # Tabellen nur in Liste (vorerst)
+        "TARDOC_TARIF": (TARDOC_TARIF_PATH, [], 'LKN', tardoc_tarif_dict),  # Tarifpositionen
+        "TARDOC_INTERP": (TARDOC_INTERP_PATH, [], 'LKN', tardoc_interp_dict),  # Interpretationen
+        "Tabellen": (TABELLEN_PATH, tabellen_data, None, None)  # Tabellen nur in Liste (vorerst)
     }
 
     for name, (path, target_list_ref, key_field, target_dict_ref) in files_to_load.items():
@@ -246,7 +248,7 @@ def load_data() -> bool:
                 if name == "Tabellen": # Spezifische Behandlung für 'Tabellen'
                     TAB_KEY = "Tabelle"
                     tabellen_dict_by_table.clear()
-                    for item in data_from_file: # data_from_file ist hier der Inhalt von tblTabellen.json
+                    for item in data_from_file: # data_from_file ist hier der Inhalt von PAUSCHALEN_Tabellen.json
                         if isinstance(item, dict):
                             table_name = item.get(TAB_KEY)
                             if table_name: # Stelle sicher, dass table_name nicht None ist
@@ -262,35 +264,23 @@ def load_data() -> bool:
                          all_loaded_successfully = False
             else:
                 print(f"  FEHLER: {name}-Datei nicht gefunden: {path}")
-                if name in ["Leistungskatalog", "Pauschalen", "TARDOC", "PauschaleBedingungen", "Tabellen"]:
+                if name in ["Leistungskatalog", "Pauschalen", "TARDOC_TARIF", "TARDOC_INTERP", "PauschaleBedingungen", "Tabellen"]:
                     all_loaded_successfully = False
         except (json.JSONDecodeError, IOError, Exception) as e:
              print(f"  FEHLER beim Laden/Verarbeiten von {name} ({path}): {e}")
              all_loaded_successfully = False
              traceback.print_exc()
 
-    # Lade Regelwerk LKN
+    # Regelwerk direkt aus TARDOC_Tarifpositionen extrahieren
     try:
-        print(f"  Versuche Regelwerk (LKN) von {REGELWERK_PATH} zu laden...")
-        # rp_lkn_module wurde oben importiert
-        if rp_lkn_module and hasattr(rp_lkn_module, 'lade_regelwerk'):
-            if REGELWERK_PATH.is_file():
-                regelwerk_dict.clear()
-                regelwerk_dict_loaded = rp_lkn_module.lade_regelwerk(str(REGELWERK_PATH))
-                if regelwerk_dict_loaded: # Annahme: Gibt Dict[str, List[Regel]] zurück
-                    regelwerk_dict.update(regelwerk_dict_loaded)
-                    print(f"  ✓ Regelwerk (LKN) '{REGELWERK_PATH}' geladen ({len(regelwerk_dict)} LKNs).")
-                else:
-                    print(f"  FEHLER: LKN-Regelwerk konnte nicht geladen werden (Funktion gab leeres Dict zurück).")
-                    all_loaded_successfully = False
-            else:
-                print(f"  FEHLER: Regelwerk (LKN) nicht gefunden: {REGELWERK_PATH}")
-                regelwerk_dict.clear(); all_loaded_successfully = False
-        else:
-            print("  ℹ️ Regelprüfung (LKN) nicht verfügbar oder lade_regelwerk fehlt im Modul regelpruefer.")
-            regelwerk_dict.clear()
+        regelwerk_dict.clear()
+        for lkn, info in tardoc_tarif_dict.items():
+            rules = info.get("Regeln")
+            if rules:
+                regelwerk_dict[lkn] = rules
+        print(f"  ✓ Regelwerk aus TARDOC geladen ({len(regelwerk_dict)} LKNs mit Regeln).")
     except Exception as e:
-        print(f"  FEHLER beim Laden des LKN-Regelwerks: {e}")
+        print(f"  FEHLER beim Extrahieren des Regelwerks aus TARDOC: {e}")
         traceback.print_exc(); regelwerk_dict.clear(); all_loaded_successfully = False
 
     print("--- Daten laden abgeschlossen ---")
@@ -312,9 +302,9 @@ app: Flask = create_app()
 def call_gemini_stage1(user_input: str, katalog_context: str) -> dict:
     if not GEMINI_API_KEY: raise ValueError("GEMINI_API_KEY nicht konfiguriert.")
 
-    prompt = f"""**Aufgabe:** Analysiere den folgenden medizinischen Behandlungstext aus der Schweiz äußerst präzise. Deine Aufgabe ist die Identifikation relevanter Leistungs-Katalog-Nummern (LKN), deren Menge und die Extraktion spezifischer Kontextinformationen basierend **ausschließlich** auf dem bereitgestellten Leistungskatalog.
+    prompt = f"""**Aufgabe:** Analysiere den folgenden medizinischen Behandlungstext aus der Schweiz äußerst präzise. Deine Aufgabe ist die Identifikation relevanter Leistungs-Katalog-Nummern (LKN), deren Menge und die Extraktion spezifischer Kontextinformationen basierend **ausschließlich** auf dem bereitgestellten LKAAT_Leistungskatalog.
 
-**Kontext: Leistungskatalog (Dies ist die EINZIGE Quelle für gültige LKNs und deren Beschreibungen! Ignoriere jegliches anderes Wissen.)**
+**Kontext: LKAAT_Leistungskatalog (Dies ist die EINZIGE Quelle für gültige LKNs und deren Beschreibungen! Ignoriere jegliches anderes Wissen.)**
 --- Leistungskatalog Start ---
 {katalog_context}
 --- Leistungskatalog Ende ---
