@@ -73,7 +73,9 @@ function beschreibungZuLKN(lkn) {
 
 function findTardocPosition(lkn) {
     if (!Array.isArray(data_tardocGesamt)) return null;
-    return data_tardocGesamt.find(item => item && item.LKN && String(item.LKN).toUpperCase() === lkn.toUpperCase());
+    if (typeof lkn !== 'string') return null;
+    const code = lkn.trim().toUpperCase();
+    return data_tardocGesamt.find(item => item && item.LKN && String(item.LKN).toUpperCase() === code);
 }
 
 function getInterpretation(code) {
@@ -117,11 +119,12 @@ function buildChapterInfoHtml(code) {
 }
 
 function buildGroupInfoHtml(code) {
-    const info = groupInfoMap[code];
-    if (!info) return `<p>Keine Daten zur Leistungsgruppe ${escapeHtml(code)}.</p>`;
+    const key = (code || '').trim();
+    const info = groupInfoMap[key];
+    if (!info) return `<p>Keine Daten zur Leistungsgruppe ${escapeHtml(key)}.</p>`;
     const lkns = Array.from(info.lkns).sort();
     const links = lkns.map(l => createInfoLink(l,'lkn')).join(', ');
-    return `<h3>Leistungsgruppe ${escapeHtml(code)}</h3>` +
+    return `<h3>Leistungsgruppe ${escapeHtml(key)}</h3>` +
            (info.text ? `<p>${escapeHtml(info.text)}</p>` : '') +
            `<p><b>Enthaltene LKN:</b> ${links}</p>`;
 }
@@ -306,11 +309,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.addEventListener('click', (e) => {
-        const target = e.target;
-        if (target.classList && target.classList.contains('info-link')) {
+        const link = e.target.closest('a.info-link');
+        if (link) {
             e.preventDefault();
-            const code = target.dataset.code;
-            const type = target.dataset.type;
+            const code = (link.dataset.code || '').trim();
+            const type = link.dataset.type;
             let html = '';
             if (type === 'lkn') html = buildLknInfoHtml(findTardocPosition(code));
             else if (type === 'chapter') html = buildChapterInfoHtml(code);
