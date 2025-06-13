@@ -9,6 +9,8 @@ let data_pauschalen = [];
 let data_pauschaleBedingungen = [];
 let data_tardocGesamt = [];
 let data_tabellen = [];
+let data_interpretationen = [];
+let groupInfoMap = {};
 
 // Pfade zu den lokalen JSON-Daten
 const DATA_PATHS = {
@@ -17,7 +19,8 @@ const DATA_PATHS = {
     pauschalen: 'data/PAUSCHALEN_Pauschalen.json',
     pauschaleBedingungen: 'data/PAUSCHALEN_Bedingungen.json',
     tardocGesamt: 'data/TARDOC_Tarifpositionen.json',
-    tabellen: 'data/PAUSCHALEN_Tabellen.json'
+    tabellen: 'data/PAUSCHALEN_Tabellen.json',
+    interpretationen: 'data/TARDOC_Interpretationen.json'
 };
 
 // Referenz zum Mouse Spinner
@@ -37,6 +40,23 @@ function escapeHtml(s) {
         .replace(/'/g, "&#39;");
 }
 
+function createInfoLink(code, type) {
+    return `<a href="#" class="info-link" data-type="${type}" data-code="${escapeHtml(code)}">${escapeHtml(code)}</a>`;
+}
+
+function showInfoModal(html) {
+    const modal = $('infoModal');
+    const content = $('infoModalContent');
+    if (!modal || !content) return;
+    content.innerHTML = html;
+    modal.style.display = 'flex';
+}
+
+function hideInfoModal() {
+    const modal = $('infoModal');
+    if (modal) modal.style.display = 'none';
+}
+
 
 function beschreibungZuLKN(lkn) {
     // Stellt sicher, dass data_leistungskatalog geladen ist und ein Array ist
@@ -48,6 +68,59 @@ function beschreibungZuLKN(lkn) {
     const hit = data_leistungskatalog.find(e => e.LKN?.toUpperCase() === lkn.toUpperCase());
     // Gibt Beschreibung zurück oder LKN selbst, wenn keine Beschreibung vorhanden ist
     return hit ? (hit.Beschreibung || lkn) : lkn;
+}
+
+function findTardocPosition(lkn) {
+    if (!Array.isArray(data_tardocGesamt)) return null;
+    return data_tardocGesamt.find(item => item && item.LKN && String(item.LKN).toUpperCase() === lkn.toUpperCase());
+}
+
+function getChapterInfo(kapitelCode) {
+    const info = { name: '', interpretation: '' };
+    const pos = data_tardocGesamt.find(item => item.KapitelNummer === kapitelCode);
+    if (pos) info.name = pos.Kapitel || '';
+    if (Array.isArray(data_interpretationen)) {
+        let entry = data_interpretationen.find(e => e.KNR === kapitelCode);
+        if (!entry) {
+            const base = kapitelCode.split('.')[0];
+            entry = data_interpretationen.find(e => e.KNR === base);
+        }
+        if (entry) info.interpretation = entry.Interpretation || '';
+    }
+    return info;
+}
+
+function buildLknInfoHtml(pos) {
+    if (!pos) return `<p>Keine Daten vorhanden.</p>`;
+    const dign = Array.isArray(pos.Qualitative_Dignität) ? pos.Qualitative_Dignität.map(d => escapeHtml(d.DignitaetText)).join(', ') : '';
+    let groups = '';
+    if (Array.isArray(pos.Leistungsgruppen)) {
+        groups = pos.Leistungsgruppen.map(g => `${createInfoLink(g.Gruppe,'group')}: ${escapeHtml(g.Text || '')}`).join('<br>');
+    }
+    const rules = formatRules(pos.Regeln);
+    return `
+        <h3>${escapeHtml(pos.LKN)} - ${escapeHtml(pos.Bezeichnung || '')}</h3>
+        ${pos['Medizinische Interpretation'] ? `<p>${escapeHtml(pos['Medizinische Interpretation'])}</p>` : ''}
+        <p><b>AL:</b> ${pos['AL_(normiert)']} <b>IPL:</b> ${pos['IPL_(normiert)']}</p>
+        ${dign ? `<p><b>Dignitäten:</b> ${dign}</p>` : ''}
+        ${groups ? `<p><b>Leistungsgruppen:</b><br>${groups}</p>` : ''}
+        ${rules ? `<p><b>Regeln:</b> ${rules}</p>` : ''}
+    `;
+}
+
+function buildChapterInfoHtml(code) {
+    const info = getChapterInfo(code);
+    return `<h3>Kapitel ${escapeHtml(code)}${info.name ? ' - ' + escapeHtml(info.name) : ''}</h3>` + (info.interpretation ? `<p>${escapeHtml(info.interpretation)}</p>` : '');
+}
+
+function buildGroupInfoHtml(code) {
+    const info = groupInfoMap[code];
+    if (!info) return `<p>Keine Daten zur Leistungsgruppe ${escapeHtml(code)}.</p>`;
+    const lkns = Array.from(info.lkns).sort();
+    const links = lkns.map(l => createInfoLink(l,'lkn')).join(', ');
+    return `<h3>Leistungsgruppe ${escapeHtml(code)}</h3>` +
+           (info.text ? `<p>${escapeHtml(info.text)}</p>` : '') +
+           `<p><b>Enthaltene LKN:</b> ${links}</p>`;
 }
 
 
@@ -138,13 +211,18 @@ async function loadData() {
 
     try {
         loadedDataArray = await Promise.all([
-            fetchJSON(DATA_PATHS.leistungskatalog), fetchJSON(DATA_PATHS.pauschaleLP),
-            fetchJSON(DATA_PATHS.pauschalen), fetchJSON(DATA_PATHS.pauschaleBedingungen),
-            fetchJSON(DATA_PATHS.tardocGesamt), fetchJSON(DATA_PATHS.tabellen)
+            fetchJSON(DATA_PATHS.leistungskatalog),
+            fetchJSON(DATA_PATHS.pauschaleLP),
+            fetchJSON(DATA_PATHS.pauschalen),
+            fetchJSON(DATA_PATHS.pauschaleBedingungen),
+            fetchJSON(DATA_PATHS.tardocGesamt),
+            fetchJSON(DATA_PATHS.tabellen),
+            fetchJSON(DATA_PATHS.interpretationen)
         ]);
 
         [ data_leistungskatalog, data_pauschaleLeistungsposition, data_pauschalen,
-          data_pauschaleBedingungen, data_tardocGesamt, data_tabellen ] = loadedDataArray;
+          data_pauschaleBedingungen, data_tardocGesamt, data_tabellen,
+          data_interpretationen ] = loadedDataArray;
 
         let missingDataErrors = [];
         if (!Array.isArray(data_leistungskatalog) || data_leistungskatalog.length === 0) missingDataErrors.push("Leistungskatalog");
@@ -152,10 +230,26 @@ async function loadData() {
         if (!Array.isArray(data_pauschalen) || data_pauschalen.length === 0) missingDataErrors.push("Pauschalen");
         if (!Array.isArray(data_pauschaleBedingungen) || data_pauschaleBedingungen.length === 0) missingDataErrors.push("Pauschalen-Bedingungen");
         if (!Array.isArray(data_tabellen) || data_tabellen.length === 0) missingDataErrors.push("Referenz-Tabellen");
+        if (!Array.isArray(data_interpretationen) || data_interpretationen.length === 0) missingDataErrors.push("Interpretationen");
 
         if (missingDataErrors.length > 0) {
              throw new Error(`Folgende kritische Daten fehlen oder konnten nicht geladen werden: ${missingDataErrors.join(', ')}.`);
         }
+
+        // Leistungsgruppen-Übersicht aufbauen
+        groupInfoMap = {};
+        data_tardocGesamt.forEach(item => {
+            if (Array.isArray(item.Leistungsgruppen)) {
+                item.Leistungsgruppen.forEach(g => {
+                    if (!groupInfoMap[g.Gruppe]) {
+                        groupInfoMap[g.Gruppe] = { text: g.Text || '', lkns: new Set() };
+                    } else if (g.Text && !groupInfoMap[g.Gruppe].text) {
+                        groupInfoMap[g.Gruppe].text = g.Text;
+                    }
+                    groupInfoMap[g.Gruppe].lkns.add(item.LKN);
+                });
+            }
+        });
 
         console.log("Frontend-Daten vom Server geladen.");
 
@@ -180,6 +274,23 @@ document.addEventListener("DOMContentLoaded", () => {
     mouseSpinnerElement = $('mouseSpinner');
     loadIcdCheckboxState();
     loadData();
+
+    const modalClose = $('infoModalClose');
+    if (modalClose) modalClose.addEventListener('click', hideInfoModal);
+
+    document.addEventListener('click', (e) => {
+        const target = e.target;
+        if (target.classList && target.classList.contains('info-link')) {
+            e.preventDefault();
+            const code = target.dataset.code;
+            const type = target.dataset.type;
+            let html = '';
+            if (type === 'lkn') html = buildLknInfoHtml(findTardocPosition(code));
+            else if (type === 'chapter') html = buildChapterInfoHtml(code);
+            else if (type === 'group') html = buildGroupInfoHtml(code);
+            showInfoModal(html);
+        }
+    });
 });
 
 // ─── 3 · Hauptlogik (Button‑Click) ────────────────────────────────────────
@@ -547,7 +658,7 @@ function displayTardocTable(tardocLeistungen, ruleResultsDetailsList = []) {
         const name = leistung.beschreibung || tardocDetails.leistungsname || 'N/A';
         const al = tardocDetails.al;
         const ipl = tardocDetails.ipl;
-        let regelnHtml = tardocDetails.regeln ? `<p><b>TARDOC-Regel:</b> ${escapeHtml(tardocDetails.regeln)}</p>` : '';
+        let regelnHtml = tardocDetails.regeln ? `<p><b>TARDOC-Regel:</b> ${tardocDetails.regeln}</p>` : '';
 
         const ruleResult = ruleResultsDetailsList.find(r => r.lkn === lkn);
         let hasHintForThisLKN = false;
@@ -605,17 +716,33 @@ function processTardocLookup(lkn) {
     function formatRules(ruleData) {
         if (!ruleData) return '';
         if (!Array.isArray(ruleData)) {
-            return typeof ruleData === 'string' ? ruleData : JSON.stringify(ruleData);
+            return typeof ruleData === 'string' ? escapeHtml(ruleData) : JSON.stringify(ruleData);
         }
         const parts = ruleData.map(rule => {
-            let txt = rule.Typ || '';
+            let txt = escapeHtml(rule.Typ || '');
             if (rule.MaxMenge !== undefined) {
                 txt += ` max. ${rule.MaxMenge}`;
-                if (rule.Zeitraum) txt += ` ${rule.Zeitraum}`;
+                if (rule.Zeitraum) txt += ` ${escapeHtml(rule.Zeitraum)}`;
             }
-            if (rule.LKN) txt += ` ${rule.LKN}`;
-            if (Array.isArray(rule.LKNs)) txt += ` ${rule.LKNs.join(', ')}`;
-            if (rule.Hinweis) txt += ` ${rule.Hinweis}`;
+            const items = [];
+            if (rule.LKN) items.push(createInfoLink(rule.LKN, 'lkn'));
+            if (Array.isArray(rule.LKNs)) {
+                rule.LKNs.forEach(item => {
+                    if (typeof item !== 'string') return;
+                    if (item.startsWith('Kapitel ')) {
+                        const code = item.replace('Kapitel ', '').trim();
+                        items.push('Kapitel ' + createInfoLink(code, 'chapter'));
+                    } else if (item.startsWith('Leistungsgruppe ')) {
+                        const code = item.replace('Leistungsgruppe ', '').trim();
+                        items.push('Leistungsgruppe ' + createInfoLink(code, 'group'));
+                    } else {
+                        items.push(createInfoLink(item, 'lkn'));
+                    }
+                });
+            }
+            if (rule.Gruppe) items.push(createInfoLink(rule.Gruppe, 'group'));
+            if (items.length > 0) txt += ' ' + items.join(', ');
+            if (rule.Hinweis) txt += ` ${escapeHtml(rule.Hinweis)}`;
             return txt.trim();
         });
         return parts.join('; ');
