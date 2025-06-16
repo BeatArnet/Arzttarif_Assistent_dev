@@ -38,7 +38,10 @@ TABELLEN_PATH = DATA_DIR / "PAUSCHALEN_Tabellen.json"
 
 # --- Typ-Aliase für Klarheit ---
 EvaluateStructuredConditionsType = Callable[[str, Dict[Any, Any], List[Dict[Any, Any]], Dict[str, List[Dict[Any, Any]]]], bool]
-CheckPauschaleConditionsType = Callable[[str, Dict[Any, Any], List[Dict[Any, Any]], Dict[str, List[Dict[Any, Any]]], Dict[str, Dict[Any, Any]]], Dict[str, Any]]
+CheckPauschaleConditionsType = Callable[
+    [str, Dict[Any, Any], List[Dict[Any, Any]], Dict[str, List[Dict[Any, Any]]], Dict[str, Dict[Any, Any]], str],
+    Dict[str, Any]
+]
 GetSimplifiedConditionsType = Callable[[str, List[Dict[Any, Any]]], Set[Any]]
 GenerateConditionDetailHtmlType = Callable[[Tuple[Any, ...], Dict[Any, Any], Dict[Any, Any]], str]
 DetermineApplicablePauschaleType = Callable[
@@ -57,12 +60,13 @@ def default_evaluate_fallback( # Matches: evaluate_structured_conditions(pauscha
     print("WARNUNG: Fallback für 'evaluate_structured_conditions' aktiv.")
     return False
 
-def default_check_html_fallback( # Matches: check_pauschale_conditions(pauschale_code: str, context: dict, pauschale_bedingungen_data: list[dict], tabellen_dict_by_table: Dict[str, List[Dict]], leistungskatalog_dict: Dict[str, Dict]) -> dict
+def default_check_html_fallback(
     pauschale_code: str,
     context: Dict[Any, Any],
     pauschale_bedingungen_data: List[Dict[Any, Any]],
     tabellen_dict_by_table: Dict[str, List[Dict[Any, Any]]],
-    leistungskatalog_dict: Dict[str, Dict[Any, Any]]
+    leistungskatalog_dict: Dict[str, Dict[Any, Any]],
+    lang: str = 'de'
 ) -> Dict[str, Any]:
     print("WARNUNG: Fallback für 'check_pauschale_conditions' aktiv.")
     return {"html": "HTML-Prüfung nicht verfügbar (Fallback)", "errors": ["Fallback aktiv"], "trigger_lkn_condition_met": False}
