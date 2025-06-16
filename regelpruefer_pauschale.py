@@ -230,7 +230,30 @@ def check_pauschale_conditions(
     tabellen_dict_by_table: Dict[str, List[Dict]],
     leistungskatalog_dict: Dict[str, Dict],
     lang: str = 'de'
-    ) -> dict:
+) -> dict:
+    """Generate a detailed HTML report for the given pauschale.
+
+    Parameters
+    ----------
+    pauschale_code : str
+        Code der zu prüfenden Pauschale.
+    context : dict
+        Kontextdaten wie LKN, ICD etc.
+    pauschale_bedingungen_data : list[dict]
+        Bedingungen aller Pauschalen.
+    tabellen_dict_by_table : dict
+        Nach Tabellennamen gruppierte Einträge.
+    leistungskatalog_dict : dict
+        LKN-Katalog für Beschreibungen.
+    lang : str, optional
+        Sprache der Beschreibungen, standardmäßig "de".
+
+    Returns
+    -------
+    dict
+        HTML-Ausgabe, Fehlerliste und LKN-Trigger-Flag.
+    """
+
     errors: list[str] = []
     grouped_html_parts: Dict[Any, List[str]] = {}
     trigger_lkn_condition_met = False # Wird nicht mehr direkt hier gesetzt, sondern von aufrufender Funktion
