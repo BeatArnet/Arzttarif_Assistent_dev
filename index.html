@@ -337,6 +337,14 @@
             2025
         </div>
     </div>
+    <div class="language-select">
+        <label id="langLabel" for="languageSelect">Sprache:</label>
+        <select id="languageSelect">
+            <option value="de">Deutsch</option>
+            <option value="fr">Français</option>
+            <option value="it">Italiano</option>
+        </select>
+    </div>
 
     <h1 id="mainHeader">Neuer Arzttarif Schweiz: TARDOC und Pauschalen</h1>
     <p id="intro">Geben Sie die medizinische Leistung oder die LKN ein (inkl. relevanter Details wie Dauer, Alter, Geschlecht, falls zutreffend). Der Assistent prüft die optimale Abrechnung.</p>
@@ -472,6 +480,7 @@
             document.getElementById('analyzeButton').textContent = t.analyzeButton;
             document.getElementById('spinner').textContent = t.loading;
             const out = document.getElementById('output');
+
             if(out){
                 const prev = translations[prevLang];
                 const content = out.innerHTML.trim();
