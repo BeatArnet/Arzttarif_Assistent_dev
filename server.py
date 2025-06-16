@@ -38,9 +38,15 @@ TABELLEN_PATH = DATA_DIR / "PAUSCHALEN_Tabellen.json"
 
 # --- Typ-Aliase für Klarheit ---
 EvaluateStructuredConditionsType = Callable[[str, Dict[Any, Any], List[Dict[Any, Any]], Dict[str, List[Dict[Any, Any]]]], bool]
-CheckPauschaleConditionsType = Callable[[str, Dict[Any, Any], List[Dict[Any, Any]], Dict[str, List[Dict[Any, Any]]], Dict[str, Dict[Any, Any]]], Dict[str, Any]]
+CheckPauschaleConditionsType = Callable[
+    [str, Dict[Any, Any], List[Dict[Any, Any]], Dict[str, List[Dict[Any, Any]]], Dict[str, Dict[Any, Any]], str],
+    Dict[str, Any]
+]
 GetSimplifiedConditionsType = Callable[[str, List[Dict[Any, Any]]], Set[Any]]
-GenerateConditionDetailHtmlType = Callable[[Tuple[Any, ...], Dict[Any, Any], Dict[Any, Any]], str]
+GenerateConditionDetailHtmlType = Callable[
+    [Tuple[Any, ...], Dict[Any, Any], Dict[Any, Any], str],
+    str,
+]
 DetermineApplicablePauschaleType = Callable[
     [str, List[Dict[str, Any]], Dict[str, Any], List[Dict[str, Any]], List[Dict[str, Any]], Dict[str, Any], Dict[str, Any], Dict[str, List[Dict[str, Any]]], Set[str], str],
     Dict[str, Any]
@@ -57,12 +63,13 @@ def default_evaluate_fallback( # Matches: evaluate_structured_conditions(pauscha
     print("WARNUNG: Fallback für 'evaluate_structured_conditions' aktiv.")
     return False
 
-def default_check_html_fallback( # Matches: check_pauschale_conditions(pauschale_code: str, context: dict, pauschale_bedingungen_data: list[dict], tabellen_dict_by_table: Dict[str, List[Dict]], leistungskatalog_dict: Dict[str, Dict]) -> dict
+def default_check_html_fallback(
     pauschale_code: str,
     context: Dict[Any, Any],
     pauschale_bedingungen_data: List[Dict[Any, Any]],
     tabellen_dict_by_table: Dict[str, List[Dict[Any, Any]]],
-    leistungskatalog_dict: Dict[str, Dict[Any, Any]]
+    leistungskatalog_dict: Dict[str, Dict[Any, Any]],
+    lang: str = 'de'
 ) -> Dict[str, Any]:
     print("WARNUNG: Fallback für 'check_pauschale_conditions' aktiv.")
     return {"html": "HTML-Prüfung nicht verfügbar (Fallback)", "errors": ["Fallback aktiv"], "trigger_lkn_condition_met": False}
@@ -75,9 +82,10 @@ def default_get_simplified_conditions_fallback( # Matches: get_simplified_condit
     return set()
 
 def default_generate_condition_detail_html_fallback(
-    condition_tuple: Tuple[Any, ...], # Name aus Pylance-Fehler
-    leistungskatalog_dict: Dict[Any, Any], # Name aus Pylance-Fehler
-    tabellen_dict_by_table: Dict[Any, Any] # Name aus Pylance-Fehler
+    condition_tuple: Tuple[Any, ...],
+    leistungskatalog_dict: Dict[Any, Any],
+    tabellen_dict_by_table: Dict[Any, Any],
+    lang: str = 'de',
 ) -> str:
     print("WARNUNG: Fallback für 'generate_condition_detail_html' aktiv.")
     return "<li>Detail-Generierung fehlgeschlagen (Fallback)</li>"
