@@ -299,11 +299,149 @@ app = Flask(__name__, static_folder='.', static_url_path='') # Flask App Instanz
 # Die App-Instanz, auf die Gunicorn zugreift
 app: Flask = create_app()
 
-# --- LLM Stufe 1: LKN Identifikation ---
-def call_gemini_stage1(user_input: str, katalog_context: str) -> dict:
-    if not GEMINI_API_KEY: raise ValueError("GEMINI_API_KEY nicht konfiguriert.")
+# --- Prompt-Übersetzungen ---
+def get_stage1_prompt(user_input: str, katalog_context: str, lang: str) -> str:
+    """Return the Stage 1 prompt in the requested language."""
+    if lang == "fr":
+        return f"""**Tâche:** Analyse très précisément le texte de traitement médical suivant provenant de Suisse. Ton rôle est l'identification des numéros de catalogue de prestations (LKN) pertinents, de leur quantité et l'extraction d'informations contextuelles spécifiques basées **exclusivement** sur le LKAAT_Leistungskatalog fourni.
 
-    prompt = f"""**Aufgabe:** Analysiere den folgenden medizinischen Behandlungstext aus der Schweiz äußerst präzise. Deine Aufgabe ist die Identifikation relevanter Leistungs-Katalog-Nummern (LKN), deren Menge und die Extraktion spezifischer Kontextinformationen basierend **ausschließlich** auf dem bereitgestellten LKAAT_Leistungskatalog.
+**Contexte: LKAAT_Leistungskatalog (Il s'agit de la SEULE source de LKN valides et de leurs descriptions ! Ignore toute autre connaissance.)**
+--- Leistungskatalog Start ---
+{katalog_context}
+--- Leistungskatalog Ende ---
+
+**Instructions:** Exécute exactement les étapes suivantes:
+
+1.  **Identification des LKN et validation STRICTE:**
+    *   Lis le "Behandlungstext" attentivement.
+    *   Identifie **tous** les codes LKN potentiels (format `XX.##.####`) pouvant représenter les actes décrits.
+    *   Note que plusieurs prestations peuvent être documentées dans le texte et que plusieurs LKN peuvent être valides (p. ex. intervention chirurgicale plus anesthésie).
+    *   Si une anesthésie réalisée par un anesthésiste est mentionnée sans détails précis sur la classe d'effort ou la durée, tu peux choisir une LKN d'anesthésie générique. Utilise pour cela généralement `WA.05.0020`. Si une durée précise en minutes est donnée, utilise la LKN `WA.10.00x0` correspondante.
+    *   **ABSOLUMENT CRITIQUE:** Pour CHAQUE code LKN potentiel, vérifie **LETTRE PAR LETTRE et CHIFFRE PAR CHIFFRE** que ce code existe **EXACTEMENT** comme 'LKN:' dans le catalogue ci-dessus. Ce n'est que si le code existe que tu compares la **description du catalogue** avec l'acte décrit.
+    *   Crée une liste (`identified_leistungen`) **UNIQUEMENT** avec les LKN ayant passé cette vérification exacte et dont la description correspond au texte.
+    *   Reconnais si les prestations relèvent du chapitre CA (médecine de famille).
+
+2.  **Type et description:**
+    *   Pour chaque LKN **validée** de `identified_leistungen`, ajoute le `typ` et la `beschreibung` **directement et sans modification** depuis le contexte du catalogue pour cette LKN.
+
+3.  **Extraction d'informations contextuelles (CRITIQUE pour les conditions supplémentaires):**
+    *   Extrait **uniquement** les valeurs explicitement mentionnées dans le "Behandlungstext":
+        *   `dauer_minuten` (nombre)
+        *   `menge_allgemein` (nombre)
+        *   `alter` (nombre)
+        *   `geschlecht` ('weiblich', 'männlich', 'divers', 'unbekannt')
+        *   `seitigkeit` (chaîne: 'einseitig', 'beidseits', 'links', 'rechts', 'unbekannt')
+        *   `anzahl_prozeduren` (nombre ou `null`)
+    *   Si une valeur n'est pas mentionnée, définis-la sur `null` (sauf `seitigkeit`, qui peut être 'unbekannt').
+
+4.  **Détermination de la quantité (par LKN validée):**
+    *   La quantité par défaut est `1`.
+    *   **Basé sur le temps:** si la description du catalogue contient "pro X Min" ET que `dauer_minuten` (Y) est extrait, mets `menge` = Y.
+    *   **Général:** si `menge_allgemein` (Z) est extrait ET que la LKN n'est pas basée sur le temps ET `anzahl_prozeduren` est `null`, mets `menge` = Z.
+    *   **Nombre spécifique de procédures:** si `anzahl_prozeduren` est extrait et se rapporte clairement à la LKN (p. ex. "deux injections"), mets `menge` = `anzahl_prozeduren`. Cela prime sur `menge_allgemein`.
+    *   Assure-toi que `menge` >= 1.
+
+5.  **Justification:**
+    *   `begruendung_llm` courte indiquant pourquoi les LKN **validées** ont été choisies. Réfère-toi au texte et aux **descriptions du catalogue**.
+
+**Format de sortie:** **UNIQUEMENT** du JSON valide, **AUCUN** autre texte.
+```json
+{{
+  "identified_leistungen": [
+    {{
+      "lkn": "VALIDIERTE_LKN_1",
+      "typ": "TYP_AUS_KATALOG_1",
+      "beschreibung": "BESCHREIBUNG_AUS_KATALOG_1",
+      "menge": MENGE_ZAHL_LKN_1
+    }}
+  ],
+  "extracted_info": {{
+    "dauer_minuten": null,
+    "menge_allgemein": null,
+    "alter": null,
+    "geschlecht": null,
+    "seitigkeit": "unbekannt",
+    "anzahl_prozeduren": null
+  }},
+  "begruendung_llm": "<Begründung>"
+}}
+
+Si aucune LKN correspondante n'est trouvée, renvoie un objet JSON avec une liste "identified_leistungen" vide.
+
+Behandlungstext: "{user_input}"
+
+Réponse JSON:"""
+    elif lang == "it":
+        return f"""**Compito:** Analizza con la massima precisione il seguente testo di trattamento medico proveniente dalla Svizzera. Il tuo compito è identificare i numeri di catalogo delle prestazioni (LKN) pertinenti, determinarne la quantità ed estrarre informazioni contestuali specifiche basandoti **esclusivamente** sul LKAAT_Leistungskatalog fornito.
+
+**Contesto: LKAAT_Leistungskatalog (Questa è l'UNICA fonte di LKN validi e delle loro descrizioni! Ignora qualsiasi altra conoscenza.)**
+--- Leistungskatalog Start ---
+{katalog_context}
+--- Leistungskatalog Ende ---
+
+**Istruzioni:** Esegui esattamente i seguenti passaggi:
+
+1.  **Identificazione LKN e convalida STRETTA:**
+    *   Leggi attentamente il "Behandlungstext".
+    *   Identifica **tutti** i possibili codici LKN (formato `XX.##.####`) che potrebbero rappresentare le attività descritte.
+    *   Considera che nel testo possono essere documentate più prestazioni e quindi possono essere valide più LKN (ad es. intervento chirurgico più anestesia).
+    *   Se viene menzionata un'anestesia eseguita da un anestesista ma mancano dettagli sulla classe di impegno o sulla durata, puoi scegliere una LKN di anestesia generica. Usa di norma `WA.05.0020`. Se è indicato un tempo preciso in minuti, utilizza la relativa LKN `WA.10.00x0`.
+    *   **ASSOLUTAMENTE CRITICO:** Per OGNI codice LKN potenziale verifica **LETTERA PER LETTERA e CIFRA PER CIFRA** che esista **ESATTAMENTE** come 'LKN:' nel catalogo sopra. Solo se il codice esiste confronta la **descrizione del catalogo** con l'attività descritta.
+    *   Crea un elenco (`identified_leistungen`) **SOLO** con le LKN che hanno superato questa verifica esatta e la cui descrizione corrisponde al testo.
+    *   Riconosci se si tratta di prestazioni di medicina di base del capitolo CA.
+
+2.  **Tipo e descrizione:**
+    *   Per ogni LKN **convalidata** in `identified_leistungen` aggiungi il `typ` corretto e la `beschreibung` **direttamente e senza modifiche** dal contesto del catalogo per quella LKN.
+
+3.  **Estrazione delle informazioni contestuali (CRITICO per condizioni aggiuntive):**
+    *   Estrai **solo** i valori esplicitamente menzionati nel "Behandlungstext":
+        *   `dauer_minuten` (numero)
+        *   `menge_allgemein` (numero)
+        *   `alter` (numero)
+        *   `geschlecht` ('weiblich', 'männlich', 'divers', 'unbekannt')
+        *   `seitigkeit` (stringa: 'einseitig', 'beidseits', 'links', 'rechts', 'unbekannt')
+        *   `anzahl_prozeduren` (numero o `null`)
+    *   Se un valore non è menzionato, impostalo su `null` (tranne `seitigkeit`, che può essere 'unbekannt').
+
+4.  **Determinazione della quantità (per LKN convalidata):**
+    *   La quantità standard è `1`.
+    *   **Basato sul tempo:** se la descrizione del catalogo contiene "pro X Min" E `dauer_minuten` (Y) è stato estratto, imposta `menge` = Y.
+    *   **Generale:** se `menge_allgemein` (Z) è stato estratto E la LKN non è basata sul tempo E `anzahl_prozeduren` è `null`, imposta `menge` = Z.
+    *   **Numero specifico di procedure:** se `anzahl_prozeduren` è stato estratto e si riferisce chiaramente alla LKN (ad es. "due iniezioni"), imposta `menge` = `anzahl_prozeduren`. Questo prevale su `menge_allgemein`.
+    *   Assicurati che `menge` >= 1.
+
+5.  **Motivazione:**
+    *   `begruendung_llm` breve sul perché le LKN **convalidate** sono state scelte. Fai riferimento al testo e alle **descrizioni del catalogo**.
+
+**Formato di output:** **SOLO** JSON valido, **NESSUN** altro testo.
+```json
+{{
+  "identified_leistungen": [
+    {{
+      "lkn": "VALIDIERTE_LKN_1",
+      "typ": "TYP_AUS_KATALOG_1",
+      "beschreibung": "BESCHREIBUNG_AUS_KATALOG_1",
+      "menge": MENGE_ZAHL_LKN_1
+    }}
+  ],
+  "extracted_info": {{
+    "dauer_minuten": null,
+    "menge_allgemein": null,
+    "alter": null,
+    "geschlecht": null,
+    "seitigkeit": "unbekannt",
+    "anzahl_prozeduren": null
+  }},
+  "begruendung_llm": "<Begründung>"
+}}
+
+Se nessuna LKN appropriata viene trovata, restituisci un oggetto JSON con una lista "identified_leistungen" vuota.
+
+Behandlungstext: "{user_input}"
+
+Risposta JSON:"""
+    else:
+        return f"""**Aufgabe:** Analysiere den folgenden medizinischen Behandlungstext aus der Schweiz äußerst präzise. Deine Aufgabe ist die Identifikation relevanter Leistungs-Katalog-Nummern (LKN), deren Menge und die Extraktion spezifischer Kontextinformationen basierend **ausschließlich** auf dem bereitgestellten LKAAT_Leistungskatalog.
 
 **Kontext: LKAAT_Leistungskatalog (Dies ist die EINZIGE Quelle für gültige LKNs und deren Beschreibungen! Ignoriere jegliches anderes Wissen.)**
 --- Leistungskatalog Start ---
@@ -371,6 +509,133 @@ Wenn absolut keine passende LKN aus dem Katalog gefunden wird, gib ein JSON-Obje
 Behandlungstext: "{user_input}"
 
 JSON-Antwort:"""
+
+def get_stage2_mapping_prompt(tardoc_lkn: str, tardoc_desc: str, candidates_text: str, lang: str) -> str:
+    """Return the Stage 2 mapping prompt in the requested language."""
+    if lang == "fr":
+        return f"""**Tâche:** Vous êtes un expert des systèmes de facturation médicale en Suisse (TARDOC et Pauschalen). Votre tâche est de trouver pour la prestation TARDOC donnée (type E/EZ) la prestation fonctionnellement **équivalente** dans la \"liste de candidats\". La liste contient des LKN (souvent P/PZ) utilisés comme conditions dans les Pauschalen potentielles.
+
+**Prestation TARDOC donnée (type E/EZ):**
+*   LKN: {tardoc_lkn}
+*   Description: {tardoc_desc}
+*   Contexte: Cette prestation a été réalisée dans le cadre d'un traitement pour lequel une facturation par Pauschalen est examinée.
+
+**Équivalents possibles (liste de candidats - LKN pour les conditions des Pauschalen):**
+Choisis dans CETTE liste la LKN candidate décrivant **le même type d'acte médical** que la prestation TARDOC fournie.
+--- Kandidaten Start ---
+{candidates_text}
+--- Kandidaten Ende ---
+
+**Analyse & décision:**
+1.  Comprends la **fonction médicale principale** de la prestation TARDOC.
+2.  Identifie les LKN candidates qui représentent le mieux cette fonction. Priorise par pertinence.
+
+**Réponse:**
+*   Donne une **liste simple séparée par des virgules** des codes LKN correspondants.
+*   Si aucun candidat ne convient, renvoie exactement `NONE`.
+*   Aucune autre sortie, pas d'explications.
+
+Liste priorisée (seulement la liste ou NONE):"""
+    elif lang == "it":
+        return f"""**Compito:** Sei un esperto dei sistemi di fatturazione medica in Svizzera (TARDOC e Pauschalen). Il tuo compito è trovare, per la prestazione TARDOC indicata (tipo E/EZ), la prestazione funzionalmente **equivalente** nella \"lista dei candidati\". La lista contiene LKN (spesso P/PZ) che compaiono come condizioni nelle Pauschalen potenzialmente rilevanti.
+
+**Prestazione TARDOC fornita (tipo E/EZ):**
+*   LKN: {tardoc_lkn}
+*   Descrizione: {tardoc_desc}
+*   Contesto: Questa prestazione è stata eseguita nell'ambito di un trattamento per il quale si verifica una fatturazione a forfait.
+
+**Possibili equivalenti (lista dei candidati - LKN per le condizioni delle Pauschalen):**
+Trova in QUESTA lista la LKN candidata che descrive **lo stesso tipo di atto medico** della prestazione TARDOC.
+--- Kandidaten Start ---
+{candidates_text}
+--- Kandidaten Ende ---
+
+**Analisi e decisione:**
+1.  Comprendi la **funzione medica principale** della prestazione TARDOC.
+2.  Identifica i candidati che rappresentano meglio tale funzione e ordinali per pertinenza.
+
+**Risposta:**
+*   Fornisci un **elenco semplice separato da virgole** dei codici LKN idonei.
+*   Se nessun candidato è adatto, restituisci esattamente `NONE`.
+*   Nessun altro testo o spiegazione.
+
+Elenco prioritario (solo elenco o NONE):"""
+    else:
+        return f"""**Aufgabe:** Du bist ein Experte für medizinische Abrechnungssysteme in der Schweiz (TARDOC und Pauschalen). Deine Aufgabe ist es, für die gegebene TARDOC-Einzelleistung (Typ E/EZ) die funktional **äquivalente** Leistung aus der \"Kandidatenliste\" zu finden. Die Kandidatenliste enthält LKNs (aller Typen, oft P/PZ), die als Bedingungen in potenziell relevanten Pauschalen vorkommen.
+
+**Gegebene TARDOC-Leistung (Typ E/EZ):**
+*   LKN: {tardoc_lkn}
+*   Beschreibung: {tardoc_desc}
+*   Kontext: Diese Leistung wurde im Rahmen einer Behandlung erbracht, für die eine Pauschalenabrechnung geprüft wird.
+
+**Mögliche Äquivalente (Kandidatenliste - LKNs für Pauschalen-Bedingungen):**
+Finde aus DIESER Liste die Kandidaten-LKN, die die **gleiche Art von medizinischer Tätigkeit** beschreibt.
+--- Kandidaten Start ---
+{candidates_text}
+--- Kandidaten Ende ---
+
+**Analyse & Entscheidung:**
+1.  Verstehe die **medizinische Kernfunktion** der gegebenen TARDOC-Leistung.
+2.  Identifiziere die Kandidaten-LKN, die diese Kernfunktion am besten repräsentiert, und priorisiere nach Passgenauigkeit.
+
+**Antwort:**
+*   Gib eine **reine, kommagetrennte Liste** der LKN-Codes zurück.
+*   Wenn keine passt, gib exakt `NONE` aus.
+*   Keine weiteren Erklärungen.
+
+Priorisierte Liste (nur Liste oder NONE):"""
+
+def get_stage2_ranking_prompt(user_input: str, potential_pauschalen_text: str, lang: str) -> str:
+    """Return the Stage 2 ranking prompt in the requested language."""
+    if lang == "fr":
+        return f"""Sur la base du texte de traitement suivant, quelle Pauschale listée ci-dessous correspond le mieux au contenu ?
+Prends en compte la description de la Pauschale ('Pauschale_Text').
+Fournis une liste priorisée des codes de Pauschale en commençant par la meilleure correspondance.
+Donne UNIQUEMENT les codes séparés par des virgules (ex. \"CODE1,CODE2\"). Aucune justification.
+
+Behandlungstext: \"{user_input}\"
+
+Pauschalen potentielles:
+--- Pauschalen Start ---
+{potential_pauschalen_text}
+--- Pauschalen Ende ---
+
+Codes de Pauschale par ordre de pertinence (liste uniquement):"""
+    elif lang == "it":
+        return f"""In base al seguente testo di trattamento, quale delle Pauschalen elencate di seguito corrisponde meglio al contenuto?
+Tieni conto della descrizione della Pauschale ('Pauschale_Text').
+Fornisci un elenco prioritario dei codici Pauschale iniziando dal più adatto.
+Fornisci SOLO i codici separati da virgola (es. \"CODE1,CODE2\"). Nessuna spiegazione.
+
+Behandlungstext: \"{user_input}\"
+
+Pauschalen potenziali:
+--- Pauschalen Start ---
+{potential_pauschalen_text}
+--- Pauschalen Ende ---
+
+Codici Pauschale in ordine di rilevanza (solo elenco):"""
+    else:
+        return f"""Basierend auf dem folgenden Behandlungstext, welche der unten aufgeführten Pauschalen passt inhaltlich am besten?
+Berücksichtige die Beschreibung der Pauschale ('Pauschale_Text').
+Gib eine priorisierte Liste der Pauschalen-Codes zurück, beginnend mit der besten Übereinstimmung.
+Gib NUR die Pauschalen-Codes als kommagetrennte Liste zurück (z.B. \"CODE1,CODE2\"). KEINE Begründung.
+
+Behandlungstext: \"{user_input}\"
+
+Potenzielle Pauschalen:
+--- Pauschalen Start ---
+{potential_pauschalen_text}
+--- Pauschalen Ende ---
+
+Priorisierte Pauschalen-Codes (nur kommagetrennte Liste):"""
+
+
+# --- LLM Stufe 1: LKN Identifikation ---
+def call_gemini_stage1(user_input: str, katalog_context: str, lang: str = "de") -> dict:
+    if not GEMINI_API_KEY: raise ValueError("GEMINI_API_KEY nicht konfiguriert.")
+    prompt = get_stage1_prompt(user_input, katalog_context, lang)
+
 
     gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
     payload = {
@@ -563,7 +828,7 @@ JSON-Antwort:"""
         traceback.print_exc()
         raise e
 
-def call_gemini_stage2_mapping(tardoc_lkn: str, tardoc_desc: str, candidate_pauschal_lkns: Dict[str, str]) -> str | None:
+def call_gemini_stage2_mapping(tardoc_lkn: str, tardoc_desc: str, candidate_pauschal_lkns: Dict[str, str], lang: str = "de") -> str | None:
     if not GEMINI_API_KEY: raise ValueError("GEMINI_API_KEY nicht konfiguriert.")
     if not candidate_pauschal_lkns:
         print(f"WARNUNG (Mapping): Keine Kandidaten-LKNs für Mapping von {tardoc_lkn} übergeben.")
@@ -574,30 +839,7 @@ def call_gemini_stage2_mapping(tardoc_lkn: str, tardoc_desc: str, candidate_paus
         print(f"WARNUNG (Mapping): Kandidatenliste für {tardoc_lkn} zu lang ({len(candidates_text)} Zeichen), wird gekürzt.")
         candidates_text = candidates_text[:15000] + "\n..." # Einfache Kürzung
 
-    prompt = f"""**Aufgabe:** Du bist ein Experte für medizinische Abrechnungssysteme in der Schweiz (TARDOC und Pauschalen). Deine Aufgabe ist es, für die gegebene TARDOC-Einzelleistung (Typ E/EZ) die funktional **äquivalente** Leistung aus der "Kandidatenliste" zu finden. Die Kandidatenliste enthält LKNs (aller Typen, oft P/PZ), die als Bedingungen in potenziell relevanten Pauschalen vorkommen.
-
-**Gegebene TARDOC-Leistung (Typ E/EZ):**
-*   LKN: {tardoc_lkn}
-*   Beschreibung: {tardoc_desc}
-*   Kontext: Diese Leistung (z.B. eine spezifische Anästhesie) wurde im Rahmen einer Behandlung erbracht, für die eine Pauschalenabrechnung geprüft wird.
-
-**Mögliche Äquivalente (Kandidatenliste - LKNs für Pauschalen-Bedingungen):**
-Finde aus DIESER spezifischen Liste die Kandidaten-LKN, die die **gleiche Art von medizinischer Tätigkeit** wie die gegebene TARDOC-Leistung beschreibt (z.B. `AG.*` entspricht oft einer `WA.*`-LKN).
---- Kandidaten Start ---
-{candidates_text}
---- Kandidaten Ende ---
-
-**Analyse & Entscheidung:**
-1.  Verstehe die **medizinische Kernfunktion** der gegebenen TARDOC-Leistung (z.B. "Anästhesie", "Bildgebung", "Laboranalyse").
-2.  Identifiziere die Kandidaten-LKN aus der Liste, die diese Kernfunktion am besten repräsentiert. Achte auf spezifische Übereinstimmungen (z.B. Anästhesie-Typ).
-3.  Priorisiere nach Passgenauigkeit, falls mehrere Kandidaten sehr ähnlich sind. Die spezifischste Übereinstimmung zuerst.
-
-**Antwort:**
-*   Gib eine **reine, kommagetrennte Liste** der LKN-Codes der passenden Kandidaten zurück. Beispiel: `WA.10.0010,WA.10.0020,WA.10.0030`
-*   Wenn **keine** der Kandidaten-LKNs funktional passt, gib exakt das Wort `NONE` zurück.
-*   Gib **absolut keinen anderen Text, keine Erklärungen, keine JSON-Formatierung oder Markdown** aus. NUR die reine Code-Liste (z.B. `CODE1,CODE2`) oder das Wort `NONE`.
-
-Priorisierte Liste der besten Kandidaten-LKNs (nur reine kommagetrennte Liste oder NONE):"""
+    prompt = get_stage2_mapping_prompt(tardoc_lkn, tardoc_desc, candidates_text, lang)
 
     gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
     payload = {
@@ -680,24 +922,14 @@ Priorisierte Liste der besten Kandidaten-LKNs (nur reine kommagetrennte Liste od
         return None
 
 # --- LLM Stufe 2: Pauschalen-Ranking ---
-def call_gemini_stage2_ranking(user_input: str, potential_pauschalen_text: str) -> list[str]:
-    if not GEMINI_API_KEY: raise ValueError("GEMINI_API_KEY nicht konfiguriert.")
-    prompt = f"""Basierend auf dem folgenden Behandlungstext, welche der unten aufgeführten Pauschalen passt inhaltlich am besten?
-Berücksichtige die Beschreibung der Pauschale ('Pauschale_Text').
-Gib eine priorisierte Liste der Pauschalen-Codes zurück, beginnend mit der besten Übereinstimmung.
-Gib NUR die Pauschalen-Codes als kommagetrennte Liste zurück (z.B. "CODE1,CODE2,CODE3"). KEINE Begründung oder anderen Text.
+def call_gemini_stage2_ranking(user_input: str, potential_pauschalen_text: str, lang: str = "de") -> list[str]:
+    if not GEMINI_API_KEY:
+        raise ValueError("GEMINI_API_KEY nicht konfiguriert.")
 
-Behandlungstext: "{user_input}"
-
-Potenzielle Pauschalen:
---- Pauschalen Start ---
-{potential_pauschalen_text}
---- Pauschalen Ende ---
-
-Priorisierte Pauschalen-Codes (nur kommagetrennte Liste):"""
+    prompt = get_stage2_ranking_prompt(user_input, potential_pauschalen_text, lang)
 
     gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
-    payload = { "contents": [{"parts": [{"text": prompt}]}], "generationConfig": { "temperature": 0.1, "maxOutputTokens": 500 } }
+    payload = {"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"temperature": 0.1, "maxOutputTokens": 500}}
     print(f"Sende Anfrage Stufe 2 (Ranking) an Gemini Model: {GEMINI_MODEL}...")
     try:
         response = requests.post(gemini_url, json=payload, timeout=45)
@@ -903,7 +1135,7 @@ def analyze_billing():
         ]
         katalog_context_str = "\n".join(katalog_context_parts)
         if not katalog_context_str: raise ValueError("Leistungskatalog für LLM-Kontext (Stufe 1) ist leer.")
-        llm_stage1_result = call_gemini_stage1(user_input, katalog_context_str)
+        llm_stage1_result = call_gemini_stage1(user_input, katalog_context_str, lang)
     except ConnectionError as e: print(f"FEHLER: Verbindung zu LLM1 fehlgeschlagen: {e}"); return jsonify({"error": f"Verbindungsfehler zum Analyse-Service (Stufe 1): {e}"}), 504
     except ValueError as e: print(f"FEHLER: Verarbeitung LLM1 fehlgeschlagen: {e}"); return jsonify({"error": f"Fehler bei der Leistungsanalyse (Stufe 1): {e}"}), 400
     except Exception as e: print(f"FEHLER: Unerwarteter Fehler bei LLM1: {e}"); traceback.print_exc(); return jsonify({"error": f"Unerwarteter interner Fehler (Stufe 1): {e}"}), 500
@@ -1095,7 +1327,7 @@ def analyze_billing():
 
                     if t_lkn_code and t_lkn_desc and current_candidates_for_llm:
                         try:
-                            mapped_target_lkn_code = call_gemini_stage2_mapping(str(t_lkn_code), str(t_lkn_desc), current_candidates_for_llm)
+                            mapped_target_lkn_code = call_gemini_stage2_mapping(str(t_lkn_code), str(t_lkn_desc), current_candidates_for_llm, lang)
                             if mapped_target_lkn_code:
                                 mapped_lkn_codes_set.add(mapped_target_lkn_code)
                                 # print(f"INFO: LKN-Mapping: {t_lkn_code} -> {mapped_target_lkn_code}")
