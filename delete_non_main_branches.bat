@@ -1,12 +1,24 @@
 @echo off
-REM Löscht alle lokalen und Remote-Branches ausser 'main', auch wenn Remote nicht 'origin' heisst
+REM Löscht alle lokalen und Remote-Branches ausser 'main' (auch bei umbenanntem Remote)
 
-REM Hole aktuellen Remote-Namen
-FOR /F "tokens=*" %%r IN ('git remote') DO (
+REM Hole aktuellen Remote-Namen (nehmen den ersten)
+FOR /F "delims=" %%r IN ('git remote') DO (
     SET "REMOTE=%%r"
+    GOTO REMOTE_FOUND
+)
+:REMOTE_FOUND
+
+REM Prüfen, ob Remote korrekt ist
+IF "%REMOTE%"=="" (
+    echo Kein Remote-Repository gefunden.
+    pause
+    exit /b
 )
 
-REM Sicherstellen, dass wir auf main sind
+REM Remote aktualisieren (verwaiste Branches entfernen)
+git remote prune %REMOTE%
+
+REM Wechsel auf main
 git checkout main
 
 REM Lokale Branches ausser main löschen
@@ -15,14 +27,14 @@ FOR /F "tokens=*" %%b IN ('git branch ^| findstr /V "main"') DO (
 )
 
 REM Remote Branches ausser main löschen
-FOR /F "tokens=*" %%b IN ('git branch -r ^| findstr /V "!REMOTE!/main" ^| findstr /V "HEAD"') DO (
+FOR /F "tokens=*" %%b IN ('git branch -r ^| findstr /V "%REMOTE%/main" ^| findstr /V "HEAD"') DO (
     SETLOCAL ENABLEDELAYEDEXPANSION
-    SET "branch=%%b"
-    REM Entferne das Remote-Präfix
-    SET "branch=!branch:%REMOTE%/=!"
-    git push !REMOTE! --delete !branch!
+    SET "rb=%%b"
+    SET "branch=!rb:%REMOTE%/=!"
+    echo Lösche Remote-Branch: !branch!
+    git push %REMOTE% --delete !branch! >nul 2>&1
     ENDLOCAL
 )
 
-echo Alle Branches ausser 'main' wurden gelöscht (lokal und remote).
+echo Alle lokalen und entfernten Branches ausser 'main' wurden (soweit möglich) gelöscht.
 pause
