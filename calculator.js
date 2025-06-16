@@ -540,8 +540,8 @@ async function getBillingAnalysis() {
     console.log("[getBillingAnalysis] Funktion gestartet.");
     const userInput = $("userInput").value.trim();
     let mappedInput = userInput;
-    if(exampleValueToDe[currentLang] && exampleValueToDe[currentLang][userInput]){
-        mappedInput = exampleValueToDe[currentLang][userInput];
+    if(exampleValueToFrIt[currentLang] && exampleValueToFrIt[currentLang][userInput]){
+        mappedInput = exampleValueToFrIt[currentLang][userInput];
     }
     const icdInput = $("icdInput").value.trim().split(",").map(s => s.trim().toUpperCase()).filter(Boolean);
     const gtinInput = ($("gtinInput") ? $("gtinInput").value.trim().split(",").map(s => s.trim()).filter(Boolean) : []);
