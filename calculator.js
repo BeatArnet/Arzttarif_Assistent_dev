@@ -13,6 +13,145 @@ let data_interpretationen = {};
 let interpretationMap = {};
 let groupInfoMap = {};
 
+// Dynamische Übersetzungen
+const DYN_TEXT = {
+    de: {
+        spinnerWorking: 'Prüfung läuft...',
+        loadingData: 'Lade Tarifdaten...',
+        dataLoaded: 'Daten geladen. Bereit zur Prüfung.',
+        pleaseEnter: 'Bitte Leistungsbeschreibung eingeben.',
+        resultFor: 'Ergebnis für',
+        billingPauschale: 'Abrechnung als Pauschale.',
+        billingTardoc: 'Abrechnung als TARDOC-Einzelleistung(en).',
+        billingError: 'Abrechnung nicht möglich oder Fehler aufgetreten.',
+        billingUnknown: 'Unbekannter Abrechnungstyp vom Server.',
+        noTardoc: 'Keine TARDOC-Positionen zur Abrechnung übermittelt.',
+        errorPauschaleMissing: 'Fehler: Pauschalendetails fehlen.',
+        tardocDetails: 'Details TARDOC Abrechnung',
+        thLkn: 'LKN', thLeistung: 'Leistung', thAl: 'AL', thIpl: 'IPL',
+        thAnzahl: 'Anzahl', thTotal: 'Total TP', thRegeln: 'Regeln/Hinweise',
+        none: 'Keine', gesamtTp: 'Gesamt TARDOC TP:',
+        llmDetails1: 'Details LLM-Analyse (Stufe 1)',
+        llmIdent: 'Die vom LLM identifizierte(n) LKN(s):',
+        llmNoneIdent: 'Keine LKN durch LLM identifiziert.',
+        llmExtr: 'Vom LLM extrahierte Details:',
+        llmNoneExtr: 'Keine zusätzlichen Details vom LLM extrahiert.',
+        llmReason: 'Begründung LLM (Stufe 1):',
+        llmDetails2: 'Details LLM-Analyse Stufe 2 (TARDOC-zu-Pauschalen-LKN Mapping)',
+        mappingIntro: 'Folgende TARDOC LKNs wurden versucht, auf äquivalente Pauschalen-Bedingungs-LKNs zu mappen:',
+        ruleDetails: 'Details Regelprüfung',
+        ruleNotBill: 'Nicht abrechnungsfähig.',
+        ruleHints: 'Hinweise / Anpassungen:',
+        ruleOk: 'Regelprüfung OK.',
+        ruleNone: 'Kein Regelprüfungsergebnis vorhanden.',
+        pauschaleCode: 'Pauschale Code',
+        description: 'Beschreibung',
+        taxpoints: 'Taxpunkte',
+        reasonPauschale: 'Begründung Pauschalenauswahl',
+        pauschaleDetails: 'Details Pauschale',
+        condDetails: 'Details Pauschalen-Bedingungsprüfung',
+        overallOk: 'Gesamtlogik erfüllt',
+        overallNotOk: 'Gesamtlogik NICHT erfüllt',
+        logicOk: '(Logik erfüllt)',
+        logicNotOk: '(Logik NICHT erfüllt)',
+        errorLkn: 'Fehler: Details für LKN {lkn} nicht gefunden!',
+        noData: 'Keine Daten vorhanden.',
+        groupNoData: 'Keine Daten zur Leistungsgruppe {code}.'
+    },
+    fr: {
+        spinnerWorking: 'Vérification en cours...',
+        loadingData: 'Chargement des données tarifaires...',
+        dataLoaded: 'Données chargées. Prêt pour l\'analyse.',
+        pleaseEnter: 'Veuillez saisir la description de la prestation.',
+        resultFor: 'Résultat pour',
+        billingPauschale: 'Facturation comme forfait.',
+        billingTardoc: 'Facturation comme prestation TARDOC.',
+        billingError: 'Facturation impossible ou erreur survenue.',
+        billingUnknown: 'Type de facturation inconnu du serveur.',
+        noTardoc: 'Aucune position TARDOC à facturer.',
+        errorPauschaleMissing: 'Erreur : détails du forfait manquants.',
+        tardocDetails: 'Détails facturation TARDOC',
+        thLkn: 'NPL', thLeistung: 'Prestation', thAl: 'AL', thIpl: 'IPL',
+        thAnzahl: 'Quantité', thTotal: 'Total PT', thRegeln: 'Règles/Remarques',
+        none: 'Aucun', gesamtTp: 'Total TP TARDOC:',
+        llmDetails1: 'Détails analyse LLM (Niveau 1)',
+        llmIdent: 'NPL identifié(s) par le LLM :',
+        llmNoneIdent: 'Aucun NPL identifié par le LLM.',
+        llmExtr: 'Détails extraits par le LLM :',
+        llmNoneExtr: 'Aucun détail supplémentaire extrait par le LLM.',
+        llmReason: 'Justification LLM (Niveau 1) :',
+        llmDetails2: 'Détails analyse LLM niveau 2 (mappage TARDOC vers forfaits)',
+        mappingIntro: 'Les NPL TARDOC suivants ont été mis en correspondance avec des NPL de conditions de forfait :',
+        ruleDetails: 'Détails contrôle des règles',
+        ruleNotBill: 'Non facturable.',
+        ruleHints: 'Remarques / ajustements :',
+        ruleOk: 'Contrôle des règles OK.',
+        ruleNone: 'Aucun résultat de contrôle des règles.',
+        pauschaleCode: 'Code forfait',
+        description: 'Description',
+        taxpoints: 'Points',
+        reasonPauschale: 'Justification du choix du forfait',
+        pauschaleDetails: 'Détails forfait',
+        condDetails: 'Détails vérification des conditions du forfait',
+        overallOk: 'Logique globale remplie',
+        overallNotOk: 'Logique globale NON remplie',
+        logicOk: '(Logique remplie)',
+        logicNotOk: '(Logique NON remplie)',
+        errorLkn: 'Erreur : détails pour NPL {lkn} introuvables !',
+        noData: 'Aucune donnée disponible.',
+        groupNoData: 'Aucune donnée pour le groupe de prestations {code}.'
+    },
+    it: {
+        spinnerWorking: 'Verifica in corso...',
+        loadingData: 'Caricamento dati tariffari...',
+        dataLoaded: 'Dati caricati. Pronto per l\'analisi.',
+        pleaseEnter: 'Inserire la descrizione della prestazione.',
+        resultFor: 'Risultato per',
+        billingPauschale: 'Fatturazione come forfait.',
+        billingTardoc: 'Fatturazione come prestazione TARDOC.',
+        billingError: 'Fatturazione non possibile o errore.',
+        billingUnknown: 'Tipo di fatturazione sconosciuto dal server.',
+        noTardoc: 'Nessuna posizione TARDOC da fatturare.',
+        errorPauschaleMissing: 'Errore: dettagli forfait mancanti.',
+        tardocDetails: 'Dettagli fatturazione TARDOC',
+        thLkn: 'NPL', thLeistung: 'Prestazione', thAl: 'AL', thIpl: 'IPL',
+        thAnzahl: 'Quantità', thTotal: 'Totale PT', thRegeln: 'Regole/Note',
+        none: 'Nessuno', gesamtTp: 'Totale TP TARDOC:',
+        llmDetails1: 'Dettagli analisi LLM (Livello 1)',
+        llmIdent: 'NPL identificato/i dal LLM:',
+        llmNoneIdent: 'Nessun NPL identificato dal LLM.',
+        llmExtr: 'Dettagli estratti dal LLM:',
+        llmNoneExtr: 'Nessun dettaglio aggiuntivo estratto dal LLM.',
+        llmReason: 'Motivazione LLM (Livello 1):',
+        llmDetails2: 'Dettagli analisi LLM livello 2 (mappatura TARDOC a forfait)',
+        mappingIntro: 'I seguenti NPL TARDOC sono stati mappati su NPL di condizioni forfait:',
+        ruleDetails: 'Dettagli verifica regole',
+        ruleNotBill: 'Non fatturabile.',
+        ruleHints: 'Suggerimenti / adattamenti:',
+        ruleOk: 'Verifica delle regole OK.',
+        ruleNone: 'Nessun risultato di verifica delle regole.',
+        pauschaleCode: 'Codice forfait',
+        description: 'Descrizione',
+        taxpoints: 'Punti',
+        reasonPauschale: 'Motivazione scelta forfait',
+        pauschaleDetails: 'Dettagli forfait',
+        condDetails: 'Dettagli verifica condizioni forfait',
+        overallOk: 'Logica complessiva soddisfatta',
+        overallNotOk: 'Logica complessiva NON soddisfatta',
+        logicOk: '(Logica soddisfatta)',
+        logicNotOk: '(Logica NON soddisfatta)',
+        errorLkn: 'Errore: dettagli per NPL {lkn} non trovati!',
+        noData: 'Nessun dato disponibile.',
+        groupNoData: 'Nessun dato per il gruppo di prestazioni {code}.'
+    }
+};
+
+function tDyn(key, params = {}) {
+    const lang = (typeof currentLang === 'undefined') ? 'de' : currentLang;
+    const template = (DYN_TEXT[lang] && DYN_TEXT[lang][key]) || DYN_TEXT['de'][key] || key;
+    return template.replace(/\{(\w+)\}/g, (_, k) => params[k] || '');
+}
+
 // Pfade zu den lokalen JSON-Daten
 const DATA_PATHS = {
     leistungskatalog: 'data/LKAAT_Leistungskatalog.json',
@@ -146,7 +285,7 @@ function buildLknInfoHtmlFromCode(code) {
             ${interp ? `<p>${escapeHtml(interp)}</p>` : ''}
         `;
     }
-    return `<p>Keine Daten vorhanden.</p>`;
+    return `<p>${tDyn('noData')}</p>`;
 }
 
 function getInterpretation(code) {
@@ -165,7 +304,7 @@ function getChapterInfo(kapitelCode) {
 }
 
 function buildLknInfoHtml(pos) {
-    if (!pos) return `<p>Keine Daten vorhanden.</p>`;
+    if (!pos) return `<p>${tDyn('noData')}</p>`;
     const dign = Array.isArray(pos.Qualitative_Dignität) ? pos.Qualitative_Dignität.map(d => escapeHtml(d.DignitaetText)).join(', ') : '';
     let groups = '';
     if (Array.isArray(pos.Leistungsgruppen)) {
@@ -194,7 +333,7 @@ function buildChapterInfoHtml(code) {
 function buildGroupInfoHtml(code) {
     const key = (code || '').trim();
     const info = groupInfoMap[key];
-    if (!info) return `<p>Keine Daten zur Leistungsgruppe ${escapeHtml(key)}.</p>`;
+    if (!info) return `<p>${tDyn('groupNoData',{code: escapeHtml(key)})}</p>`;
     const lkns = Array.from(info.lkns).sort();
     const links = lkns.map(l => createInfoLink(l,'lkn')).join(', ');
     return `<h3>Leistungsgruppe ${escapeHtml(key)}</h3>` +
@@ -218,7 +357,7 @@ function updateSpinnerPosition(event) {
     }
 }
 
-function showSpinner(text = "Prüfung läuft...") {
+function showSpinner(text = tDyn('spinnerWorking')) {
     const textSpinner = $('spinner');
     const button = $('analyzeButton');
     const body = document.body;
@@ -280,7 +419,7 @@ async function fetchJSON(path) {
 
 async function loadData() {
     console.log("Lade Frontend-Daten vom Server...");
-    const initialSpinnerMsg = "Lade Tarifdaten...";
+    const initialSpinnerMsg = tDyn('loadingData');
     showSpinner(initialSpinnerMsg);
     const outputDiv = $("output");
     if (outputDiv) outputDiv.innerHTML = "";
@@ -352,7 +491,7 @@ async function loadData() {
 
         console.log("Frontend-Daten vom Server geladen.");
 
-        displayOutput("<p class='success'>Daten geladen. Bereit zur Prüfung.</p>");
+        displayOutput(`<p class='success'>${tDyn('dataLoaded')}</p>`);
         hideSpinner();
         setTimeout(() => {
             const currentOutput = $("output");
@@ -414,9 +553,9 @@ async function getBillingAnalysis() {
 
     const outputDiv = $("output");
     if (!outputDiv) { console.error("Output element not found!"); return; }
-    if (!userInput) { displayOutput("<p class='error'>Bitte Leistungsbeschreibung eingeben.</p>"); return; }
+    if (!userInput) { displayOutput(`<p class='error'>${tDyn('pleaseEnter')}</p>`); return; }
 
-    showSpinner("Analyse gestartet, sende Anfrage...");
+    showSpinner(tDyn('spinnerWorking'));
     displayOutput("", "info");
 
     try {
@@ -446,7 +585,7 @@ async function getBillingAnalysis() {
              throw new Error("Unerwartete Hauptstruktur vom Server erhalten.");
         }
         console.log("[getBillingAnalysis] Backend-Antwortstruktur ist OK.");
-        showSpinner("Antwort erhalten, verarbeite Ergebnisse...");
+        showSpinner(tDyn('spinnerWorking'));
 
     } catch (e) {
         console.error("Fehler bei Backend-Anfrage oder Verarbeitung:", e);
@@ -469,7 +608,7 @@ async function getBillingAnalysis() {
         const regelErgebnisseDetails = backendResponse.regel_ergebnisse_details || [];
 
         // --- Baue das FINALE HTML für den Output-Bereich ---
-        htmlOutput = `<h2>Ergebnis für «${escapeHtml(userInput)}»</h2>`;
+        htmlOutput = `<h2>${tDyn('resultFor')} «${escapeHtml(userInput)}»</h2>`;
 
         let finalResultHeader = "";
         let finalResultDetailsHtml = "";
@@ -478,30 +617,30 @@ async function getBillingAnalysis() {
         switch (abrechnung.type) {
             case "Pauschale":
                 console.log("[getBillingAnalysis] Abrechnungstyp: Pauschale", abrechnung.details?.Pauschale);
-                finalResultHeader = `<p class="final-result-header success"><b>Abrechnung als Pauschale.</b></p>`;
+                finalResultHeader = `<p class="final-result-header success"><b>${tDyn('billingPauschale')}</b></p>`;
                 if (abrechnung.details) {
                     finalResultDetailsHtml = displayPauschale(abrechnung);
                 } else {
-                    finalResultDetailsHtml = "<p class='error'>Fehler: Pauschalendetails fehlen.</p>";
+                    finalResultDetailsHtml = `<p class='error'>${tDyn('errorPauschaleMissing')}</p>`;
                 }
                 break;
             case "TARDOC":
                  console.log("[getBillingAnalysis] Abrechnungstyp: TARDOC");
-                 finalResultHeader = `<p class="final-result-header success"><b>Abrechnung als TARDOC-Einzelleistung(en).</b></p>`;
+                 finalResultHeader = `<p class="final-result-header success"><b>${tDyn('billingTardoc')}</b></p>`;
                  if (abrechnung.leistungen && abrechnung.leistungen.length > 0) {
                      finalResultDetailsHtml = displayTardocTable(abrechnung.leistungen, regelErgebnisseDetails);
                  } else {
-                     finalResultDetailsHtml = "<p><i>Keine TARDOC-Positionen zur Abrechnung übermittelt.</i></p>";
+                     finalResultDetailsHtml = `<p><i>${tDyn('noTardoc')}</i></p>`;
                  }
                  break;
              case "Error":
                 console.error("[getBillingAnalysis] Abrechnungstyp: Error", abrechnung.message);
-                finalResultHeader = `<p class="final-result-header error"><b>Abrechnung nicht möglich oder Fehler aufgetreten.</b></p>`;
+                finalResultHeader = `<p class="final-result-header error"><b>${tDyn('billingError')}</b></p>`;
                 finalResultDetailsHtml = `<p><i>Grund: ${escapeHtml(abrechnung.message || 'Unbekannter Fehler')}</i></p>`;
                 break;
             default:
                 console.error("[getBillingAnalysis] Unbekannter Abrechnungstyp:", abrechnung.type);
-                finalResultHeader = `<p class="final-result-header error"><b>Unbekannter Abrechnungstyp vom Server.</b></p>`;
+                finalResultHeader = `<p class="final-result-header error"><b>${tDyn('billingUnknown')}</b></p>`;
                 finalResultDetailsHtml = `<p class='error'>Interner Fehler: Unbekannter Abrechnungstyp '${escapeHtml(abrechnung.type)}'.</p>`;
         }
 
@@ -557,11 +696,11 @@ function generateLlmStage1Details(llmResult) {
     const extractedInfo = llmResult.extracted_info || {};
     const begruendung = llmResult.begruendung_llm || 'N/A';
 
-    let detailsHtml = `<details><summary>Details LLM-Analyse (Stufe 1)</summary>`;
+    let detailsHtml = `<details><summary>${tDyn('llmDetails1')}</summary>`;
     detailsHtml += `<div>`;
 
     if (identifiedLeistungen.length > 0) {
-        detailsHtml += `<p><b>Die vom LLM identifizierte(n) LKN(s):</b></p><ul>`;
+        detailsHtml += `<p><b>${tDyn('llmIdent')}</b></p><ul>`;
         identifiedLeistungen.forEach(l => {
             // Hole Beschreibung aus lokalen Daten, wenn möglich
             const desc = beschreibungZuLKN(l.lkn);
@@ -570,7 +709,7 @@ function generateLlmStage1Details(llmResult) {
         });
         detailsHtml += `</ul>`;
     } else {
-        detailsHtml += `<p><i>Keine LKN durch LLM identifiziert.</i></p>`;
+        detailsHtml += `<p><i>${tDyn('llmNoneIdent')}</i></p>`;
     }
 
     let extractedDetails = [];
@@ -579,12 +718,12 @@ function generateLlmStage1Details(llmResult) {
     if (extractedInfo.geschlecht !== null && extractedInfo.geschlecht !== 'null' && extractedInfo.geschlecht !== 'unbekannt') extractedDetails.push(`Geschlecht: ${extractedInfo.geschlecht}`);
 
     if (extractedDetails.length > 0) {
-        detailsHtml += `<p><b>Vom LLM extrahierte Details:</b> ${extractedDetails.join(', ')}</p>`;
+        detailsHtml += `<p><b>${tDyn('llmExtr')}</b> ${extractedDetails.join(', ')}</p>`;
     } else {
-        detailsHtml += `<p><i>Keine zusätzlichen Details vom LLM extrahiert.</i></p>`
+        detailsHtml += `<p><i>${tDyn('llmNoneExtr')}</i></p>`
     }
 
-    detailsHtml += `<p><b>Begründung LLM (Stufe 1):</b></p><p style="white-space: pre-wrap;">${escapeHtml(begruendung)}</p>`;
+    detailsHtml += `<p><b>${tDyn('llmReason')}</b></p><p style="white-space: pre-wrap;">${escapeHtml(begruendung)}</p>`;
     detailsHtml += `</div></details>`;
     return detailsHtml;
 }
@@ -600,9 +739,9 @@ function generateLlmStage2Details(llmResultStufe2) {
     }
 
     const mappingResults = llmResultStufe2.mapping_results;
-    let detailsHtml = `<details><summary>Details LLM-Analyse Stufe 2 (TARDOC-zu-Pauschalen-LKN Mapping)</summary>`;
+    let detailsHtml = `<details><summary>${tDyn('llmDetails2')}</summary>`;
     detailsHtml += `<div>`;
-    detailsHtml += `<p>Folgende TARDOC LKNs wurden versucht, auf äquivalente Pauschalen-Bedingungs-LKNs zu mappen:</p><ul>`;
+    detailsHtml += `<p>${tDyn('mappingIntro')}</p><ul>`;
 
     try {
         mappingResults.forEach(map => {
@@ -648,7 +787,7 @@ function generateRuleCheckDetails(regelErgebnisse, isErrorCase = false) {
          return "";
     }
 
-    let detailsHtml = `<details ${isErrorCase || hasOnlyNoLknError ? 'open' : ''}><summary>Details Regelprüfung</summary><div>`;
+    let detailsHtml = `<details ${isErrorCase || hasOnlyNoLknError ? 'open' : ''}><summary>${tDyn('ruleDetails')}</summary><div>`;
 
     regelErgebnisse.forEach((resultItem) => {
         const lkn = resultItem.lkn || 'N/A';
@@ -663,7 +802,7 @@ function generateRuleCheckDetails(regelErgebnisse, isErrorCase = false) {
 
         if (regelpruefung) {
             if (!regelpruefung.abrechnungsfaehig) {
-                 detailsHtml += `<p style="color: var(--danger);"><b>Nicht abrechnungsfähig.</b></p>`; // Grund wird in Fehlern gelistet
+                 detailsHtml += `<p style="color: var(--danger);"><b>${tDyn('ruleNotBill')}</b></p>`; // Grund wird in Fehlern gelistet
                  if (regelpruefung.fehler && regelpruefung.fehler.length > 0) {
                       detailsHtml += `<ul>`;
                       regelpruefung.fehler.forEach(fehler => { detailsHtml += `<li class="error">${escapeHtml(fehler)}</li>`; });
@@ -672,17 +811,17 @@ function generateRuleCheckDetails(regelErgebnisse, isErrorCase = false) {
                       detailsHtml += `<p><i>Kein spezifischer Grund angegeben.</i></p>`;
                  }
             } else if (regelpruefung.fehler && regelpruefung.fehler.length > 0) {
-                 detailsHtml += `<p><b>Hinweise / Anpassungen:</b></p><ul>`;
+                 detailsHtml += `<p><b>${tDyn('ruleHints')}</b></p><ul>`;
                  regelpruefung.fehler.forEach(hinweis => {
                       const style = hinweis.includes("Menge auf") ? "color: var(--danger); font-weight: bold;" : "";
                       detailsHtml += `<li style="${style}">${escapeHtml(hinweis)}</li>`;
                  });
                  detailsHtml += `</ul>`;
             } else if (lkn !== 'N/A') { // Nur anzeigen, wenn es eine LKN gab
-                 detailsHtml += `<p style="color: var(--accent);"><i>Regelprüfung OK.</i></p>`;
+                 detailsHtml += `<p style="color: var(--accent);"><i>${tDyn('ruleOk')}</i></p>`;
             }
         } else if (lkn !== 'N/A') { // Nur anzeigen, wenn es eine LKN gab
-             detailsHtml += `<p><i>Kein Regelprüfungsergebnis vorhanden.</i></p>`;
+             detailsHtml += `<p><i>${tDyn('ruleNone')}</i></p>`;
         }
     });
 
@@ -703,7 +842,7 @@ function displayPauschale(abrechnungsObjekt) {
     const PAUSCHALE_TP_KEY = 'Taxpunkte';
     const PAUSCHALE_ERKLAERUNG_KEY = 'pauschale_erklaerung_html';
 
-    if (!pauschaleDetails) return "<p class='error'>Pauschalendetails fehlen.</p>";
+    if (!pauschaleDetails) return `<p class='error'>${tDyn('errorPauschaleMissing')}</p>`;
 
     const pauschaleCode = escapeHtml(pauschaleDetails[PAUSCHALE_KEY] || 'N/A');
     const pauschaleText = escapeHtml(getLangField(pauschaleDetails, PAUSCHALE_TEXT_KEY) || 'N/A');
@@ -712,7 +851,7 @@ function displayPauschale(abrechnungsObjekt) {
 
     let detailsContent = `
         <table border="1" style="border-collapse: collapse; width: 100%; margin-bottom: 10px;">
-            <thead><tr><th>Pauschale Code</th><th>Beschreibung</th><th>Taxpunkte</th></tr></thead>
+            <thead><tr><th>${tDyn('pauschaleCode')}</th><th>${tDyn('description')}</th><th>${tDyn('taxpoints')}</th></tr></thead>
             <tbody><tr>
                 <td>${pauschaleCode}</td>
                 <td>${pauschaleText}</td>
@@ -721,20 +860,20 @@ function displayPauschale(abrechnungsObjekt) {
         </table>`;
 
     if (pauschaleErklaerung) {
-         detailsContent += `<details style="margin-top: 10px;"><summary>Begründung Pauschalenauswahl</summary>${pauschaleErklaerung}</details>`;
+         detailsContent += `<details style="margin-top: 10px;"><summary>${tDyn('reasonPauschale')}</summary>${pauschaleErklaerung}</details>`;
     }
 
     if (bedingungsHtml) {
         // Öffne Details immer, wenn die strukturierte Logik nicht erfüllt war ODER wenn es Einzelfehler gab
         const openAttr = !conditions_met_structured || (bedingungsFehler && bedingungsFehler.length > 0) ? 'open' : '';
-        let summary_status_text = conditions_met_structured ? "Gesamtlogik erfüllt" : "Gesamtlogik NICHT erfüllt";
-        detailsContent += `<details ${openAttr} style="margin-top: 10px;"><summary>Details Pauschalen-Bedingungsprüfung (${summary_status_text})</summary>${bedingungsHtml}</details>`;
+        let summary_status_text = conditions_met_structured ? tDyn('overallOk') : tDyn('overallNotOk');
+        detailsContent += `<details ${openAttr} style="margin-top: 10px;"><summary>${tDyn('condDetails')} (${summary_status_text})</summary>${bedingungsHtml}</details>`;
     }
 
     // Block für potenzielle ICDs wurde entfernt
 
-    let summary_main_status = conditions_met_structured ? '<span style="color:green;">(Logik erfüllt)</span>' : '<span style="color:red;">(Logik NICHT erfüllt)</span>';
-    let html = `<details open><summary>Details Pauschale: ${pauschaleCode} ${summary_main_status}</summary>${detailsContent}</details>`;
+    let summary_main_status = conditions_met_structured ? `<span style="color:green;">${tDyn('logicOk')}</span>` : `<span style="color:red;">${tDyn('logicNotOk')}</span>`;
+    let html = `<details open><summary>${tDyn('pauschaleDetails')}: ${pauschaleCode} ${summary_main_status}</summary>${detailsContent}</details>`;
     return html;
 }
 
@@ -742,7 +881,7 @@ function displayPauschale(abrechnungsObjekt) {
 // Zeigt TARDOC-Tabelle an
 function displayTardocTable(tardocLeistungen, ruleResultsDetailsList = []) {
     if (!tardocLeistungen || tardocLeistungen.length === 0) {
-        return "<p><i>Keine TARDOC-Positionen zur Abrechnung.</i></p>";
+        return `<p><i>${tDyn('noTardoc')}</i></p>`;
     }
 
     let tardocTableBody = "";
@@ -755,7 +894,7 @@ function displayTardocTable(tardocLeistungen, ruleResultsDetailsList = []) {
         const tardocDetails = processTardocLookup(lkn); // Lokale Suche
 
         if (!tardocDetails.applicable) {
-             tardocTableBody += `<tr><td colspan="7" class="error">Fehler: Details für LKN ${escapeHtml(lkn)} nicht gefunden!</td></tr>`;
+             tardocTableBody += `<tr><td colspan="7" class="error">${tDyn('errorLkn',{lkn: escapeHtml(lkn)})}</td></tr>`;
              continue;
         }
 
@@ -790,17 +929,17 @@ function displayTardocTable(tardocLeistungen, ruleResultsDetailsList = []) {
                 <td>${escapeHtml(lkn)}</td><td>${escapeHtml(name)}</td>
                 <td>${al.toFixed(2)}</td><td>${ipl.toFixed(2)}</td>
                 <td>${anzahl}</td><td>${total_tp.toFixed(2)}</td>
-                <td>${regelnHtml ? `<details><summary${detailsSummaryStyle}>Regeln/Hinweise</summary>${regelnHtml}</details>` : 'Keine'}</td>
+                <td>${regelnHtml ? `<details><summary${detailsSummaryStyle}>${tDyn('thRegeln')}</summary>${regelnHtml}</details>` : tDyn('none')}</td>
             </tr>`;
     }
 
     const overallSummaryClass = hasHintsOverall ? ' class="rule-hint-trigger"' : '';
-    let html = `<details open><summary ${overallSummaryClass}>Details TARDOC Abrechnung (${tardocLeistungen.length} Positionen)</summary>`;
+    let html = `<details open><summary ${overallSummaryClass}>${tDyn('tardocDetails')} (${tardocLeistungen.length} Positionen)</summary>`;
     html += `
         <table border="1" style="border-collapse: collapse; width: 100%; margin-bottom: 10px;">
-            <thead><tr><th>LKN</th><th>Leistung</th><th>AL</th><th>IPL</th><th>Anzahl</th><th>Total TP</th><th>Regeln/Hinweise</th></tr></thead>
+            <thead><tr><th>${tDyn('thLkn')}</th><th>${tDyn('thLeistung')}</th><th>${tDyn('thAl')}</th><th>${tDyn('thIpl')}</th><th>${tDyn('thAnzahl')}</th><th>${tDyn('thTotal')}</th><th>${tDyn('thRegeln')}</th></tr></thead>
             <tbody>${tardocTableBody}</tbody>
-            <tfoot><tr><th colspan="5" style="text-align:right;">Gesamt TARDOC TP:</th><th colspan="2">${gesamtTP.toFixed(2)}</th></tr></tfoot>
+            <tfoot><tr><th colspan="5" style="text-align:right;">${tDyn('gesamtTp')}</th><th colspan="2">${gesamtTP.toFixed(2)}</th></tr></tfoot>
         </table>`;
     html += `</details>`;
     return html;
