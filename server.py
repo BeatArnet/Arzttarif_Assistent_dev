@@ -43,7 +43,10 @@ CheckPauschaleConditionsType = Callable[
     Dict[str, Any]
 ]
 GetSimplifiedConditionsType = Callable[[str, List[Dict[Any, Any]]], Set[Any]]
-GenerateConditionDetailHtmlType = Callable[[Tuple[Any, ...], Dict[Any, Any], Dict[Any, Any]], str]
+GenerateConditionDetailHtmlType = Callable[
+    [Tuple[Any, ...], Dict[Any, Any], Dict[Any, Any], str],
+    str,
+]
 DetermineApplicablePauschaleType = Callable[
     [str, List[Dict[str, Any]], Dict[str, Any], List[Dict[str, Any]], List[Dict[str, Any]], Dict[str, Any], Dict[str, Any], Dict[str, List[Dict[str, Any]]], Set[str], str],
     Dict[str, Any]
@@ -79,9 +82,10 @@ def default_get_simplified_conditions_fallback( # Matches: get_simplified_condit
     return set()
 
 def default_generate_condition_detail_html_fallback(
-    condition_tuple: Tuple[Any, ...], # Name aus Pylance-Fehler
-    leistungskatalog_dict: Dict[Any, Any], # Name aus Pylance-Fehler
-    tabellen_dict_by_table: Dict[Any, Any] # Name aus Pylance-Fehler
+    condition_tuple: Tuple[Any, ...],
+    leistungskatalog_dict: Dict[Any, Any],
+    tabellen_dict_by_table: Dict[Any, Any],
+    lang: str = 'de',
 ) -> str:
     print("WARNUNG: Fallback für 'generate_condition_detail_html' aktiv.")
     return "<li>Detail-Generierung fehlgeschlagen (Fallback)</li>"
