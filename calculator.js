@@ -539,6 +539,10 @@ document.addEventListener("DOMContentLoaded", () => {
 async function getBillingAnalysis() {
     console.log("[getBillingAnalysis] Funktion gestartet.");
     const userInput = $("userInput").value.trim();
+    let mappedInput = userInput;
+    if(exampleValueToDe[currentLang] && exampleValueToDe[currentLang][userInput]){
+        mappedInput = exampleValueToDe[currentLang][userInput];
+    }
     const icdInput = $("icdInput").value.trim().split(",").map(s => s.trim().toUpperCase()).filter(Boolean);
     const gtinInput = ($("gtinInput") ? $("gtinInput").value.trim().split(",").map(s => s.trim()).filter(Boolean) : []);
     const useIcd = $('useIcdCheckbox')?.checked ?? true;
@@ -561,7 +565,7 @@ async function getBillingAnalysis() {
     try {
         console.log("[getBillingAnalysis] Sende Anfrage an Backend...");
         const requestBody = {
-            inputText: userInput,
+            inputText: mappedInput,
             icd: icdInput,
             gtin: gtinInput,
             useIcd: useIcd,
