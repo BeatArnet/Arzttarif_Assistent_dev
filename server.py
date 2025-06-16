@@ -42,10 +42,10 @@ CheckPauschaleConditionsType = Callable[[str, Dict[Any, Any], List[Dict[Any, Any
 GetSimplifiedConditionsType = Callable[[str, List[Dict[Any, Any]]], Set[Any]]
 GenerateConditionDetailHtmlType = Callable[[Tuple[Any, ...], Dict[Any, Any], Dict[Any, Any]], str]
 DetermineApplicablePauschaleType = Callable[
-    [str, List[Dict[str, Any]], Dict[str, Any], List[Dict[str, Any]], List[Dict[str, Any]], Dict[str, Any], Dict[str, Any], Dict[str, List[Dict[str, Any]]], Set[str]],
+    [str, List[Dict[str, Any]], Dict[str, Any], List[Dict[str, Any]], List[Dict[str, Any]], Dict[str, Any], Dict[str, Any], Dict[str, List[Dict[str, Any]]], Set[str], str],
     Dict[str, Any]
 ]
-PrepareTardocAbrechnungType = Callable[[List[Dict[Any,Any]], Dict[str, Dict[Any,Any]]], Dict[str,Any]]
+PrepareTardocAbrechnungType = Callable[[List[Dict[Any,Any]], Dict[str, Dict[Any,Any]], str], Dict[str,Any]]
 
 # --- Standard-Fallbacks für Funktionen aus regelpruefer_pauschale ---
 def default_evaluate_fallback( # Matches: evaluate_structured_conditions(pauschale_code: str, context: Dict, pauschale_bedingungen_data: List[Dict], tabellen_dict_by_table: Dict[str, List[Dict]]) -> bool
@@ -90,7 +90,8 @@ def default_determine_applicable_pauschale_fallback(
     pauschalen_dict_param: Dict[str, Any],
     leistungskatalog_dict_param: Dict[str, Any],
     tabellen_dict_by_table_param: Dict[str, List[Dict[str, Any]]],
-    potential_pauschale_codes_set_param: Set[str]
+    potential_pauschale_codes_set_param: Set[str],
+    lang_param: str = 'de'
 ) -> Dict[str, Any]:
     print("WARNUNG: Fallback für 'determine_applicable_pauschale' aktiv.")
     return {"type": "Error", "message": "Pauschalen-Hauptprüfung nicht verfügbar (Fallback)"}
@@ -114,12 +115,12 @@ try:
         print("DEBUG: 'prepare_tardoc_abrechnung' aus regelpruefer.py zugewiesen.")
     else:
         print("FEHLER: 'prepare_tardoc_abrechnung' NICHT in regelpruefer.py gefunden! Verwende Fallback.")
-        def prepare_tardoc_lkn_fb(r: List[Dict[Any,Any]], l: Dict[str, Dict[Any,Any]]) -> Dict[str,Any]:
+        def prepare_tardoc_lkn_fb(r: List[Dict[Any,Any]], l: Dict[str, Dict[Any,Any]], lang_param: str = 'de') -> Dict[str,Any]:
             return {"type":"Error", "message":"TARDOC Prep Fallback (LKN Funktion fehlt)"}
         prepare_tardoc_abrechnung_func = prepare_tardoc_lkn_fb
 except ImportError:
     print("FEHLER: regelpruefer.py nicht gefunden! Verwende Fallbacks für LKN-Regelprüfung.")
-    def prepare_tardoc_lkn_import_fb(r: List[Dict[Any,Any]], l: Dict[str, Dict[Any,Any]]) -> Dict[str,Any]:
+    def prepare_tardoc_lkn_import_fb(r: List[Dict[Any,Any]], l: Dict[str, Dict[Any,Any]], lang_param: str = 'de') -> Dict[str,Any]:
         return {"type":"Error", "message":"TARDOC Prep Fallback (LKN Modulimportfehler)"}
     prepare_tardoc_abrechnung_func = prepare_tardoc_lkn_import_fb
 
@@ -864,6 +865,9 @@ def analyze_billing():
     if not request.is_json: return jsonify({"error": "Request must be JSON"}), 400
     data = request.get_json() # This is fine now, as we've logged the rawish data already
     user_input = data.get('inputText', "") # Default zu leerem String
+    lang = data.get('lang', 'de')
+    if lang not in ['de', 'fr', 'it']:
+        lang = 'de'
     icd_input_raw = data.get('icd', [])
     gtin_input_raw = data.get('gtin', [])
     use_icd_flag = data.get('useIcd', True)
@@ -1129,8 +1133,9 @@ def analyze_billing():
                     # KORREKTUR: Aufruf über die Funktionsvariable determine_applicable_pauschale_func
                     pauschale_pruef_ergebnis_dict = determine_applicable_pauschale_func(
                         user_input, rule_checked_leistungen_list, pauschale_haupt_pruef_kontext,
-                        pauschale_lp_data, pauschale_bedingungen_data, pauschalen_dict, # Globale Variablen
-                        leistungskatalog_dict, tabellen_dict_by_table, potential_pauschale_codes_set # Globale Variablen
+                        pauschale_lp_data, pauschale_bedingungen_data, pauschalen_dict,
+                        leistungskatalog_dict, tabellen_dict_by_table, potential_pauschale_codes_set,
+                        lang
                     )
                     finale_abrechnung_obj = pauschale_pruef_ergebnis_dict
                     if finale_abrechnung_obj.get("type") == "Pauschale": print(f"INFO: Anwendbare Pauschale gefunden: {finale_abrechnung_obj.get('details',{}).get('Pauschale')}")
@@ -1142,7 +1147,7 @@ def analyze_billing():
     if finale_abrechnung_obj is None or finale_abrechnung_obj.get("type") != "Pauschale":
         print("INFO: Keine gültige Pauschale ausgewählt oder Prüfung übersprungen. Bereite TARDOC-Abrechnung vor.")
         # prepare_tardoc_abrechnung_func wurde oben initialisiert (entweder echt oder Fallback)
-        finale_abrechnung_obj = prepare_tardoc_abrechnung_func(regel_ergebnisse_details_list, leistungskatalog_dict) # Globale Variable
+        finale_abrechnung_obj = prepare_tardoc_abrechnung_func(regel_ergebnisse_details_list, leistungskatalog_dict, lang)
 
     decision_time = time.time(); print(f"Zeit nach finaler Entscheidung: {decision_time - start_time:.2f}s (seit Start)")
     final_response_payload = {

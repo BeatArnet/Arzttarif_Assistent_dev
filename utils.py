@@ -31,3 +31,10 @@ def get_table_content(table_ref: str, table_type: str, tabellen_dict_by_table: d
 
     unique_content = {item['Code']: item for item in all_entries_for_type}.values()
     return sorted(unique_content, key=lambda x: x.get('Code', ''))
+
+def get_lang_field(entry: Dict[str, Any], base_key: str, lang: str) -> Any:
+    """Returns the value for a language-aware key if available."""
+    if not isinstance(entry, dict):
+        return None
+    suffix = {'de': '', 'fr': '_f', 'it': '_i'}.get(str(lang).lower(), '')
+    return entry.get(f"{base_key}{suffix}") or entry.get(base_key)

@@ -58,6 +58,19 @@ function hideInfoModal() {
     if (modal) modal.style.display = 'none';
 }
 
+function getLangSuffix() {
+    if (typeof currentLang === 'undefined') return '';
+    if (currentLang === 'fr') return '_f';
+    if (currentLang === 'it') return '_i';
+    return '';
+}
+
+function getLangField(obj, baseKey) {
+    if (!obj) return undefined;
+    const suffix = getLangSuffix();
+    return obj[baseKey + suffix] || obj[baseKey];
+}
+
 
 function beschreibungZuLKN(lkn) {
     // Stellt sicher, dass data_leistungskatalog geladen ist und ein Array ist
@@ -68,7 +81,7 @@ function beschreibungZuLKN(lkn) {
     // Case-insensitive Suche
     const hit = data_leistungskatalog.find(e => e.LKN?.toUpperCase() === lkn.toUpperCase());
     // Gibt Beschreibung zurück oder LKN selbst, wenn keine Beschreibung vorhanden ist
-    return hit ? (hit.Beschreibung || lkn) : lkn;
+    return hit ? (getLangField(hit, 'Beschreibung') || lkn) : lkn;
 }
 
 function findTardocPosition(lkn) {
@@ -126,9 +139,11 @@ function buildLknInfoHtmlFromCode(code) {
 
     const cat = findCatalogEntry(code);
     if (cat) {
+        const desc = getLangField(cat, 'Beschreibung') || '';
+        const interp = getLangField(cat, 'MedizinischeInterpretation');
         return `
-            <h3>${escapeHtml(cat.LKN)} - ${escapeHtml(cat.Beschreibung || '')}</h3>
-            ${cat.MedizinischeInterpretation ? `<p>${escapeHtml(cat.MedizinischeInterpretation)}</p>` : ''}
+            <h3>${escapeHtml(cat.LKN)} - ${escapeHtml(desc)}</h3>
+            ${interp ? `<p>${escapeHtml(interp)}</p>` : ''}
         `;
     }
     return `<p>Keine Daten vorhanden.</p>`;
@@ -158,9 +173,11 @@ function buildLknInfoHtml(pos) {
     }
     const rules = formatRules(pos.Regeln);
     const interp = getInterpretation(String(pos.LKN));
+    const desc = getLangField(pos, 'Bezeichnung') || '';
+    const medInterp = getLangField(pos, 'Medizinische Interpretation');
     return `
-        <h3>${escapeHtml(pos.LKN)} - ${escapeHtml(pos.Bezeichnung || '')}</h3>
-        ${pos['Medizinische Interpretation'] ? `<p>${escapeHtml(pos['Medizinische Interpretation'])}</p>` : ''}
+        <h3>${escapeHtml(pos.LKN)} - ${escapeHtml(desc)}</h3>
+        ${medInterp ? `<p>${escapeHtml(medInterp)}</p>` : ''}
         ${interp ? `<p>${escapeHtml(interp)}</p>` : ''}
         <p><b>AL:</b> ${pos['AL_(normiert)']} <b>IPL:</b> ${pos['IPL_(normiert)']}</p>
         ${dign ? `<p><b>Dignitäten:</b> ${dign}</p>` : ''}
@@ -410,7 +427,8 @@ async function getBillingAnalysis() {
             gtin: gtinInput,
             useIcd: useIcd,
             age: age,
-            gender: gender
+            gender: gender,
+            lang: currentLang
         };
         const res = await fetch("/api/analyze-billing", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(requestBody) });
         rawResponseText = await res.text();
@@ -688,7 +706,7 @@ function displayPauschale(abrechnungsObjekt) {
     if (!pauschaleDetails) return "<p class='error'>Pauschalendetails fehlen.</p>";
 
     const pauschaleCode = escapeHtml(pauschaleDetails[PAUSCHALE_KEY] || 'N/A');
-    const pauschaleText = escapeHtml(pauschaleDetails[PAUSCHALE_TEXT_KEY] || 'N/A');
+    const pauschaleText = escapeHtml(getLangField(pauschaleDetails, PAUSCHALE_TEXT_KEY) || 'N/A');
     const pauschaleTP = escapeHtml(pauschaleDetails[PAUSCHALE_TP_KEY] || 'N/A');
     const pauschaleErklaerung = pauschaleDetails[PAUSCHALE_ERKLAERUNG_KEY] || "";
 
@@ -818,7 +836,7 @@ function processTardocLookup(lkn) {
     };
     result.al = parseGermanFloat(tardocPosition[AL_KEY]);
     result.ipl = parseGermanFloat(tardocPosition[IPL_KEY]);
-    result.leistungsname = tardocPosition[DESC_KEY_1] || 'N/A';
+    result.leistungsname = getLangField(tardocPosition, DESC_KEY_1) || 'N/A';
     result.regeln = formatRules(tardocPosition[RULES_KEY_1]);
     return result;
 }

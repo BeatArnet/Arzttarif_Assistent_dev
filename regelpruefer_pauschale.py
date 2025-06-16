@@ -2,7 +2,7 @@
 import traceback
 import json
 from typing import Dict, List, Any, Set # <-- Set hier importieren
-from utils import escape, get_table_content
+from utils import escape, get_table_content, get_lang_field
 import re, html
 
 # === FUNKTION ZUR PRÜFUNG EINER EINZELNEN BEDINGUNG ===
@@ -144,9 +144,11 @@ def check_single_condition(
         traceback.print_exc()
         return False
 
-def get_beschreibung_fuer_lkn_im_backend(lkn_code: str, leistungskatalog_dict: Dict) -> str:
+def get_beschreibung_fuer_lkn_im_backend(lkn_code: str, leistungskatalog_dict: Dict, lang: str = 'de') -> str:
     details = leistungskatalog_dict.get(str(lkn_code).upper())
-    return details.get('Beschreibung', lkn_code) if details else lkn_code
+    if not details:
+        return lkn_code
+    return get_lang_field(details, 'Beschreibung', lang) or lkn_code
 
 def get_beschreibung_fuer_icd_im_backend(icd_code: str, tabellen_dict_by_table: Dict, spezifische_icd_tabelle: str | None = None) -> str:
     # Wenn eine spezifische Tabelle bekannt ist (z.B. aus der Bedingung), diese zuerst prüfen
@@ -328,8 +330,8 @@ def check_pauschale_conditions(
                     # Zeige Kontext-Elemente, die NICHT in der Regel-Tabelle waren
                     for kontext_code in kontext_elemente_fuer_vergleich:
                         if kontext_code not in all_codes_in_regel_tabellen:
-                             desc = get_beschreibung_fuer_lkn_im_backend(kontext_code, leistungskatalog_dict) if type_prefix == "LKN" else get_beschreibung_fuer_icd_im_backend(kontext_code, tabellen_dict_by_table, spezifische_icd_tabelle=aktuelle_tabelle_fuer_icd_fallback if aktuelle_tabelle_fuer_icd_fallback is not None else None)
-                             fehlende_elemente_details.append(f"<b>{escape(kontext_code)}</b> ({escape(desc)})")
+                            desc = get_beschreibung_fuer_lkn_im_backend(kontext_code, leistungskatalog_dict, lang) if type_prefix == "LKN" else get_beschreibung_fuer_icd_im_backend(kontext_code, tabellen_dict_by_table, spezifische_icd_tabelle=aktuelle_tabelle_fuer_icd_fallback if aktuelle_tabelle_fuer_icd_fallback is not None else None)
+                            fehlende_elemente_details.append(f"<b>{escape(kontext_code)}</b> ({escape(desc)})")
                     if fehlende_elemente_details : kontext_erfuellungs_info_html = f" <span class='context-match-info not-fulfilled'>(Kontext-Element(e) {', '.join(fehlende_elemente_details)} nicht in Regel-Tabelle(n) gefunden)</span>"
                 elif not condition_met_this_line and not all_codes_in_regel_tabellen: # Nicht erfüllt und Regel-Tabelle war leer
                      kontext_erfuellungs_info_html = f" <span class='context-match-info not-fulfilled'>(Regel-Tabelle(n) leer oder nicht gefunden)</span>"
@@ -375,7 +377,7 @@ def check_pauschale_conditions(
                     erfuellende_details = []
                     for k_kontext in kontext_elemente_fuer_vergleich:
                         if k_kontext in regel_items_upper:
-                            desc = get_beschreibung_fuer_lkn_im_backend(k_kontext, leistungskatalog_dict) if type_prefix == 'LKN' else get_beschreibung_fuer_icd_im_backend(k_kontext, tabellen_dict_by_table)
+                            desc = get_beschreibung_fuer_lkn_im_backend(k_kontext, leistungskatalog_dict, lang) if type_prefix == 'LKN' else get_beschreibung_fuer_icd_im_backend(k_kontext, tabellen_dict_by_table)
                             erfuellende_details.append(f"<b>{escape(k_kontext)}</b> ({escape(desc)})")
                     if erfuellende_details: kontext_erfuellungs_info_html = f" <span class='context-match-info fulfilled'>(Erfüllt durch: {', '.join(erfuellende_details)})</span>"
                 elif regel_items_upper : # Nicht erfüllt UND Regel-Liste hatte Items
@@ -383,7 +385,7 @@ def check_pauschale_conditions(
                     # Zeige Kontext-Elemente, die NICHT in der Regel-Liste waren
                     for k_kontext in kontext_elemente_fuer_vergleich:
                         if k_kontext not in regel_items_upper:
-                             desc = get_beschreibung_fuer_lkn_im_backend(k_kontext, leistungskatalog_dict) if type_prefix == 'LKN' else get_beschreibung_fuer_icd_im_backend(k_kontext, tabellen_dict_by_table)
+                             desc = get_beschreibung_fuer_lkn_im_backend(k_kontext, leistungskatalog_dict, lang) if type_prefix == 'LKN' else get_beschreibung_fuer_icd_im_backend(k_kontext, tabellen_dict_by_table)
                              fehlende_details.append(f"<b>{escape(k_kontext)}</b> ({escape(desc)})")
                     if fehlende_details: kontext_erfuellungs_info_html = f" <span class='context-match-info not-fulfilled'>(Kontext-Element(e) {', '.join(fehlende_details)} nicht in Regel-Liste)</span>"
                 elif not regel_items_upper: # Nicht erfüllt und Regel-Liste war leer
@@ -529,7 +531,8 @@ def determine_applicable_pauschale(
     pauschalen_dict: Dict[str, Dict], # Dict aller Pauschalen {code: details}
     leistungskatalog_dict: Dict[str, Dict], # Für LKN-Beschreibungen etc.
     tabellen_dict_by_table: Dict[str, List[Dict]], # Für Tabellen-Lookups
-    potential_pauschale_codes_input: Set[str] | None = None # Optional vorabgefilterte Codes
+    potential_pauschale_codes_input: Set[str] | None = None, # Optional vorabgefilterte Codes
+    lang: str = 'de'
     ) -> dict:
     """
     Ermittelt die anwendbarste Pauschale durch Auswertung der strukturierten Bedingungen.
@@ -664,7 +667,7 @@ def determine_applicable_pauschale(
         # Erstelle eine informativere Nachricht, wenn potenzielle Kandidaten da waren
         if potential_pauschale_codes:
             # Hole die Namen der geprüften, aber nicht validen Pauschalen
-            gepruefte_codes_namen = [f"{c['code']} ({c['details'].get(PAUSCHALE_TEXT_KEY_IN_PAUSCHALEN, 'N/A')})"
+            gepruefte_codes_namen = [f"{c['code']} ({get_lang_field(c['details'], PAUSCHALE_TEXT_KEY_IN_PAUSCHALEN, lang) or 'N/A'})"
                                      for c in evaluated_candidates if not c['is_valid_structured']]
             msg_details = ""
             if gepruefte_codes_namen:
@@ -709,12 +712,12 @@ def determine_applicable_pauschale(
     pauschale_erklaerung_html += "<ul>"
     for cand_eval in sorted(evaluated_candidates, key=lambda x: x['code']):
         status_text = '<span style="color:green;">(Bedingungen erfüllt)</span>' if cand_eval['is_valid_structured'] else '<span style="color:red;">(Bedingungen NICHT erfüllt)</span>'
-        pauschale_erklaerung_html += f"<li><b>{escape(cand_eval['code'])}</b>: {escape(cand_eval['details'].get(PAUSCHALE_TEXT_KEY_IN_PAUSCHALEN, 'N/A'))} {status_text}</li>"
+        pauschale_erklaerung_html += f"<li><b>{escape(cand_eval['code'])}</b>: {escape(get_lang_field(cand_eval['details'], PAUSCHALE_TEXT_KEY_IN_PAUSCHALEN, lang) or 'N/A')} {status_text}</li>"
     pauschale_erklaerung_html += "</ul>"
     
     pauschale_erklaerung_html += (
         f"<p><b>Ausgewählt wurde: {escape(best_pauschale_code)}</b> "
-        f"({escape(best_pauschale_details.get(PAUSCHALE_TEXT_KEY_IN_PAUSCHALEN, 'N/A'))}) - "
+        f"({escape(get_lang_field(best_pauschale_details, PAUSCHALE_TEXT_KEY_IN_PAUSCHALEN, lang) or 'N/A')}) - "
         f"als die Pauschale mit dem niedrigsten Suffix-Buchstaben (z.B. A vor B) unter den gültigen Kandidaten "
         f"der bevorzugten Kategorie (spezifische Pauschalen vor Fallback-Pauschalen C9x).</p>"
     )
@@ -745,20 +748,20 @@ def determine_applicable_pauschale(
 
                   pauschale_erklaerung_html += (
                       f"<details style='margin-left: 15px; font-size: 0.9em;'>"
-                      f"<summary>Unterschiede zu <b>{escape(other_code_str)}</b> ({escape(other_details_dict.get(PAUSCHALE_TEXT_KEY_IN_PAUSCHALEN, 'N/A'))}) {validity_info_html}</summary>"
+                      f"<summary>Unterschiede zu <b>{escape(other_code_str)}</b> ({escape(get_lang_field(other_details_dict, PAUSCHALE_TEXT_KEY_IN_PAUSCHALEN, lang) or 'N/A')}) {validity_info_html}</summary>"
                   )
                   
                   if additional_conditions_for_other:
                       pauschale_erklaerung_html += f"<p>Zusätzliche/Andere Anforderungen für {escape(other_code_str)}:</p><ul>"
                       for cond_tuple_item in sorted(list(additional_conditions_for_other)):
-                            condition_html_detail_item = generate_condition_detail_html(cond_tuple_item, leistungskatalog_dict, tabellen_dict_by_table)
+                            condition_html_detail_item = generate_condition_detail_html(cond_tuple_item, leistungskatalog_dict, tabellen_dict_by_table, lang)
                             pauschale_erklaerung_html += condition_html_detail_item
                       pauschale_erklaerung_html += "</ul>"
                   
                   if missing_conditions_in_other:
                      pauschale_erklaerung_html += f"<p>Folgende Anforderungen von {escape(best_pauschale_code)} fehlen bei {escape(other_code_str)}:</p><ul>"
                      for cond_tuple_item in sorted(list(missing_conditions_in_other)):
-                         condition_html_detail_item = generate_condition_detail_html(cond_tuple_item, leistungskatalog_dict, tabellen_dict_by_table)
+                         condition_html_detail_item = generate_condition_detail_html(cond_tuple_item, leistungskatalog_dict, tabellen_dict_by_table, lang)
                          pauschale_erklaerung_html += condition_html_detail_item
                      pauschale_erklaerung_html += "</ul>"
                   
@@ -879,7 +882,8 @@ def get_simplified_conditions(pauschale_code: str, bedingungen_data: list[dict])
 def generate_condition_detail_html(
     condition_tuple: tuple,
     leistungskatalog_dict: Dict, # Für LKN-Beschreibungen
-    tabellen_dict_by_table: Dict  # Für Tabelleninhalte und ICD-Beschreibungen
+    tabellen_dict_by_table: Dict,  # Für Tabelleninhalte und ICD-Beschreibungen
+    lang: str = 'de'
     ) -> str:
     """
     Generiert HTML für eine einzelne vereinfachte Bedingung (aus get_simplified_conditions)
@@ -897,7 +901,7 @@ def generate_condition_detail_html(
             else:
                 lkn_details_html_parts = []
                 for lkn_code in cond_value_comp: # Iteriere über das Tuple
-                    beschreibung = get_beschreibung_fuer_lkn_im_backend(lkn_code, leistungskatalog_dict)
+                    beschreibung = get_beschreibung_fuer_lkn_im_backend(lkn_code, leistungskatalog_dict, lang)
                     lkn_details_html_parts.append(f"<b>{html.escape(lkn_code)}</b> ({html.escape(beschreibung)})")
                 condition_html += ", ".join(lkn_details_html_parts)
 
