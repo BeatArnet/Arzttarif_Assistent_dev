@@ -47,6 +47,7 @@ Das Frontend zeigt das Ergebnis übersichtlich an, mit Details zur initialen KI-
     *   `PAUSCHALEN_Bedingungen.json`: Strukturierte Bedingungen für Pauschalen.
     *   `PAUSCHALEN_Tabellen.json`: Nachschlagetabellen für Codes in Bedingungen.
     *   `TARDOC_Tarifpositionen.json`: Details und Regeldefinitionen für TARDOC-Einzelleistungen.
+    *   `TARDOC_Interpretationen.json`: Erläuterungen und Kapiteltexte zu TARDOC-Positionen.
 
 ## Technologie-Stack
 
@@ -135,6 +136,7 @@ Das Frontend zeigt das Ergebnis übersichtlich an, mit Details zur initialen KI-
 │   ├── PAUSCHALEN_Pauschalen.json
 │   ├── PAUSCHALEN_Bedingungen.json
 │   ├── TARDOC_Tarifpositionen.json
+│   ├── TARDOC_Interpretationen.json
 │   ├── PAUSCHALEN_Tabellen.json
 ├── server.py              # Flask Backend Logik
 ├── calculator.js          # Frontend JavaScript Logik
