@@ -228,8 +228,9 @@ def check_pauschale_conditions(
     context: dict,
     pauschale_bedingungen_data: list[dict],
     tabellen_dict_by_table: Dict[str, List[Dict]],
-    leistungskatalog_dict: Dict[str, Dict]
-) -> dict:
+    leistungskatalog_dict: Dict[str, Dict],
+    lang: str = 'de'
+    ) -> dict:
     errors: list[str] = []
     grouped_html_parts: Dict[Any, List[str]] = {}
     trigger_lkn_condition_met = False # Wird nicht mehr direkt hier gesetzt, sondern von aufrufender Funktion
@@ -688,8 +689,12 @@ def determine_applicable_pauschale(
     condition_errors_html_gen = []
     try:
         condition_result_html_dict = check_pauschale_conditions(
-            best_pauschale_code, context, pauschale_bedingungen_data,
-            tabellen_dict_by_table, leistungskatalog_dict
+            best_pauschale_code,
+            context,
+            pauschale_bedingungen_data,
+            tabellen_dict_by_table,
+            leistungskatalog_dict,
+            lang
         )
         bedingungs_pruef_html_result = condition_result_html_dict.get("html", "<p class='error'>Fehler bei HTML-Generierung der Bedingungen.</p>")
         condition_errors_html_gen = condition_result_html_dict.get("errors", [])
