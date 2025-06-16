@@ -307,14 +307,14 @@ app: Flask = create_app()
 def get_stage1_prompt(user_input: str, katalog_context: str, lang: str) -> str:
     """Return the Stage 1 prompt in the requested language."""
     if lang == "fr":
-        return f"""**Tâche:** Analyse très précisément le texte de traitement médical suivant provenant de Suisse. Ton rôle est l'identification des numéros de catalogue de prestations (LKN) pertinents, de leur quantité et l'extraction d'informations contextuelles spécifiques basées **exclusivement** sur le LKAAT_Leistungskatalog fourni.
+        return f"""**Tâche :** Analyse de manière très précise le texte de traitement médical suivant provenant de Suisse. Ton objectif est d'identifier les numéros du catalogue des prestations (LKN) pertinents, d'en déterminer la quantité et d'extraire des informations contextuelles spécifiques **uniquement** à partir du LKAAT_Leistungskatalog fourni.
 
-**Contexte: LKAAT_Leistungskatalog (Il s'agit de la SEULE source de LKN valides et de leurs descriptions ! Ignore toute autre connaissance.)**
+**Contexte : LKAAT_Leistungskatalog (c'est la SEULE source valide pour les LKN et leurs descriptions ; ignore toute autre information.)**
 --- Leistungskatalog Start ---
 {katalog_context}
 --- Leistungskatalog Ende ---
 
-**Instructions:** Exécute exactement les étapes suivantes:
+**Instructions :** Suis exactement les étapes suivantes :
 
 1.  **Identification des LKN et validation STRICTE:**
     *   Lis le "Behandlungstext" attentivement.
@@ -376,14 +376,14 @@ Behandlungstext: "{user_input}"
 
 Réponse JSON:"""
     elif lang == "it":
-        return f"""**Compito:** Analizza con la massima precisione il seguente testo di trattamento medico proveniente dalla Svizzera. Il tuo compito è identificare i numeri di catalogo delle prestazioni (LKN) pertinenti, determinarne la quantità ed estrarre informazioni contestuali specifiche basandoti **esclusivamente** sul LKAAT_Leistungskatalog fornito.
+        return f"""**Compito:** Analizza con la massima precisione il seguente testo di trattamento medico proveniente dalla Svizzera. Il tuo obiettivo è identificare i numeri di catalogo delle prestazioni (LKN) pertinenti, determinarne la quantità ed estrarre informazioni contestuali specifiche **esclusivamente** dal LKAAT_Leistungskatalog fornito.
 
 **Contesto: LKAAT_Leistungskatalog (Questa è l'UNICA fonte di LKN validi e delle loro descrizioni! Ignora qualsiasi altra conoscenza.)**
 --- Leistungskatalog Start ---
 {katalog_context}
 --- Leistungskatalog Ende ---
 
-**Istruzioni:** Esegui esattamente i seguenti passaggi:
+**Istruzioni:** Segui esattamente i passi seguenti:
 
 1.  **Identificazione LKN e convalida STRETTA:**
     *   Leggi attentamente il "Behandlungstext".
@@ -517,31 +517,33 @@ JSON-Antwort:"""
 def get_stage2_mapping_prompt(tardoc_lkn: str, tardoc_desc: str, candidates_text: str, lang: str) -> str:
     """Return the Stage 2 mapping prompt in the requested language."""
     if lang == "fr":
-        return f"""**Tâche:** Vous êtes un expert des systèmes de facturation médicale en Suisse (TARDOC et Pauschalen). Votre tâche est de trouver pour la prestation TARDOC donnée (type E/EZ) la prestation fonctionnellement **équivalente** dans la \"liste de candidats\". La liste contient des LKN (souvent P/PZ) utilisés comme conditions dans les Pauschalen potentielles.
+
+        return f"""**Tâche :** Vous êtes un expert des systèmes de facturation médicale en Suisse (TARDOC et Pauschalen). Votre objectif est de trouver, pour la prestation TARDOC indiquée (type E/EZ), la prestation fonctionnellement **équivalente** dans la « liste des candidats ». Cette liste contient des LKN (souvent P/PZ) utilisés comme conditions dans les Pauschalen potentielles.
 
 **Prestation TARDOC donnée (type E/EZ):**
 *   LKN: {tardoc_lkn}
 *   Description: {tardoc_desc}
 *   Contexte: Cette prestation a été réalisée dans le cadre d'un traitement pour lequel une facturation par Pauschalen est examinée.
 
-**Équivalents possibles (liste de candidats - LKN pour les conditions des Pauschalen):**
-Choisis dans CETTE liste la LKN candidate décrivant **le même type d'acte médical** que la prestation TARDOC fournie.
+**Équivalents possibles (liste des candidats - LKN pour les conditions des Pauschalen) :**
+Choisissez dans CETTE liste la LKN candidate décrivant **le même type d'acte médical** que la prestation TARDOC.
 --- Kandidaten Start ---
 {candidates_text}
 --- Kandidaten Ende ---
 
-**Analyse & décision:**
-1.  Comprends la **fonction médicale principale** de la prestation TARDOC.
-2.  Identifie les LKN candidates qui représentent le mieux cette fonction. Priorise par pertinence.
+**Analyse et décision :**
+1.  Comprenez la **fonction médicale principale** de la prestation TARDOC.
+2.  Identifiez les LKN candidates correspondant le mieux à cette fonction.
+3.  Classez-les par pertinence.
 
-**Réponse:**
-*   Donne une **liste simple séparée par des virgules** des codes LKN correspondants.
-*   Si aucun candidat ne convient, renvoie exactement `NONE`.
+**Réponse :**
+*   Donnez une **liste simple séparée par des virgules** des codes LKN retenus.
+*   Si aucun candidat ne convient, renvoyez exactement `NONE`.
 *   Aucune autre sortie, pas d'explications.
 
 Liste priorisée (seulement la liste ou NONE):"""
     elif lang == "it":
-        return f"""**Compito:** Sei un esperto dei sistemi di fatturazione medica in Svizzera (TARDOC e Pauschalen). Il tuo compito è trovare, per la prestazione TARDOC indicata (tipo E/EZ), la prestazione funzionalmente **equivalente** nella \"lista dei candidati\". La lista contiene LKN (spesso P/PZ) che compaiono come condizioni nelle Pauschalen potenzialmente rilevanti.
+        return f"""**Compito:** Sei un esperto dei sistemi di fatturazione medica in Svizzera (TARDOC e Pauschalen). Il tuo obiettivo è individuare, per la prestazione TARDOC indicata (tipo E/EZ), la prestazione funzionalmente **equivalente** nella "lista dei candidati". Questa lista contiene LKN (spesso P/PZ) utilizzati come condizioni nelle Pauschalen potenzialmente rilevanti.
 
 **Prestazione TARDOC fornita (tipo E/EZ):**
 *   LKN: {tardoc_lkn}
@@ -556,10 +558,11 @@ Trova in QUESTA lista la LKN candidata che descrive **lo stesso tipo di atto med
 
 **Analisi e decisione:**
 1.  Comprendi la **funzione medica principale** della prestazione TARDOC.
-2.  Identifica i candidati che rappresentano meglio tale funzione e ordinali per pertinenza.
+2.  Individua i candidati che rappresentano meglio tale funzione.
+3.  Ordinali per pertinenza.
 
 **Risposta:**
-*   Fornisci un **elenco semplice separato da virgole** dei codici LKN idonei.
+*   Fornisci un **elenco semplice separato da virgole** dei codici LKN trovati.
 *   Se nessun candidato è adatto, restituisci esattamente `NONE`.
 *   Nessun altro testo o spiegazione.
 
@@ -595,9 +598,9 @@ def get_stage2_ranking_prompt(user_input: str, potential_pauschalen_text: str, l
         return f"""Sur la base du texte de traitement suivant, quelle Pauschale listée ci-dessous correspond le mieux au contenu ?
 Prends en compte la description de la Pauschale ('Pauschale_Text').
 Fournis une liste priorisée des codes de Pauschale en commençant par la meilleure correspondance.
-Donne UNIQUEMENT les codes séparés par des virgules (ex. \"CODE1,CODE2\"). Aucune justification.
+Donne UNIQUEMENT les codes séparés par des virgules (ex. "CODE1,CODE2"). Aucune justification.
 
-Behandlungstext: \"{user_input}\"
+Behandlungstext: "{user_input}"
 
 Pauschalen potentielles:
 --- Pauschalen Start ---
@@ -609,9 +612,9 @@ Codes de Pauschale par ordre de pertinence (liste uniquement):"""
         return f"""In base al seguente testo di trattamento, quale delle Pauschalen elencate di seguito corrisponde meglio al contenuto?
 Tieni conto della descrizione della Pauschale ('Pauschale_Text').
 Fornisci un elenco prioritario dei codici Pauschale iniziando dal più adatto.
-Fornisci SOLO i codici separati da virgola (es. \"CODE1,CODE2\"). Nessuna spiegazione.
+Fornisci SOLO i codici separati da virgola (es. "CODE1,CODE2"). Nessuna spiegazione.
 
-Behandlungstext: \"{user_input}\"
+Behandlungstext: "{user_input}"
 
 Pauschalen potenziali:
 --- Pauschalen Start ---
