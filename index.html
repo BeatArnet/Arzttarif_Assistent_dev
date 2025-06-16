@@ -22,16 +22,9 @@
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-            line-height: 1.6;
-            padding: 20px;
-            margin: 0;
-            background: var(--primary-light);
-            color: var(--text-color);
+            line-height: 1.6; padding: 20px;
+            background: var(--primary-light); color: var(--text-color);
             font-size: 16px;
-        }
-        .main-container {
-            max-width: 800px;
-            margin: 0 auto;
         }
         h1 {
             color: var(--primary);
@@ -49,17 +42,18 @@
             box-sizing: border-box;
         }
         textarea, input[type="text"], select {
-            width: 100%;
-            max-width: 600px;
+            width: 90%;
+            max-width: 618px;
             margin-bottom: 15px;
             padding: 8px;
             border: 1px solid var(--border-color);
             border-radius: 4px;
         }
         select { cursor: pointer; }
-        .language-select { text-align: right; margin-bottom: 10px; }
+        .language-select { text-align: right; margin: 0; }
         .language-select label { display: inline-block; margin-right: 5px; font-weight: bold; }
-        .language-select select { width: auto; }
+        #languageSelect { width: auto; margin-bottom: 0; }
+        #beispielSelect { width: 90%; max-width: 618px; }
         button {
             padding: 10px 15px; cursor: pointer; margin-top: 10px;
             background: var(--primary); color: #fff; border: none;
@@ -301,25 +295,14 @@
     }
     .modal-close { float:right; background:none; border:none; font-size:1.2em; cursor:pointer; }
     .top-info {
+        position: absolute;
+        top: 10px;
+        right: 10px;
         display: flex;
-        justify-content: space-between;
         align-items: center;
         gap: 10px;
         font-size: 0.75em;
         color: #555;
-        margin-bottom: 10px;
-    }
-    @media (min-width: 700px) {
-        .top-info {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            margin-bottom: 0;
-        }
-    }
-    @media (max-width: 600px) {
-        body { font-size: 14px; padding: 15px; }
-        h1 { font-size: 1.2em; }
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 </style>
@@ -344,7 +327,6 @@
         </div>
     </div>
 
-    <div class="main-container">
     <div class="top-info">
         <div class="language-select">
             <label id="langLabel" for="languageSelect">Sprache:</label>
@@ -403,7 +385,6 @@
     <div class="disclaimer" id="disclaimer">
         <strong>Haftungsausschluss:</strong> Alle Auskünfte erfolgen ohne Gewähr... (<a href="https://tarifbrowser.oaat-otma.ch/startPortal" target="_blank">OAAT-OTMA Online-Portal</a>).
     </div>
-    </div> <!-- /main-container -->
 
     <script src="calculator.js"></script>
     <script>
@@ -426,7 +407,7 @@
                 analyzeButton: 'Tarifpositionen finden',
                 loading: 'Wird geladen...',
                 resultsPlaceholder: 'Hier erscheinen die Ergebnisse...',
-                disclaimer: '<strong>Haftungsausschluss:</strong> Alle Auskünfte erfolgen ohne Gewähr... (<a href="https://tarifbrowser.oaat-otma.ch/startPortal" target="_blank">TARDOC Online-Portal</a>).',
+                disclaimer: '<strong>Haftungsausschluss:</strong> Alle Auskünfte erfolgen ohne Gewähr... (<a href="https://tarifbrowser.oaat-otma.ch/startPortal" target="_blank">OAAT-OTMA Online-Portal</a>).',
                 clickFind: "<i>Bitte 'Tarifpositionen finden' klicken.</i>"
             },
             fr: {
@@ -468,7 +449,7 @@
                 analyzeButton: 'Trova le posizioni tariffarie',
                 loading: 'Caricamento...',
                 resultsPlaceholder: 'Qui verranno visualizzati i risultati...',
-                disclaimer: '<strong>Clausola di esclusione della responsabilità:</strong> tutte le informazioni sono fornite senza garanzia... (<a href="https://tarifbrowser.oaat-otma.ch/startPortal" target="_blank">Portale online TARDOC</a>).',
+                disclaimer: '<strong>Clausola di esclusione della responsabilità:</strong> tutte le informazioni sono fornite senza garanzia... (<a href="https://tarifbrowser.oaat-otma.ch/startPortal" target="_blank">Portale online OAAT-OTMA</a>).',
                 clickFind: "<i>Fare clic su 'Trova le posizioni tariffarie'.</i>"
             }
         };
@@ -496,7 +477,6 @@
             document.getElementById('analyzeButton').textContent = t.analyzeButton;
             document.getElementById('spinner').textContent = t.loading;
             const out = document.getElementById('output');
-
             if(out){
                 const prev = translations[prevLang];
                 const content = out.innerHTML.trim();
