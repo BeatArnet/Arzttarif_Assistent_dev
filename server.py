@@ -311,9 +311,9 @@ app: Flask = create_app()
 def get_stage1_prompt(user_input: str, katalog_context: str, lang: str) -> str:
     """Return the Stage 1 prompt in the requested language."""
     if lang == "fr":
-        return f"""**Tâche :** Analyse de manière très précise le texte de traitement médical suivant provenant de Suisse. Ton objectif est d'identifier les numéros du catalogue des prestations (LKN) pertinents, d'en déterminer la quantité et d'extraire des informations contextuelles spécifiques **uniquement** à partir du LKAAT_Leistungskatalog fourni.
+        return f"""**Tâche :** Analyse avec précision le texte de traitement médical ci-dessous provenant de Suisse. Ta mission consiste à identifier les numéros du catalogue des prestations (LKN), à en déterminer la quantité et à extraire les informations contextuelles. Appuie-toi principalement sur le LKAAT_Leistungskatalog fourni, mais tu peux aussi tenir compte de synonymes médicaux courants ou de termes usuels et consulter la table des forfaits.
 
-**Contexte : LKAAT_Leistungskatalog (c'est la SEULE source valide pour les LKN et leurs descriptions ; ignore toute autre information.)**
+**Contexte : LKAAT_Leistungskatalog (source de référence pour les LKN et leurs descriptions ; la table des forfaits peut également être prise en compte.)**
 --- Leistungskatalog Start ---
 {katalog_context}
 --- Leistungskatalog Ende ---
@@ -380,9 +380,9 @@ Behandlungstext: "{user_input}"
 
 Réponse JSON:"""
     elif lang == "it":
-        return f"""**Compito:** Analizza con la massima precisione il seguente testo di trattamento medico proveniente dalla Svizzera. Il tuo obiettivo è identificare i numeri di catalogo delle prestazioni (LKN) pertinenti, determinarne la quantità ed estrarre informazioni contestuali specifiche **esclusivamente** dal LKAAT_Leistungskatalog fornito.
+        return f"""**Compito:** Analizza con la massima precisione il testo di trattamento medico seguente proveniente dalla Svizzera. Il tuo obiettivo è identificare i numeri di catalogo delle prestazioni (LKN), determinarne la quantità ed estrarre informazioni contestuali. Basati principalmente sul LKAAT_Leistungskatalog fornito, ma puoi utilizzare sinonimi medici o termini comuni e includere la tabella delle Pauschalen.
 
-**Contesto: LKAAT_Leistungskatalog (Questa è l'UNICA fonte di LKN validi e delle loro descrizioni! Ignora qualsiasi altra conoscenza.)**
+**Contesto: LKAAT_Leistungskatalog (fonte principale per i LKN e le relative descrizioni; in aggiunta è disponibile la tabella delle Pauschalen.)**
 --- Leistungskatalog Start ---
 {katalog_context}
 --- Leistungskatalog Ende ---
@@ -449,9 +449,9 @@ Behandlungstext: "{user_input}"
 
 Risposta JSON:"""
     else:
-        return f"""**Aufgabe:** Analysiere den folgenden medizinischen Behandlungstext aus der Schweiz äußerst präzise. Deine Aufgabe ist die Identifikation relevanter Leistungs-Katalog-Nummern (LKN), deren Menge und die Extraktion spezifischer Kontextinformationen basierend **ausschließlich** auf dem bereitgestellten LKAAT_Leistungskatalog.
+        return f"""**Aufgabe:** Analysiere den folgenden medizinischen Behandlungstext aus der Schweiz äußerst präzise. Deine Aufgabe ist es, relevante Leistungs-Katalog-Nummern (LKN) samt Menge und Kontextinformationen zu bestimmen. Nutze primär den bereitgestellten LKAAT_Leistungskatalog, darfst aber auch medizinische Synonyme oder übliche Begriffe berücksichtigen und die Pauschalen-Tabelle hinzuziehen.
 
-**Kontext: LKAAT_Leistungskatalog (Dies ist die EINZIGE Quelle für gültige LKNs und deren Beschreibungen! Ignoriere jegliches anderes Wissen.)**
+**Kontext: LKAAT_Leistungskatalog (maßgebliche Quelle für gültige LKNs und deren Beschreibungen; ergänzend kann die Pauschalen-Tabelle verwendet werden.)**
 --- Leistungskatalog Start ---
 {katalog_context}
 --- Leistungskatalog Ende ---
