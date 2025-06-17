@@ -56,7 +56,10 @@ const DYN_TEXT = {
         logicNotOk: '(Logik NICHT erfüllt)',
         errorLkn: 'Fehler: Details für LKN {lkn} nicht gefunden!',
         noData: 'Keine Daten vorhanden.',
-        groupNoData: 'Keine Daten zur Leistungsgruppe {code}.'
+        groupNoData: 'Keine Daten zur Leistungsgruppe {code}.',
+        potentialIcds: 'Mögliche ICD-Diagnosen',
+        thIcdCode: 'ICD Code',
+        thIcdText: 'Beschreibung'
     },
     fr: {
         spinnerWorking: 'Vérification en cours...',
@@ -99,7 +102,10 @@ const DYN_TEXT = {
         logicNotOk: '(Logique NON remplie)',
         errorLkn: 'Erreur : détails pour NPL {lkn} introuvables !',
         noData: 'Aucune donnée disponible.',
-        groupNoData: 'Aucune donnée pour le groupe de prestations {code}.'
+        groupNoData: 'Aucune donnée pour le groupe de prestations {code}.',
+        potentialIcds: 'Diagnostics ICD possibles',
+        thIcdCode: 'Code ICD',
+        thIcdText: 'Description'
     },
     it: {
         spinnerWorking: 'Verifica in corso...',
@@ -142,7 +148,10 @@ const DYN_TEXT = {
         logicNotOk: '(Logica NON soddisfatta)',
         errorLkn: 'Errore: dettagli per NPL {lkn} non trovati!',
         noData: 'Nessun dato disponibile.',
-        groupNoData: 'Nessun dato per il gruppo di prestazioni {code}.'
+        groupNoData: 'Nessun dato per il gruppo di prestazioni {code}.',
+        potentialIcds: 'Possibili diagnosi ICD',
+        thIcdCode: 'Codice ICD',
+        thIcdText: 'Descrizione'
     }
 };
 
@@ -880,10 +889,25 @@ function displayPauschale(abrechnungsObjekt) {
         // Öffne Details immer, wenn die strukturierte Logik nicht erfüllt war ODER wenn es Einzelfehler gab
         const openAttr = !conditions_met_structured || (bedingungsFehler && bedingungsFehler.length > 0) ? 'open' : '';
         let summary_status_text = conditions_met_structured ? tDyn('overallOk') : tDyn('overallNotOk');
-        detailsContent += `<details ${openAttr} style="margin-top: 10px;"><summary>${tDyn('condDetails')} (${summary_status_text})</summary>${bedingungsHtml}</details>`;
-    }
 
-    // Block für potenzielle ICDs wurde entfernt
+        let bedingungenContent = bedingungsHtml;
+
+        const potentialIcds = Array.isArray(pauschaleDetails['potential_icds']) ? pauschaleDetails['potential_icds'] : [];
+        if (potentialIcds.length > 0) {
+            let icdRows = '';
+            for (const icd of potentialIcds) {
+                const code = escapeHtml(icd.Code || '');
+                const text = escapeHtml(icd.Code_Text || '');
+                icdRows += `<tr><td>${code}</td><td>${text}</td></tr>`;
+            }
+            const icdTable = `<table border="1" style="border-collapse: collapse; width: 100%; margin-top: 5px;">`+
+                             `<thead><tr><th>${tDyn('thIcdCode')}</th><th>${tDyn('thIcdText')}</th></tr></thead>`+
+                             `<tbody>${icdRows}</tbody></table>`;
+            bedingungenContent += `<details style="margin-top:8px;"><summary>${tDyn('potentialIcds')}</summary>${icdTable}</details>`;
+        }
+
+        detailsContent += `<details ${openAttr} style="margin-top: 10px;"><summary>${tDyn('condDetails')} (${summary_status_text})</summary>${bedingungenContent}</details>`;
+    }
 
     let summary_main_status = conditions_met_structured ? `<span style="color:green;">${tDyn('logicOk')}</span>` : `<span style="color:red;">${tDyn('logicNotOk')}</span>`;
     let html = `<details open><summary>${tDyn('pauschaleDetails')}: ${pauschaleCode} ${summary_main_status}</summary>${detailsContent}</details>`;
