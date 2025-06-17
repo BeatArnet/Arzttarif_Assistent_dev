@@ -1,0 +1,47 @@
+{
+  "de": [
+    {"label": "--- Bitte wählen ---", "value": ""},
+    {"label": "Hausärztliche Konsultation von 17 Minuten", "value": "Hausärztliche Konsultation von 17 Minuten"},
+    {"label": "Konsultation 10 Minuten und Entfernung Warze mit scharfem Löffel 5 Minuten, mit Wechselzeit zu Dermatologie", "value": "Konsultation 10 Minuten und Entfernung Warze mit scharfem Löffel 5 Minuten, mit Wechselzeit zu Dermatologie"},
+    {"label": "Konsultation 25 Minuten, grosser rheumatologischer Untersuch", "value": "Konsultation 25 Minuten, grosser rheumatologischer Untersuch"},
+    {"label": "Konsultation 15 Minuten", "value": "Konsultation 15 Minuten"},
+    {"label": "Hausärztliche Konsultation von 25 Minuten", "value": "Hausärztliche Konsultation von 25 Minuten"},
+    {"label": "Konsultation MF 15 Min + 10 Min Beratung Kind", "value": "Konsultation MF 15 Min + 10 Min Beratung Kind"},
+    {"label": "Kiefergelenk, Luxation. Geschlossene Reposition", "value": "Kiefergelenk, Luxation. Geschlossene Reposition"},
+    {"label": "Kiefergelenk, Luxation. Geschlossene Reposition, Anästhesie", "value": "Kiefergelenk, Luxation. Geschlossene Reposition, Anästhesie"},
+    {"label": "Aufklärung des Patienten und Leberbiopsie durch die Haut", "value": "Aufklärung des Patienten und Leberbiopsie durch die Haut"},
+    {"label": "Blinddarmentfernung als alleinige Leistung", "value": "Blinddarmentfernung als alleinige Leistung"},
+    {"label": "Korrektur eines Hallux valgus rechts", "value": "Korrektur eines Hallux valgus rechts"},
+    {"label": "Bronchoskopie mit Lavage", "value": "Bronchoskopie mit Lavage"}
+  ],
+  "fr": [
+    {"label": "--- Veuillez choisir ---", "value": ""},
+    {"label": "Consultation de médecine de famille de 17 minutes", "value": "Consultation de médecine de famille de 17 minutes"},
+    {"label": "Consultation de 10 min et ablation d'une verrue par curette 5 min, avec passage en dermatologie", "value": "Consultation de 10 min et ablation d'une verrue par curette 5 min, avec passage en dermatologie"},
+    {"label": "Consultation de 25 minutes, grand examen rhumatologique", "value": "Consultation de 25 minutes, grand examen rhumatologique"},
+    {"label": "Consultation de 15 minutes", "value": "Consultation de 15 minutes"},
+    {"label": "Consultation de médecine de famille de 25 minutes", "value": "Consultation de médecine de famille de 25 minutes"},
+    {"label": "Consultation de MF 15 min + 10 min conseil enfant", "value": "Consultation de MF 15 min + 10 min conseil enfant"},
+    {"label": "Articulation temporo-mandibulaire, luxation, réduction", "value": "Articulation temporo-mandibulaire, luxation, réduction"},
+    {"label": "Articulation temporo-mandibulaire, luxation, réduction, anesthésie", "value": "Articulation temporo-mandibulaire, luxation, réduction, anesthésie"},
+    {"label": "Explication au patient et biopsie hépatique transcutanée", "value": "Explication au patient et biopsie hépatique transcutanée"},
+    {"label": "Appendicectomie comme acte isolé", "value": "Appendicectomie comme acte isolé"},
+    {"label": "Correction d'un hallux valgus droit", "value": "Correction d'un hallux valgus droit"},
+    {"label": "Bronchoscopie avec lavage", "value": "Bronchoscopie avec lavage"}
+  ],
+  "it": [
+    {"label": "--- Seleziona ---", "value": ""},
+    {"label": "Consultazione di base di 17 minuti", "value": "Consultazione di base di 17 minuti"},
+    {"label": "Consultazione di 10 minuti e rimozione di una verruca con cucchiaio affilato 5 minuti, con passaggio a dermatologia", "value": "Consultazione di 10 minuti e rimozione di una verruca con cucchiaio affilato 5 minuti, con passaggio a dermatologia"},
+    {"label": "Consultazione di 25 minuti, grande esame reumatologico", "value": "Consultazione di 25 minuti, grande esame reumatologico"},
+    {"label": "Consultazione di 15 minuti", "value": "Consultazione di 15 minuti"},
+    {"label": "Consultazione di base di 25 minuti", "value": "Consultazione di base di 25 minuti"},
+    {"label": "Consultazione MF 15 min + 10 min consulenza bambino", "value": "Consultazione MF 15 min + 10 min consulenza bambino"},
+    {"label": "Articolazione temporo-mandibolare, lussazione, riduzione", "value": "Articolazione temporo-mandibolare, lussazione, riduzione"},
+    {"label": "Articolazione temporo-mandibolare, lussazione, riduzione, anestesia", "value": "Articolazione temporo-mandibolare, lussazione, riduzione, anestesia"},
+    {"label": "Spiegazione al paziente e biopsia epatica percutanea", "value": "Spiegazione al paziente e biopsia epatica percutanea"},
+    {"label": "Appendicectomia come prestazione singola", "value": "Appendicectomia come prestazione singola"},
+    {"label": "Correzione di alluce valgo destro", "value": "Correzione di alluce valgo destro"},
+    {"label": "Broncoscopia con lavaggio", "value": "Broncoscopia con lavaggio"}
+  ]
+}
