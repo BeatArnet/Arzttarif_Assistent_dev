@@ -540,8 +540,17 @@ async function getBillingAnalysis() {
     console.log("[getBillingAnalysis] Funktion gestartet.");
     const userInput = $("userInput").value.trim();
     let mappedInput = userInput;
-    if(exampleValueToFrIt[currentLang] && exampleValueToFrIt[currentLang][userInput]){
-        mappedInput = exampleValueToFrIt[currentLang][userInput];
+    try {
+        if (Array.isArray(examplesData)) {
+            const langKey = "value_" + currentLang.toUpperCase();
+            const extKey = "extendedValue_" + currentLang.toUpperCase();
+            const ex = examplesData.find(e => e[langKey] === userInput);
+            if (ex && ex[extKey]) {
+                mappedInput = ex[extKey];
+            }
+        }
+    } catch (err) {
+        console.error("[getBillingAnalysis] Example mapping failed:", err);
     }
     const icdInput = $("icdInput").value.trim().split(",").map(s => s.trim().toUpperCase()).filter(Boolean);
     const gtinInput = ($("gtinInput") ? $("gtinInput").value.trim().split(",").map(s => s.trim()).filter(Boolean) : []);
