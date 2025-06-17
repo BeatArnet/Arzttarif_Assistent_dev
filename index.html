@@ -443,12 +443,14 @@
         function populateExamples(lang){
             const select = document.getElementById("beispielSelect");
             if(!select || !examplesData.length) return;
-            const key = "value_" + lang.toUpperCase();
+
+            const shortKey = "value_" + lang.toUpperCase();
+            const extKey = "extendedValue_" + lang.toUpperCase();
             select.innerHTML = "";
             examplesData.forEach((e,i)=>{
                 const opt = document.createElement("option");
-                opt.textContent = e.label;
-                opt.value = e[key] || "";
+                opt.textContent = i===0 ? e.label : (e[shortKey] || e.label);
+                opt.value = e[extKey] || e[shortKey] || "";
                 if(i===0){ opt.selected = true; opt.disabled = true; }
                 select.appendChild(opt);
             });
