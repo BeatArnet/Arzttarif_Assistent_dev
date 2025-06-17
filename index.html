@@ -443,6 +443,7 @@
         function populateExamples(lang){
             const select = document.getElementById("beispielSelect");
             if(!select || !examplesData.length) return;
+
             const shortKey = "value_" + lang.toUpperCase();
             const extKey = "extendedValue_" + lang.toUpperCase();
             select.innerHTML = "";
