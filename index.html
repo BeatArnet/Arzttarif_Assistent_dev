@@ -383,6 +383,7 @@
                 header: 'Neuer Arzttarif Schweiz: TARDOC und Pauschalen',
                 intro: 'Geben Sie die medizinische Leistung oder die LKN ein (inkl. relevanter Details wie Dauer, Alter, Geschlecht, falls zutreffend). Der Assistent prüft die optimale Abrechnung.',
                 exampleLabel: 'Beispiele auswählen:',
+                selectPlaceholder: '--- Bitte wählen ---',
                 userLabel: 'Leistungsbeschreibung / LKN:',
                 userPlaceholder: 'z.B. Hausärztliche Konsultation von 17 Minuten...',
                 icdLabel: 'Zusätzliche ICD-Codes (kommagetrennt, optional):',
@@ -402,6 +403,7 @@
                 header: 'Nouveau tarif médical suisse : TARDOC et forfaits',
                 intro: "Saisissez la prestation médicale ou le NPL (y compris les détails pertinents tels que durée, âge, sexe, le cas échéant). L'assistant vérifie la facturation optimale.",
                 exampleLabel: 'Sélectionner un exemple :',
+                selectPlaceholder: '--- Veuillez choisir ---',
 
                 userLabel: 'Description de la prestation / NPL :',
                 userPlaceholder: 'p. ex. consultation de médecine de famille de 17 minutes...',
@@ -422,6 +424,7 @@
                 header: 'Nuova tariffa medica svizzera: TARDOC e forfait',
                 intro: "Inserisci la prestazione medica o il NPL (compresi i dettagli rilevanti come durata, età, sesso, se applicabile). L'assistente verifica la fatturazione ottimale.",
                 exampleLabel: 'Seleziona un esempio:',
+                selectPlaceholder: '--- Si prega di scegliere ---',
                 userLabel: 'Descrizione della prestazione / NPL:',
                 userPlaceholder: 'es. consultazione di base di 17 minuti...',
                 icdLabel: 'Codici ICD aggiuntivi (separati da virgole, opzionale):',
@@ -449,9 +452,14 @@
             select.innerHTML = "";
             examplesData.forEach((e,i)=>{
                 const opt = document.createElement("option");
-                opt.textContent = i===0 ? e.label : (e[shortKey] || e.label);
+                if(i===0){
+                    opt.textContent = translations[lang].selectPlaceholder || e.label;
+                    opt.selected = true;
+                    opt.disabled = true;
+                } else {
+                    opt.textContent = e[shortKey] || e.label;
+                }
                 opt.value = e[extKey] || e[shortKey] || "";
-                if(i===0){ opt.selected = true; opt.disabled = true; }
                 select.appendChild(opt);
             });
         }
