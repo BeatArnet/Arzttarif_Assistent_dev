@@ -349,18 +349,6 @@
     <label id="exampleLabel" for="beispielSelect">Beispiele auswählen:</label>
     <select id="beispielSelect" onchange="beispielEinfuegen()">
         <option value="" selected disabled>--- Bitte wählen ---</option>
-        <option value="Hausärztliche Konsultation von 17 Minuten">Hausärztliche Konsultation 17 Min.</option>
-        <option value="Konsultation 10 Minuten und Entfernung Warze mit scharfem Löffel 5 Minuten, mit Wechselzeit zu Dermatologie">Konsultation 10 Min + Warzenentfernung Stamm</option>
-        <option value="Konsultation 25 Minuten, grosser rheumatologischer Untersuch">Konsultation 25 Min, rheumatol. Untersuch</option>
-        <option value="Konsultation 15 Minuten">Konsultation 15 Minuten</option>
-        <option value="Konsultation 25 Minuten Hausarzt">hausärztliche Konsultation 25 Minuten</option>
-        <option value="Hausärztliche Konsultation 15 Minuten und 10 Minuten Beratung Kind">Hausärztliche Kons 15 Min + 10 Min. Beratung Kind</option>
-        <option value="Kiefergelenk, Luxation. Geschlossene Reposition">Kiefergelenk, Luxation, Reposition</option>
-        <option value="Kiefergelenk, Luxation. Geschlossene Reposition mit Anästhesie durch Anästhesist">Kiefergelenk, Luxation, Reposition, Anästhesie</option>
-        <option value="Aufklärung des Patienten und Leberbiopsie durch die Haut">Aufklärung + Leberbiopsie (Haut)</option>
-        <option value="Blinddarmentfernung als alleinige Leistung">Blinddarmentfernung (alleinig)</option>
-        <option value="Korrektur eines Hallux valgus rechts">Korrektur Hallux valgus rechts</option>
-        <option value="Bronchoskopie mit Lavage">Bronchoskopie mit Lavage</option>
     </select>
 
     <label id="userLabel" for="userInput">Leistungsbeschreibung / LKN:</label>
@@ -395,8 +383,6 @@
                 header: 'Neuer Arzttarif Schweiz: TARDOC und Pauschalen',
                 intro: 'Geben Sie die medizinische Leistung oder die LKN ein (inkl. relevanter Details wie Dauer, Alter, Geschlecht, falls zutreffend). Der Assistent prüft die optimale Abrechnung.',
                 exampleLabel: 'Beispiele auswählen:',
-                examples: ['--- Bitte wählen ---','Hausärztliche Konsultation 17 Min.','Konsultation 10 Min + Warzenentfernung Stamm','Konsultation 25 Min, rheumatol. Untersuch','Konsultation 15 Minuten','hausärztliche Konsultation 25 Minuten','Hausärztliche Kons 15 Min + 10 Min. Beratung Kind','Kiefergelenk, Luxation, Reposition','Kiefergelenk, Luxation, Reposition, Anästhesie','Aufklärung + Leberbiopsie (Haut)','Blinddarmentfernung (alleinig)','Korrektur Hallux valgus rechts','Bronchoskopie mit Lavage'],
-                exampleValues: ['', 'Hausärztliche Konsultation 17 Min.','Konsultation 10 Min + Warzenentfernung Stamm','Konsultation 25 Min, rheumatol. Untersuch','Konsultation 15 Minuten','hausärztliche Konsultation 25 Minuten','Hausärztliche Kons 15 Min + 10 Min. Beratung Kind','Kiefergelenk, Luxation, Reposition','Kiefergelenk, Luxation, Reposition, Anästhesie','Aufklärung + Leberbiopsie (Haut)','Blinddarmentfernung (alleinig)','Korrektur Hallux valgus rechts','Bronchoskopie mit Lavage'],
                 userLabel: 'Leistungsbeschreibung / LKN:',
                 userPlaceholder: 'z.B. Hausärztliche Konsultation von 17 Minuten...',
                 icdLabel: 'Zusätzliche ICD-Codes (kommagetrennt, optional):',
@@ -417,8 +403,6 @@
                 intro: "Saisissez la prestation médicale ou le NPL (y compris les détails pertinents tels que durée, âge, sexe, le cas échéant). L'assistant vérifie la facturation optimale.",
                 exampleLabel: 'Sélectionner un exemple :',
 
-                examples: ['--- Veuillez choisir ---','Consultation de médecine de famille de 17 minutes','Consultation de 10 minutes et excision d\'une verrue au curetage 5 minutes, avec transfert en dermatologie','Consultation de 25 minutes, grand examen rhumatologique','Consultation de 15 minutes','Consultation de médecine de famille de 25 minutes','Consultation de MF 15 min + 10 min de conseils pour enfant','Articulation temporo-mandibulaire, luxation, réduction fermée','Articulation temporo-mandibulaire, luxation, réduction sous anesthésie par anesthésiste','Information du patient et biopsie hépatique percutanée','Appendicectomie isolée','Correction d\'un hallux valgus droit','Bronchoscopie avec lavage'],
-                exampleValues: ['', 'Consultation de médecine de famille de 17 minutes','Consultation de 10 minutes et excision d\'une verrue au curetage 5 minutes, avec transfert en dermatologie','Consultation de 25 minutes, grand examen rhumatologique','Consultation de 15 minutes','Consultation de médecine de famille de 25 minutes','Consultation de Médecin de famille 15 min + 10 min de conseils pour enfant','Articulation temporo-mandibulaire, luxation, réduction fermée','Articulation temporo-mandibulaire, luxation : Réduction sous anesthésie par anesthésiste','Information du patient et biopsie hépatique percutanée','Appendicectomie isolée','Correction d\'un hallux valgus droit','Bronchoscopie avec lavage'],
                 userLabel: 'Description de la prestation / NPL :',
                 userPlaceholder: 'p. ex. consultation de médecine de famille de 17 minutes...',
                 icdLabel: 'Codes CIM supplémentaires (séparés par des virgules, optionnel) :',
@@ -438,8 +422,6 @@
                 header: 'Nuova tariffa medica svizzera: TARDOC e forfait',
                 intro: "Inserisci la prestazione medica o il NPL (compresi i dettagli rilevanti come durata, età, sesso, se applicabile). L'assistente verifica la fatturazione ottimale.",
                 exampleLabel: 'Seleziona un esempio:',
-                examples: ['--- Seleziona ---','Consultazione di base di 17 minuti','Consultazione di 10 minuti e rimozione di una verruca con cucchiaio affilato per 5 minuti, con passaggio in dermatologia','Consultazione di 25 minuti, ampio esame reumatologico','Consultazione di 15 minuti','Consultazione di base di 25 minuti','Consultazione MF 15 min + 10 min di consulenza per bambino','Articolazione temporo-mandibolare, lussazione, riduzione a cielo chiuso','Articolazione temporo-mandibolare, lussazione, riduzione in anestesia da parte dell\'anestesista','Spiegazione al paziente e biopsia epatica percutanea','Appendicectomia come intervento singolo','Correzione di alluce valgo destro','Broncoscopia con lavaggio'],
-                exampleValues: ['', 'Consultazione di base di 17 minuti','Consultazione di 10 minuti e rimozione di una verruca con cucchiaio affilato per 5 minuti, con passaggio in dermatologia','Consultazione di 25 minuti, ampio esame reumatologico','Consultazione di 15 minuti','Consultazione di base di 25 minuti','Consultazione MF 15 min + 10 min di consulenza per bambino','Articolazione temporo-mandibolare, lussazione, riduzione a cielo chiuso','Articolazione temporo-mandibolare, lussazione, riduzione in anestesia da parte dell\'anestesista','Spiegazione al paziente e biopsia epatica percutanea','Appendicectomia come intervento singolo','Correzione di alluce valgo destro','Broncoscopia con lavaggio'],
                 userLabel: 'Descrizione della prestazione / NPL:',
                 userPlaceholder: 'es. consultazione di base di 17 minuti...',
                 icdLabel: 'Codici ICD aggiuntivi (separati da virgole, opzionale):',
@@ -454,6 +436,23 @@
                 clickFind: "<i>Fare clic su 'Trova le posizioni tariffarie'.</i>"
             }
         };
+        let examplesData = {};
+        fetch("data/beispiele.json")
+            .then(r => r.json())
+            .then(d => { examplesData = d; populateExamples(currentLang); });
+        function populateExamples(lang){
+            const select = document.getElementById("beispielSelect");
+            if(!select || !examplesData[lang]) return;
+            select.innerHTML = "";
+            examplesData[lang].forEach((e,i)=>{
+                const opt = document.createElement("option");
+                opt.textContent = e.label;
+                opt.value = e.value;
+                if(i===0){ opt.selected = true; opt.disabled = true; }
+                select.appendChild(opt);
+            });
+        }
+
             // Mapping FR | IT  ➞ ausführlichere FR | IT Texte gemäss LKAAT
             const exampleValueToFrIt = {
             fr: {
@@ -522,9 +521,7 @@
             document.getElementById('mainHeader').textContent = t.header;
             document.getElementById('intro').textContent = t.intro;
             document.getElementById('exampleLabel').textContent = t.exampleLabel;
-            const opts = document.querySelectorAll('#beispielSelect option');
-            t.examples.forEach((text,i)=>{ if(opts[i]){opts[i].textContent=text; opts[i].value=t.exampleValues[i];}});
-            document.getElementById('userLabel').textContent = t.userLabel;
+            populateExamples(lang);
             document.getElementById('userInput').placeholder = t.userPlaceholder;
             document.getElementById('icdLabel').textContent = t.icdLabel;
             document.getElementById('icdInput').placeholder = t.icdPlaceholder;
