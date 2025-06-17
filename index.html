@@ -436,79 +436,24 @@
                 clickFind: "<i>Fare clic su 'Trova le posizioni tariffarie'.</i>"
             }
         };
-        let examplesData = {};
+        let examplesData = [];
         fetch("data/beispiele.json")
             .then(r => r.json())
             .then(d => { examplesData = d; populateExamples(currentLang); });
         function populateExamples(lang){
             const select = document.getElementById("beispielSelect");
-            if(!select || !examplesData[lang]) return;
+            if(!select || !examplesData.length) return;
+            const key = "value_" + lang.toUpperCase();
             select.innerHTML = "";
-            examplesData[lang].forEach((e,i)=>{
+            examplesData.forEach((e,i)=>{
                 const opt = document.createElement("option");
                 opt.textContent = e.label;
-                opt.value = e.value;
+                opt.value = e[key] || "";
                 if(i===0){ opt.selected = true; opt.disabled = true; }
                 select.appendChild(opt);
             });
         }
 
-            // Mapping FR | IT  ➞ ausführlichere FR | IT Texte gemäss LKAAT
-            const exampleValueToFrIt = {
-            fr: {
-                'Consultation de médecine de famille de 17 minutes':
-                'Consultation du médecin de famille de 17 minutes',
-                "Consultation de 10 min et ablation d'une verrue par curette 5 min, avec passage en dermatologie":
-                'Consultation médicale de 10 minutes et curetage d’une verrue (5 minutes), y compris temps de changement vers la dermatologie',
-                'Consultation de 25 minutes, grand examen rhumatologique':
-                'Consultation médicale de 25 minutes, grand examen rhumatologique',
-                'Consultation de 15 minutes':
-                'Consultation médicale de 15 minutes',
-                'Consultation de médecine de famille de 25 minutes':
-                'Consultation du médecin de famille de 25 minutes',
-                'Consultation de MF 15 min + 10 min conseil enfant':
-                'Consultation du médecin de famille de 15 minutes et conseil pédiatrique de 10 minutes',
-                'Articulation temporo-mandibulaire, luxation, réduction':
-                'Articulation temporo-mandibulaire, luxation, réduction fermée',
-                'Articulation temporo-mandibulaire, luxation, réduction, anesthésie':
-                'Articulation temporo-mandibulaire, luxation, réduction fermée avec anesthésie réalisée par l’anesthésiste',
-                'Explication au patient et biopsie hépatique transcutanée':
-                'Information du patient et biopsie hépatique percutanée',
-                'Appendicectomie comme acte isolé':
-                'Appendicectomie à titre isolé',
-                "Correction d'un hallux valgus droit":
-                'Correction d’un hallux valgus droit',
-                'Bronchoscopie avec lavage':
-                'Bronchoscopie avec lavage'
-            },
-
-            it: {
-                'Consultazione di base di 17 minuti':
-                'Consultazione del medico di famiglia di 17 minuti',
-                'Consultazione di 10 minuti e rimozione di una verruca con cucchiaio affilato 5 minuti, con passaggio a dermatologia':
-                'Consultazione medica di 10 minuti e rimozione di una verruca con cucchiaio tagliente (5 minuti), compreso tempo di cambio per dermatologia',
-                'Consultazione di 25 minuti, grande esame reumatologico':
-                'Consultazione medica di 25 minuti, grande esame reumatologico',
-                'Consultazione di 15 minuti':
-                'Consultazione medica di 15 minuti',
-                'Consultazione di base di 25 minuti':
-                'Consultazione del medico di famiglia di 25 minuti',
-                'Consultazione MF 15 min + 10 min consulenza bambino':
-                'Consultazione del medico di famiglia di 15 minuti e 10 minuti consulenza bambino',
-                'Articolazione temporo-mandibolare, lussazione, riduzione':
-                'Articolazione temporo-mandibolare, lussazione, riduzione a cielo chiuso',
-                'Articolazione temporo-mandibolare, lussazione, riduzione, anestesia':
-                'Articolazione temporo-mandibolare, lussazione, riduzione a cielo chiuso con anestesia eseguita dall’anestesista',
-                'Spiegazione al paziente e biopsia epatica percutanea':
-                'Spiegazione al paziente e biopsia epatica percutanea',
-                'Appendicectomia come prestazione singola':
-                'Appendicectomia come prestazione singola',
-                'Correzione di alluce valgo destro':
-                'Correzione di alluce valgo destro',
-                'Broncoscopia con lavaggio':
-                'Broncoscopia con lavaggio'
-            }
-        };
         let currentLang = 'de';
         function applyLanguage(lang){
             const prevLang = currentLang;
