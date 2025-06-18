@@ -26,7 +26,8 @@ logger = logging.getLogger('app') # Create a logger instance
 load_dotenv()
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 GEMINI_MODEL = os.getenv('GEMINI_MODEL', "gemini-1.5-flash-latest")
-# GEMINI_MODEL = os.getenv('GEMINI_MODEL', "gemini-2.0-flash")
+# Wollen wir später testen
+# GEMINI_MODEL = os.getenv('GEMINI_MODEL', "gemini-2.5-flash-lite-preview-06-17")
 DATA_DIR = Path("data")
 LEISTUNGSKATALOG_PATH = DATA_DIR / "LKAAT_Leistungskatalog.json"
 TARDOC_TARIF_PATH = DATA_DIR / "TARDOC_Tarifpositionen.json"
