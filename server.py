@@ -1189,6 +1189,79 @@ def analyze_billing():
         elif any(l.get('lkn') == "C02.CP.0100" and l.get('menge') == 1 for l in final_validated_llm_leistungen):
              anzahl_fuer_pauschale_context = 2; print(f"INFO (Heuristik C02.CP.0100): 'Anzahl' für Pauschale auf 2 gesetzt.")
 
+    finale_abrechnung_obj: Dict[str, Any] | None = None
+    fallback_pauschale_search = False
+
+    if not final_validated_llm_leistungen:
+        fallback_pauschale_search = True
+        try:
+            kandidaten_liste = [
+                {
+                    "code": code,
+                    "text": data.get("Pauschale_Text", "")
+                }
+                for code, data in pauschalen_dict.items()
+            ]
+
+            user_input_lower = user_input.lower()
+            gefilterte_kandidaten = [
+                k for k in kandidaten_liste
+                if any(word.lower() in user_input_lower for word in str(k["text"]).split())
+            ]
+            if gefilterte_kandidaten:
+                kandidaten_liste = gefilterte_kandidaten
+
+            kandidaten_text = "\n".join(
+                f"{k['code']}: {k['text']}" for k in kandidaten_liste
+            )
+            ranking_codes = call_gemini_stage2_ranking(user_input, kandidaten_text, lang)
+        except ConnectionError as e_rank:
+            print(f"FEHLER: Verbindung zu LLM Stufe 2 (Ranking) im Fallback: {e_rank}")
+            ranking_codes = []
+        except Exception as e_rank_gen:
+            print(f"FEHLER beim Fallback-Ranking: {e_rank_gen}")
+            traceback.print_exc()
+            ranking_codes = []
+
+        potential_pauschale_codes_set: Set[str] = set(ranking_codes)
+        if potential_pauschale_codes_set:
+            pauschale_haupt_pruef_kontext = {
+                "ICD": icd_input,
+                "GTIN": gtin_input,
+                "Alter": alter_context_val,
+                "Geschlecht": geschlecht_context_val,
+                "useIcd": use_icd_flag,
+                "LKN": [],
+                "Seitigkeit": seitigkeit_context_val,
+                "Anzahl": anzahl_fuer_pauschale_context,
+            }
+            try:
+                pauschale_pruef_ergebnis_dict = determine_applicable_pauschale_func(
+                    user_input,
+                    [],
+                    pauschale_haupt_pruef_kontext,
+                    pauschale_lp_data,
+                    pauschale_bedingungen_data,
+                    pauschalen_dict,
+                    leistungskatalog_dict,
+                    tabellen_dict_by_table,
+                    potential_pauschale_codes_set,
+                    lang,
+                )
+                finale_abrechnung_obj = pauschale_pruef_ergebnis_dict
+                if finale_abrechnung_obj.get("type") == "Pauschale":
+                    print(
+                        f"INFO: Fallback-Pauschale gefunden: {finale_abrechnung_obj.get('details', {}).get('Pauschale')}"
+                    )
+                else:
+                    print(
+                        f"INFO: Fallback-Pauschalenprüfung ohne Treffer. Grund: {finale_abrechnung_obj.get('message', 'Unbekannt')}"
+                    )
+            except Exception as e_pausch_fb:
+                print(f"FEHLER bei Pauschalen-Fallback-Prüfung: {e_pausch_fb}")
+                traceback.print_exc()
+                finale_abrechnung_obj = None
+
     regel_ergebnisse_details_list: List[Dict[str, Any]] = []
     rule_checked_leistungen_list: List[Dict[str, Any]] = []
     if not final_validated_llm_leistungen:
@@ -1257,7 +1330,6 @@ def analyze_billing():
     rule_time = time.time(); print(f"Zeit nach Regelprüfung: {rule_time - llm1_time:.2f}s")
     print(f"Regelkonforme Leistungen für Pauschalenprüfung: {[l['lkn']+' (Menge '+str(l['menge'])+')' for l in rule_checked_leistungen_list]}")
 
-    finale_abrechnung_obj: Dict[str, Any] | None = None # Kann None sein
     llm_stage2_mapping_results: Dict[str, Any] = { "mapping_results": [] }
 
     hat_pauschalen_potential_nach_regeln = any(l.get('typ') in ['P', 'PZ'] for l in rule_checked_leistungen_list)
@@ -1400,6 +1472,8 @@ def analyze_billing():
         "abrechnung": finale_abrechnung_obj,
         "llm_ergebnis_stufe2": llm_stage2_mapping_results
     }
+    if fallback_pauschale_search:
+        final_response_payload["fallback_pauschale_search"] = True
     end_time = time.time(); total_time = end_time - start_time
     print(f"Gesamtverarbeitungszeit Backend: {total_time:.2f}s")
     print(f"INFO: Sende finale Antwort Typ '{finale_abrechnung_obj.get('type') if finale_abrechnung_obj else 'None'}' an Frontend.")
