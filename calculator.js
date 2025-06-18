@@ -300,7 +300,7 @@ function buildLknInfoHtmlFromCode(code) {
 function getInterpretation(code) {
     if (!interpretationMap) return '';
     const entry = interpretationMap[code] || interpretationMap[code.split('.')[0]];
-    return entry ? entry.Interpretation || '' : '';
+    return entry ? getLangField(entry, 'Interpretation') || '' : '';
 }
 
 function getChapterInfo(kapitelCode) {
@@ -939,6 +939,11 @@ function displayTardocTable(tardocLeistungen, ruleResultsDetailsList = []) {
         const al = tardocDetails.al;
         const ipl = tardocDetails.ipl;
         let regelnHtml = tardocDetails.regeln ? `<p><b>TARDOC-Regel:</b> ${tardocDetails.regeln}</p>` : '';
+        const interpretationText = getInterpretation(String(lkn));
+        if (interpretationText) {
+            if (regelnHtml) regelnHtml += "<hr style='margin: 5px 0; border-color: #eee;'>";
+            regelnHtml += `<p><b>Interpretation:</b> ${escapeHtml(interpretationText)}</p>`;
+        }
 
         const ruleResult = ruleResultsDetailsList.find(r => r.lkn === lkn);
         let hasHintForThisLKN = false;
