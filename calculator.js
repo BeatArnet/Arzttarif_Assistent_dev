@@ -28,6 +28,7 @@ const DYN_TEXT = {
         noTardoc: 'Keine TARDOC-Positionen zur Abrechnung übermittelt.',
         errorPauschaleMissing: 'Fehler: Pauschalendetails fehlen.',
         tardocDetails: 'Details TARDOC Abrechnung',
+        tardocRule: 'TARDOC-Regel:',
         thLkn: 'LKN', thLeistung: 'Leistung', thAl: 'AL', thIpl: 'IPL',
         thAnzahl: 'Anzahl', thTotal: 'Total TP', thRegeln: 'Regeln/Hinweise',
         none: 'Keine', gesamtTp: 'Gesamt TARDOC TP:',
@@ -74,6 +75,7 @@ const DYN_TEXT = {
         noTardoc: 'Aucune position TARDOC à facturer.',
         errorPauschaleMissing: 'Erreur : détails du forfait manquants.',
         tardocDetails: 'Détails facturation TARDOC',
+        tardocRule: 'Règle TARDOC :',
         thLkn: 'NPL', thLeistung: 'Prestation', thAl: 'AL', thIpl: 'IPL',
         thAnzahl: 'Quantité', thTotal: 'Total PT', thRegeln: 'Règles/Remarques',
         none: 'Aucun', gesamtTp: 'Total TP TARDOC:',
@@ -120,6 +122,7 @@ const DYN_TEXT = {
         noTardoc: 'Nessuna posizione TARDOC da fatturare.',
         errorPauschaleMissing: 'Errore: dettagli forfait mancanti.',
         tardocDetails: 'Dettagli fatturazione TARDOC',
+        tardocRule: 'Regola TARDOC:',
         thLkn: 'NPL', thLeistung: 'Prestazione', thAl: 'AL', thIpl: 'IPL',
         thAnzahl: 'Quantità', thTotal: 'Totale PT', thRegeln: 'Regole/Note',
         none: 'Nessuno', gesamtTp: 'Totale TP TARDOC:',
@@ -152,6 +155,29 @@ const DYN_TEXT = {
         potentialIcds: 'Possibili diagnosi ICD',
         thIcdCode: 'Codice ICD',
         thIcdText: 'Descrizione'
+    } 
+};
+
+const RULE_TRANSLATIONS = {
+    fr: {
+        'Mengenbeschränkung': 'Limite de quantité',
+        'Mögliche Zusatzpositionen': 'Positions supplémentaires possibles',
+        'Nicht kumulierbar (E, V) mit': 'Non cumulable (E, V) avec',
+        'Nicht kumulierbar (E, L) mit': 'Non cumulable (E, L) avec',
+        'Nur als Zuschlag zu': 'Uniquement comme supplément à',
+        'Kumulierbar (I, V) mit': 'Cumulable (I, V) avec',
+        'Nur kumulierbar (X, L) mit': 'Cumulable uniquement (X, L) avec',
+        'Nur kumulierbar (X, V) mit': 'Cumulable uniquement (X, V) avec'
+    },
+    it: {
+        'Mengenbeschränkung': 'Limitazione di quantità',
+        'Mögliche Zusatzpositionen': 'Possibili posizioni aggiuntive',
+        'Nicht kumulierbar (E, V) mit': 'Non cumulabile (E, V) con',
+        'Nicht kumulierbar (E, L) mit': 'Non cumulabile (E, L) con',
+        'Nur als Zuschlag zu': 'Solo come supplemento a',
+        'Kumulierbar (I, V) mit': 'Cumulabile (I, V) con',
+        'Nur kumulierbar (X, L) mit': 'Cumulabile solo (X, L) con',
+        'Nur kumulierbar (X, V) mit': 'Cumulabile solo (X, V) con'
     }
 };
 
@@ -251,8 +277,10 @@ function formatRules(ruleData) {
     if (!Array.isArray(ruleData)) {
         return typeof ruleData === 'string' ? escapeHtml(ruleData) : JSON.stringify(ruleData);
     }
+    const lang = (typeof currentLang === 'undefined') ? 'de' : currentLang;
     const parts = ruleData.map(rule => {
-        let txt = escapeHtml(rule.Typ || '');
+        const translatedType = (RULE_TRANSLATIONS[lang] && RULE_TRANSLATIONS[lang][rule.Typ]) || rule.Typ || '';
+        let txt = escapeHtml(translatedType);
         if (rule.MaxMenge !== undefined) {
             txt += ` max. ${rule.MaxMenge}`;
             if (rule.Zeitraum) txt += ` ${escapeHtml(rule.Zeitraum)}`;
@@ -955,7 +983,7 @@ function displayTardocTable(tardocLeistungen, ruleResultsDetailsList = []) {
         const name = leistung.beschreibung || tardocDetails.leistungsname || 'N/A';
         const al = tardocDetails.al;
         const ipl = tardocDetails.ipl;
-        let regelnHtml = tardocDetails.regeln ? `<p><b>TARDOC-Regel:</b> ${tardocDetails.regeln}</p>` : '';
+        let regelnHtml = tardocDetails.regeln ? `<p><b>${tDyn('tardocRule')}</b> ${tardocDetails.regeln}</p>` : '';
         const interpretationText = getInterpretation(String(lkn), false);
         if (interpretationText) {
             if (regelnHtml) regelnHtml += "<hr style='margin: 5px 0; border-color: #eee;'>";
