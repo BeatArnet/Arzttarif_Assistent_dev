@@ -297,10 +297,29 @@ function buildLknInfoHtmlFromCode(code) {
     return `<p>${tDyn('noData')}</p>`;
 }
 
-function getInterpretation(code) {
-    if (!interpretationMap) return '';
-    const entry = interpretationMap[code] || interpretationMap[code.split('.')[0]];
-    return entry ? entry.Interpretation || '' : '';
+function getInterpretation(code, allowFallback = true) {
+    const normCode = String(code || '').toUpperCase();
+    let entry;
+
+    // 1) Suche Interpretation direkt in den Tarifpositionen
+    if (Array.isArray(data_tardocGesamt)) {
+        const pos = data_tardocGesamt.find(p => p && p.LKN && String(p.LKN).toUpperCase() === normCode);
+        if (pos) {
+            entry = getLangField(pos, 'Medizinische Interpretation') || getLangField(pos, 'Interpretation');
+            if (entry) return entry;
+        }
+    }
+
+    // 2) Fallback auf separate Interpretationen
+    if (allowFallback && interpretationMap) {
+        const mapEntry = interpretationMap[normCode] || interpretationMap[normCode.split('.')[0]];
+        if (mapEntry) {
+            entry = getLangField(mapEntry, 'Interpretation');
+            if (entry) return entry;
+        }
+    }
+
+    return '';
 }
 
 function getChapterInfo(kapitelCode) {
@@ -320,12 +339,10 @@ function buildLknInfoHtml(pos) {
         groups = pos.Leistungsgruppen.map(g => `${createInfoLink(g.Gruppe,'group')}: ${escapeHtml(g.Text || '')}`).join('<br>');
     }
     const rules = formatRules(pos.Regeln);
-    const interp = getInterpretation(String(pos.LKN));
+    const interp = getInterpretation(String(pos.LKN), false);
     const desc = getLangField(pos, 'Bezeichnung') || '';
-    const medInterp = getLangField(pos, 'Medizinische Interpretation');
     return `
         <h3>${escapeHtml(pos.LKN)} - ${escapeHtml(desc)}</h3>
-        ${medInterp ? `<p>${escapeHtml(medInterp)}</p>` : ''}
         ${interp ? `<p>${escapeHtml(interp)}</p>` : ''}
         <p><b>AL:</b> ${pos['AL_(normiert)']} <b>IPL:</b> ${pos['IPL_(normiert)']}</p>
         ${dign ? `<p><b>Dignitäten:</b> ${dign}</p>` : ''}
@@ -939,6 +956,11 @@ function displayTardocTable(tardocLeistungen, ruleResultsDetailsList = []) {
         const al = tardocDetails.al;
         const ipl = tardocDetails.ipl;
         let regelnHtml = tardocDetails.regeln ? `<p><b>TARDOC-Regel:</b> ${tardocDetails.regeln}</p>` : '';
+        const interpretationText = getInterpretation(String(lkn), false);
+        if (interpretationText) {
+            if (regelnHtml) regelnHtml += "<hr style='margin: 5px 0; border-color: #eee;'>";
+            regelnHtml += `<p><b>Interpretation:</b> ${escapeHtml(interpretationText)}</p>`;
+        }
 
         const ruleResult = ruleResultsDetailsList.find(r => r.lkn === lkn);
         let hasHintForThisLKN = false;
