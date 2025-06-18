@@ -181,6 +181,65 @@ const RULE_TRANSLATIONS = {
     }
 };
 
+const ZEITRAUM_TRANSLATIONS = {
+    fr: {
+        'pro Sitzung': 'par séance',
+        'pro Tag': 'par jour',
+        'pro 30 Tage': 'tous les 30 jours',
+        'pro 60 Tage': 'tous les 60 jours',
+        'pro 90 Tage': 'tous les 90 jours',
+        'pro 180 Tage': 'tous les 180 jours',
+        'pro 360 Tage': 'tous les 360 jours',
+        'pro Sitzung pro 120 Tage': 'par séance tous les 120 jours',
+        'pro Sitzung pro 180 Tage': 'par séance tous les 180 jours',
+        'pro Sitzung pro 360 Tage': 'par séance tous les 360 jours',
+        'pro Schwangerschaft': 'par grossesse',
+        'pro Kind': 'par enfant',
+        'pro Patient': 'par patient',
+        'pro Hauptleistung': 'par prestation principale',
+        'pro Objektträger': 'par lame',
+        'pro Probe': 'par échantillon',
+        'pro Seite': 'par côté',
+        'pro Region und Seite': 'par région et côté',
+        'pro Gelenkregion und Seite': 'par région articulaire et côté',
+        'pro Eingriff': 'par intervention',
+        'pro Antikörper': 'par anticorps',
+        'pro Extremität': 'par membre',
+        'pro Extremitätenabschnitt': 'par section de membre',
+        'pro Geburt': 'par accouchement',
+        'pro Lokalisation und Sitzung': 'par localisation et séance',
+        'pro Sitzung pro Schwangerschaft': 'par séance par grossesse'
+    },
+    it: {
+        'pro Sitzung': 'per seduta',
+        'pro Tag': 'al giorno',
+        'pro 30 Tage': 'ogni 30 giorni',
+        'pro 60 Tage': 'ogni 60 giorni',
+        'pro 90 Tage': 'ogni 90 giorni',
+        'pro 180 Tage': 'ogni 180 giorni',
+        'pro 360 Tage': 'ogni 360 giorni',
+        'pro Sitzung pro 120 Tage': 'per seduta ogni 120 giorni',
+        'pro Sitzung pro 180 Tage': 'per seduta ogni 180 giorni',
+        'pro Sitzung pro 360 Tage': 'per seduta ogni 360 giorni',
+        'pro Schwangerschaft': 'per gravidanza',
+        'pro Kind': 'per bambino',
+        'pro Patient': 'per paziente',
+        'pro Hauptleistung': 'per prestazione principale',
+        'pro Objektträger': 'per vetrino',
+        'pro Probe': 'per campione',
+        'pro Seite': 'per lato',
+        'pro Region und Seite': 'per regione e lato',
+        'pro Gelenkregion und Seite': 'per regione articolare e lato',
+        'pro Eingriff': 'per intervento',
+        'pro Antikörper': 'per anticorpo',
+        'pro Extremität': 'per arto',
+        'pro Extremitätenabschnitt': 'per sezione di arto',
+        'pro Geburt': 'per parto',
+        'pro Lokalisation und Sitzung': 'per localizzazione e seduta',
+        'pro Sitzung pro Schwangerschaft': 'per seduta per gravidanza'
+    }
+};
+
 function tDyn(key, params = {}) {
     const lang = (typeof currentLang === 'undefined') ? 'de' : currentLang;
     const template = (DYN_TEXT[lang] && DYN_TEXT[lang][key]) || DYN_TEXT['de'][key] || key;
@@ -245,6 +304,32 @@ function getLangField(obj, baseKey) {
     return obj[baseKey + suffix] || obj[baseKey];
 }
 
+function translateZeitraum(value, lang) {
+    if (!value) return '';
+    const dict = ZEITRAUM_TRANSLATIONS[lang] || {};
+    if (dict[value]) return dict[value];
+
+    let m = value.match(/^pro (\d+) Tage$/);
+    if (m) {
+        const n = m[1];
+        if (lang === 'fr') return `tous les ${n} jours`;
+        if (lang === 'it') return `ogni ${n} giorni`;
+    }
+    m = value.match(/^pro (\d+) Sitzungen$/);
+    if (m) {
+        const n = m[1];
+        if (lang === 'fr') return `toutes les ${n} séances`;
+        if (lang === 'it') return `ogni ${n} sedute`;
+    }
+    m = value.match(/^pro Sitzung pro (\d+) Tage$/);
+    if (m) {
+        const n = m[1];
+        if (lang === 'fr') return `par séance tous les ${n} jours`;
+        if (lang === 'it') return `per seduta ogni ${n} giorni`;
+    }
+    return value;
+}
+
 
 function beschreibungZuLKN(lkn) {
     // Stellt sicher, dass data_leistungskatalog geladen ist und ein Array ist
@@ -283,7 +368,10 @@ function formatRules(ruleData) {
         let txt = escapeHtml(translatedType);
         if (rule.MaxMenge !== undefined) {
             txt += ` max. ${rule.MaxMenge}`;
-            if (rule.Zeitraum) txt += ` ${escapeHtml(rule.Zeitraum)}`;
+            if (rule.Zeitraum) {
+                const zt = translateZeitraum(rule.Zeitraum, lang);
+                txt += ` ${escapeHtml(zt)}`;
+            }
         }
         const items = [];
         if (rule.LKN) items.push(createInfoLink(rule.LKN, 'lkn'));
