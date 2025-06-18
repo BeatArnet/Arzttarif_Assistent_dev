@@ -297,7 +297,7 @@ function buildLknInfoHtmlFromCode(code) {
     return `<p>${tDyn('noData')}</p>`;
 }
 
-function getInterpretation(code) {
+function getInterpretation(code, allowFallback = true) {
     const normCode = String(code || '').toUpperCase();
     let entry;
 
@@ -311,7 +311,7 @@ function getInterpretation(code) {
     }
 
     // 2) Fallback auf separate Interpretationen
-    if (interpretationMap) {
+    if (allowFallback && interpretationMap) {
         const mapEntry = interpretationMap[normCode] || interpretationMap[normCode.split('.')[0]];
         if (mapEntry) {
             entry = getLangField(mapEntry, 'Interpretation');
@@ -339,7 +339,7 @@ function buildLknInfoHtml(pos) {
         groups = pos.Leistungsgruppen.map(g => `${createInfoLink(g.Gruppe,'group')}: ${escapeHtml(g.Text || '')}`).join('<br>');
     }
     const rules = formatRules(pos.Regeln);
-    const interp = getInterpretation(String(pos.LKN));
+    const interp = getInterpretation(String(pos.LKN), false);
     const desc = getLangField(pos, 'Bezeichnung') || '';
     return `
         <h3>${escapeHtml(pos.LKN)} - ${escapeHtml(desc)}</h3>
@@ -956,7 +956,7 @@ function displayTardocTable(tardocLeistungen, ruleResultsDetailsList = []) {
         const al = tardocDetails.al;
         const ipl = tardocDetails.ipl;
         let regelnHtml = tardocDetails.regeln ? `<p><b>TARDOC-Regel:</b> ${tardocDetails.regeln}</p>` : '';
-        const interpretationText = getInterpretation(String(lkn));
+        const interpretationText = getInterpretation(String(lkn), false);
         if (interpretationText) {
             if (regelnHtml) regelnHtml += "<hr style='margin: 5px 0; border-color: #eee;'>";
             regelnHtml += `<p><b>Interpretation:</b> ${escapeHtml(interpretationText)}</p>`;
