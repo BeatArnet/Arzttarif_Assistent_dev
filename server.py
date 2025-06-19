@@ -490,6 +490,7 @@ Risposta JSON:"""
     *   **Allgemein:** Wenn `menge_allgemein` (Z) extrahiert wurde UND LKN nicht zeitbasiert ist UND `anzahl_prozeduren` `null` ist (oder nicht passt), setze `menge` = Z.
     *   **Spezifische Anzahl Prozeduren:** Wenn `anzahl_prozeduren` extrahiert wurde und sich klar auf die aktuelle LKN bezieht (z.B. "zwei Injektionen" und LKN ist Injektion), setze `menge` = `anzahl_prozeduren`. Dies hat Vorrang vor `menge_allgemein` für diese LKN.
     *   Sicherstellen: `menge` >= 1.
+    *   Wenn eine Prozedur "Seitigkeit" verlangt, dann erzeuge bei "beidseits" statt  Menge = 2 "Seitigkeit" = "beidseits" .
 
 5.  **Begründung:**
     *   **Kurze** `begruendung_llm`, warum die **validierten** LKNs gewählt wurden. Beziehe dich auf Text und **Katalog-Beschreibungen**.
