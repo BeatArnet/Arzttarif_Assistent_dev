@@ -2,7 +2,7 @@
 import traceback
 import json
 from typing import Dict, List, Any, Set # <-- Set hier importieren
-from utils import escape, get_table_content, get_lang_field
+from utils import escape, get_table_content, get_lang_field, translate
 import re, html
 
 # === FUNKTION ZUR PRÜFUNG EINER EINZELNEN BEDINGUNG ===
@@ -319,8 +319,8 @@ def check_pauschale_conditions(
                 type_prefix = "ICD"; type_for_get_table_content = "icd"
                 kontext_elemente_fuer_vergleich = provided_icds_im_kontext_upper
             
-            specific_description_html += f"Erfordert {type_prefix} aus Tabelle(n): "
-            if not table_names_list: specific_description_html += "<i>Kein Tabellenname spezifiziert.</i>"
+            specific_description_html += translate('require_lkn_table' if type_prefix == 'LKN' else 'require_icd_table', lang)
+            if not table_names_list: specific_description_html += f"<i>{translate('no_table_name', lang)}</i>"
             else:
                 table_links_html_parts = []
                 all_codes_in_regel_tabellen = set() 
@@ -372,16 +372,16 @@ def check_pauschale_conditions(
             elif "GESCHLECHT" in bedingungstyp: # Speziell für GESCHLECHT IN LISTE
                 type_prefix = "Geschlecht"; kontext_elemente_fuer_vergleich = {str(context.get('Geschlecht', 'N/A')).lower()}
                 regel_items_lower_geschlecht = {item.strip().lower() for item in items_in_list_str.split(',') if item.strip()} # Regel-Items für Geschlecht auch lower
-                specific_description_html += f"Erfordert {type_prefix} aus Liste: "
-                if not regel_items_lower_geschlecht: specific_description_html += "<i>Keine Elemente spezifiziert.</i>"
+                specific_description_html += translate('geschlecht_list', lang)
+                if not regel_items_lower_geschlecht: specific_description_html += f"<i>{translate('no_gender_spec', lang)}</i>"
                 else: specific_description_html += f"{escape(', '.join(sorted(list(regel_items_lower_geschlecht))))}"
                 if condition_met_this_line:
                     erfuellendes_geschlecht = next((g for g in kontext_elemente_fuer_vergleich if g in regel_items_lower_geschlecht), None)
                     if erfuellendes_geschlecht: kontext_erfuellungs_info_html = f" <span class='context-match-info fulfilled'>(Erfüllt durch: {escape(erfuellendes_geschlecht)})</span>"
                 # Keine "nicht erfüllt" Info hier, da es nur eine Liste ist.
             else: # Allgemeiner Fall für andere Listen (GTIN etc.)
-                specific_description_html += f"Erfordert {type_prefix} aus Liste: "
-                if not regel_items_upper: specific_description_html += "<i>Keine Elemente spezifiziert.</i>"
+                specific_description_html += translate('require_gtin_list' if type_prefix != 'Geschlecht' else 'geschlecht_list', lang)
+                if not regel_items_upper: specific_description_html += f"<i>{translate('no_gtins_spec' if type_prefix != 'Geschlecht' else 'no_gender_spec', lang)}</i>"
                 else: specific_description_html += f"{escape(', '.join(sorted(list(regel_items_upper))))}"
                 # Für GTIN etc. keine Beschreibung, nur Erfüllungsstatus
                 if condition_met_this_line:
@@ -393,8 +393,8 @@ def check_pauschale_conditions(
 
             # Dieser Block ist nur für LKN/ICD Listen, nicht für Geschlecht/GTIN
             if type_prefix in ["LKN", "ICD"]:
-                specific_description_html += f"Erfordert {type_prefix} aus Liste: "
-                if not regel_items_upper: specific_description_html += "<i>Keine Elemente spezifiziert.</i>"
+                specific_description_html += translate('require_lkn_list' if type_prefix in ['LKN','ICD'] else 'require_gtin_list', lang)
+                if not regel_items_upper: specific_description_html += f"<i>{translate('no_lkns_spec' if type_prefix in ['LKN','ICD'] else 'no_gtins_spec', lang)}</i>"
                 else: specific_description_html += f"{escape(', '.join(sorted(list(regel_items_upper))))}"
 
                 if condition_met_this_line:
@@ -482,13 +482,13 @@ def check_pauschale_conditions(
     )
 
 
-    if not sorted_group_ids: 
-        final_html = "<ul><li>Keine gültigen Bedingungsgruppen gefunden.</li></ul>"
+    if not sorted_group_ids:
+        final_html = f"<ul><li>{translate('no_valid_groups', lang)}</li></ul>"
     elif len(sorted_group_ids) == 1 and sorted_group_ids[0] == 'Ohne_Gruppe':
          # Spezialfall: Nur Bedingungen ohne explizite Gruppe (implizites UND)
          group_id = sorted_group_ids[0]
          group_html_content = "".join(grouped_html_parts[group_id])
-         group_title_text = "Bedingungen (Alle müssen erfüllt sein):"
+         group_title_text = translate('group_conditions', lang)
          final_html = (
             f"<div class='condition-group'>"
             f"<div class='condition-group-title'>{group_title_text}</div>"
@@ -507,9 +507,9 @@ def check_pauschale_conditions(
             
             group_title_text = ""
             if group_id == 'Ohne_Gruppe':
-                group_title_text = "Zusätzliche Bedingungen (Alle müssen erfüllt sein):"
+                group_title_text = translate('group_additional', lang)
             else:
-                group_title_text = f"Logik-Gruppe {escape(str(group_id))} (Alle Bedingungen dieser Gruppe müssen erfüllt sein):"
+                group_title_text = translate('group_logic', lang, id=escape(str(group_id)))
 
             group_wrapper_html = (
                 f"<div class='condition-group'>"
@@ -708,7 +708,7 @@ def determine_applicable_pauschale(
     best_pauschale_details = selected_candidate_info["details"].copy() # Kopie für Modifikationen
 
     # Generiere HTML für die Bedingungsprüfung der ausgewählten Pauschale
-    bedingungs_pruef_html_result = "<p><i>Detail-HTML für Bedingungen nicht generiert.</i></p>"
+    bedingungs_pruef_html_result = f"<p><i>{translate('detail_html_not_generated', lang)}</i></p>"
     condition_errors_html_gen = []
     try:
         condition_result_html_dict = check_pauschale_conditions(
@@ -730,25 +730,62 @@ def determine_applicable_pauschale(
     # Erstelle die Erklärung für die Pauschalenauswahl
     # Kontext-LKNs für die Erklärung (aus dem `context` Dictionary)
     lkns_fuer_erklaerung = [str(lkn) for lkn in context.get('LKN', []) if lkn]
-    pauschale_erklaerung_html = (
-        f"<p>Basierend auf dem Kontext (u.a. LKNs: {escape(', '.join(lkns_fuer_erklaerung) or 'keine')}, "
-        f"Seitigkeit: {escape(str(context.get('Seitigkeit')))}, Anzahl: {escape(str(context.get('Anzahl')))}, "
-        f"ICD-Prüfung aktiv: {context.get('useIcd', True)}) wurden folgende Pauschalen geprüft:</p>"
-    )
+    if lang == 'fr':
+        pauschale_erklaerung_html = (
+            f"<p>Sur la base du contexte (p.ex. LKN : {escape(', '.join(lkns_fuer_erklaerung) or 'aucun')}, "
+            f"latéralité : {escape(str(context.get('Seitigkeit')))}, nombre : {escape(str(context.get('Anzahl')))}, "
+            f"vérification ICD active : {context.get('useIcd', True)}) les forfaits suivants ont été vérifiés :</p>"
+        )
+    elif lang == 'it':
+        pauschale_erklaerung_html = (
+            f"<p>Sulla base del contesto (ad es. LKN: {escape(', '.join(lkns_fuer_erklaerung) or 'nessuna')}, "
+            f"lateralità: {escape(str(context.get('Seitigkeit')))}, numero: {escape(str(context.get('Anzahl')))}, "
+            f"verifica ICD attiva: {context.get('useIcd', True)}) sono stati verificati i seguenti forfait:</p>"
+        )
+    else:
+        pauschale_erklaerung_html = (
+            f"<p>Basierend auf dem Kontext (u.a. LKNs: {escape(', '.join(lkns_fuer_erklaerung) or 'keine')}, "
+            f"Seitigkeit: {escape(str(context.get('Seitigkeit')))}, Anzahl: {escape(str(context.get('Anzahl')))}, "
+            f"ICD-Prüfung aktiv: {context.get('useIcd', True)}) wurden folgende Pauschalen geprüft:</p>"
+        )
     
     # Liste aller potenziell geprüften Pauschalen (vor der Validierung)
     pauschale_erklaerung_html += "<ul>"
     for cand_eval in sorted(evaluated_candidates, key=lambda x: x['code']):
-        status_text = '<span style="color:green;">(Bedingungen erfüllt)</span>' if cand_eval['is_valid_structured'] else '<span style="color:red;">(Bedingungen NICHT erfüllt)</span>'
-        pauschale_erklaerung_html += f"<li><b>{escape(cand_eval['code'])}</b>: {escape(get_lang_field(cand_eval['details'], PAUSCHALE_TEXT_KEY_IN_PAUSCHALEN, lang) or 'N/A')} {status_text}</li>"
+        if cand_eval['is_valid_structured']:
+            status = translate('conditions_met', lang)
+            status_text = f"<span style=\"color:green;\">{status}</span>"
+        else:
+            status = translate('conditions_not_met', lang)
+            status_text = f"<span style=\"color:red;\">{status}</span>"
+        pauschale_erklaerung_html += (
+            f"<li><b>{escape(cand_eval['code'])}</b>: "
+            f"{escape(get_lang_field(cand_eval['details'], PAUSCHALE_TEXT_KEY_IN_PAUSCHALEN, lang) or 'N/A')} "
+            f"{status_text}</li>"
+        )
     pauschale_erklaerung_html += "</ul>"
     
-    pauschale_erklaerung_html += (
-        f"<p><b>Ausgewählt wurde: {escape(best_pauschale_code)}</b> "
-        f"({escape(get_lang_field(best_pauschale_details, PAUSCHALE_TEXT_KEY_IN_PAUSCHALEN, lang) or 'N/A')}) - "
-        f"als die Pauschale mit dem niedrigsten Suffix-Buchstaben (z.B. A vor B) unter den gültigen Kandidaten "
-        f"der bevorzugten Kategorie (spezifische Pauschalen vor Fallback-Pauschalen C9x).</p>"
-    )
+    if lang == 'fr':
+        pauschale_erklaerung_html += (
+            f"<p><b>Choix : {escape(best_pauschale_code)}</b> "
+            f"({escape(get_lang_field(best_pauschale_details, PAUSCHALE_TEXT_KEY_IN_PAUSCHALEN, lang) or 'N/A')}) - "
+            "comme forfait avec la lettre suffixe la plus basse (p. ex. A avant B) parmi les candidats valides "
+            "de la catégorie privilégiée (forfaits spécifiques avant forfaits de secours C9x).</p>"
+        )
+    elif lang == 'it':
+        pauschale_erklaerung_html += (
+            f"<p><b>Selezionato: {escape(best_pauschale_code)}</b> "
+            f"({escape(get_lang_field(best_pauschale_details, PAUSCHALE_TEXT_KEY_IN_PAUSCHALEN, lang) or 'N/A')}) - "
+            "come forfait con la lettera suffisso più bassa (es. A prima di B) tra i candidati validi "
+            "della categoria preferita (forfait specifici prima dei forfait di fallback C9x).</p>"
+        )
+    else:
+        pauschale_erklaerung_html += (
+            f"<p><b>Ausgewählt wurde: {escape(best_pauschale_code)}</b> "
+            f"({escape(get_lang_field(best_pauschale_details, PAUSCHALE_TEXT_KEY_IN_PAUSCHALEN, lang) or 'N/A')}) - "
+            f"als die Pauschale mit dem niedrigsten Suffix-Buchstaben (z.B. A vor B) unter den gültigen Kandidaten "
+            f"der bevorzugten Kategorie (spezifische Pauschalen vor Fallback-Pauschalen C9x).</p>"
+        )
 
     # Vergleich mit anderen Pauschalen der gleichen Gruppe (Stamm)
     match_stamm = re.match(r"([A-Z0-9.]+)([A-Z])$", str(best_pauschale_code))
@@ -761,41 +798,66 @@ def determine_applicable_pauschale(
             if str(cand['code']).startswith(pauschalen_stamm_code) and str(cand['code']) != best_pauschale_code
         ]
         if other_evaluated_codes_in_group:
-             pauschale_erklaerung_html += f"<hr><p><b>Vergleich mit anderen Pauschalen der Gruppe '{escape(pauschalen_stamm_code)}':</b></p>"
-             selected_conditions_repr_set = get_simplified_conditions(best_pauschale_code, pauschale_bedingungen_data)
-             
-             for other_cand in sorted(other_evaluated_codes_in_group, key=lambda x: x['code']):
-                  other_code_str = str(other_cand['code'])
-                  other_details_dict = other_cand['details']
-                  other_was_valid_structured = other_cand['is_valid_structured']
-                  validity_info_html = '<span style="color:green;">(Bedingungen auch erfüllt)</span>' if other_was_valid_structured else '<span style="color:red;">(Bedingungen NICHT erfüllt)</span>'
+            if lang == 'fr':
+                pauschale_erklaerung_html += f"<hr><p><b>Comparaison avec d'autres forfaits du groupe '{escape(pauschalen_stamm_code)}':</b></p>"
+            elif lang == 'it':
+                pauschale_erklaerung_html += f"<hr><p><b>Confronto con altri forfait del gruppo '{escape(pauschalen_stamm_code)}':</b></p>"
+            else:
+                pauschale_erklaerung_html += f"<hr><p><b>Vergleich mit anderen Pauschalen der Gruppe '{escape(pauschalen_stamm_code)}':</b></p>"
+            selected_conditions_repr_set = get_simplified_conditions(best_pauschale_code, pauschale_bedingungen_data)
 
-                  other_conditions_repr_set = get_simplified_conditions(other_code_str, pauschale_bedingungen_data)
-                  additional_conditions_for_other = other_conditions_repr_set - selected_conditions_repr_set
-                  missing_conditions_in_other = selected_conditions_repr_set - other_conditions_repr_set
+            for other_cand in sorted(other_evaluated_codes_in_group, key=lambda x: x['code']):
+                other_code_str = str(other_cand['code'])
+                other_details_dict = other_cand['details']
+                other_was_valid_structured = other_cand['is_valid_structured']
+                if other_was_valid_structured:
+                    status = translate('conditions_also_met', lang)
+                    validity_info_html = f"<span style=\"color:green;\">{status}</span>"
+                else:
+                    status = translate('conditions_not_met', lang)
+                    validity_info_html = f"<span style=\"color:red;\">{status}</span>"
 
-                  pauschale_erklaerung_html += (
-                      f"<details style='margin-left: 15px; font-size: 0.9em;'>"
-                      f"<summary>Unterschiede zu <b>{escape(other_code_str)}</b> ({escape(get_lang_field(other_details_dict, PAUSCHALE_TEXT_KEY_IN_PAUSCHALEN, lang) or 'N/A')}) {validity_info_html}</summary>"
-                  )
+                other_conditions_repr_set = get_simplified_conditions(other_code_str, pauschale_bedingungen_data)
+                additional_conditions_for_other = other_conditions_repr_set - selected_conditions_repr_set
+                missing_conditions_in_other = selected_conditions_repr_set - other_conditions_repr_set
+
+                pauschale_erklaerung_html += (
+                    f"<details style='margin-left: 15px; font-size: 0.9em;'>"
+                    f"<summary>Unterschiede zu <b>{escape(other_code_str)}</b> ({escape(get_lang_field(other_details_dict, PAUSCHALE_TEXT_KEY_IN_PAUSCHALEN, lang) or 'N/A')}) {validity_info_html}</summary>"
+                )
+
+                if additional_conditions_for_other:
+                    if lang == 'fr':
+                        pauschale_erklaerung_html += f"<p>Exigences supplémentaires / autres pour {escape(other_code_str)}:</p><ul>"
+                    elif lang == 'it':
+                        pauschale_erklaerung_html += f"<p>Requisiti supplementari / altri per {escape(other_code_str)}:</p><ul>"
+                    else:
+                        pauschale_erklaerung_html += f"<p>Zusätzliche/Andere Anforderungen für {escape(other_code_str)}:</p><ul>"
+                    for cond_tuple_item in sorted(list(additional_conditions_for_other)):
+                        condition_html_detail_item = generate_condition_detail_html(cond_tuple_item, leistungskatalog_dict, tabellen_dict_by_table, lang)
+                        pauschale_erklaerung_html += condition_html_detail_item
+                    pauschale_erklaerung_html += "</ul>"
                   
-                  if additional_conditions_for_other:
-                      pauschale_erklaerung_html += f"<p>Zusätzliche/Andere Anforderungen für {escape(other_code_str)}:</p><ul>"
-                      for cond_tuple_item in sorted(list(additional_conditions_for_other)):
-                            condition_html_detail_item = generate_condition_detail_html(cond_tuple_item, leistungskatalog_dict, tabellen_dict_by_table, lang)
-                            pauschale_erklaerung_html += condition_html_detail_item
-                      pauschale_erklaerung_html += "</ul>"
-                  
-                  if missing_conditions_in_other:
-                     pauschale_erklaerung_html += f"<p>Folgende Anforderungen von {escape(best_pauschale_code)} fehlen bei {escape(other_code_str)}:</p><ul>"
-                     for cond_tuple_item in sorted(list(missing_conditions_in_other)):
-                         condition_html_detail_item = generate_condition_detail_html(cond_tuple_item, leistungskatalog_dict, tabellen_dict_by_table, lang)
-                         pauschale_erklaerung_html += condition_html_detail_item
-                     pauschale_erklaerung_html += "</ul>"
-                  
-                  if not additional_conditions_for_other and not missing_conditions_in_other:
-                     pauschale_erklaerung_html += "<p><i>Keine unterschiedlichen Kernbedingungen gefunden (basierend auf vereinfachter Typ/Wert-Prüfung). Detaillierte Unterschiede können in der Anzahl oder spezifischen Logikgruppen liegen.</i></p>"
-                  pauschale_erklaerung_html += "</details>"
+                if missing_conditions_in_other:
+                    if lang == 'fr':
+                        pauschale_erklaerung_html += f"<p>Les exigences suivantes de {escape(best_pauschale_code)} manquent pour {escape(other_code_str)}:</p><ul>"
+                    elif lang == 'it':
+                        pauschale_erklaerung_html += f"<p>I seguenti requisiti di {escape(best_pauschale_code)} mancano in {escape(other_code_str)}:</p><ul>"
+                    else:
+                        pauschale_erklaerung_html += f"<p>Folgende Anforderungen von {escape(best_pauschale_code)} fehlen bei {escape(other_code_str)}:</p><ul>"
+                    for cond_tuple_item in sorted(list(missing_conditions_in_other)):
+                        condition_html_detail_item = generate_condition_detail_html(cond_tuple_item, leistungskatalog_dict, tabellen_dict_by_table, lang)
+                        pauschale_erklaerung_html += condition_html_detail_item
+                    pauschale_erklaerung_html += "</ul>"
+
+                if not additional_conditions_for_other and not missing_conditions_in_other:
+                    if lang == 'fr':
+                        pauschale_erklaerung_html += "<p><i>Aucune différence de conditions essentielles trouvée (basé sur un contrôle simplifié type/valeur). Des différences détaillées peuvent exister au niveau du nombre ou de groupes logiques spécifiques.</i></p>"
+                    elif lang == 'it':
+                        pauschale_erklaerung_html += "<p><i>Nessuna differenza nelle condizioni principali trovata (basato su un confronto semplificato tipo/valore). Differenze dettagliate possibili nel numero o in gruppi logici specifici.</i></p>"
+                    else:
+                        pauschale_erklaerung_html += "<p><i>Keine unterschiedlichen Kernbedingungen gefunden (basierend auf vereinfachter Typ/Wert-Prüfung). Detaillierte Unterschiede können in der Anzahl oder spezifischen Logikgruppen liegen.</i></p>"
+                pauschale_erklaerung_html += "</details>"
     
     best_pauschale_details[PAUSCHALE_ERKLAERUNG_KEY] = pauschale_erklaerung_html
 
@@ -923,9 +985,9 @@ def generate_condition_detail_html(
     try:
         # Formatierung basierend auf dem normalisierten Typ aus get_simplified_conditions
         if cond_type_comp == 'LKN_LIST':
-            condition_html += f"Erfordert LKN aus Liste: "
+            condition_html += translate('require_lkn_list', lang)
             if not cond_value_comp: # cond_value_comp ist hier ein Tuple von LKNs
-                condition_html += "<i>(Keine LKNs spezifiziert)</i>"
+                condition_html += f"<i>{translate('no_lkns_spec', lang)}</i>"
             else:
                 lkn_details_html_parts = []
                 for lkn_code in cond_value_comp: # Iteriere über das Tuple
@@ -934,9 +996,9 @@ def generate_condition_detail_html(
                 condition_html += ", ".join(lkn_details_html_parts)
 
         elif cond_type_comp == 'LKN_TABLE':
-            condition_html += f"Erfordert LKN aus Tabelle(n): "
+            condition_html += translate('require_lkn_table', lang)
             if not cond_value_comp: # cond_value_comp ist Tuple von Tabellennamen
-                condition_html += "<i>(Kein Tabellenname spezifiziert)</i>"
+                condition_html += f"<i>{translate('no_table_name', lang)}</i>"
             else:
                 table_links_html_parts = []
                 for table_name_norm in cond_value_comp: # Iteriere über Tuple von normalisierten Tabellennamen
@@ -960,9 +1022,9 @@ def generate_condition_detail_html(
                 condition_html += ", ".join(table_links_html_parts)
 
         elif cond_type_comp == 'ICD_TABLE':
-            condition_html += f"Erfordert ICD aus Tabelle(n): "
+            condition_html += translate('require_icd_table', lang)
             if not cond_value_comp: # Tuple von Tabellennamen
-                condition_html += "<i>(Kein Tabellenname spezifiziert)</i>"
+                condition_html += f"<i>{translate('no_table_name', lang)}</i>"
             else:
                 table_links_html_parts = []
                 for table_name_norm in cond_value_comp:
@@ -983,9 +1045,9 @@ def generate_condition_detail_html(
                 condition_html += ", ".join(table_links_html_parts)
 
         elif cond_type_comp == 'ICD_LIST':
-            condition_html += f"Erfordert ICD aus Liste: "
+            condition_html += translate('require_icd_list', lang)
             if not cond_value_comp: # Tuple von ICDs
-                condition_html += "<i>(Keine ICDs spezifiziert)</i>"
+                condition_html += f"<i>{translate('no_icds_spec', lang)}</i>"
             else:
                 icd_details_html_parts = []
                 for icd_code in cond_value_comp:
@@ -994,23 +1056,23 @@ def generate_condition_detail_html(
                 condition_html += ", ".join(icd_details_html_parts)
         
         elif cond_type_comp == 'GTIN_LIST':
-            condition_html += f"Erfordert GTIN aus Liste: "
-            if not cond_value_comp: condition_html += "<i>(Keine GTINs spezifiziert)</i>"
+            condition_html += translate('require_gtin_list', lang)
+            if not cond_value_comp: condition_html += f"<i>{translate('no_gtins_spec', lang)}</i>"
             else: condition_html += html.escape(", ".join(cond_value_comp))
         
         elif cond_type_comp.startswith('PATIENT_'):
             feld_name = cond_type_comp.split('_', 1)[1].capitalize()
-            condition_html += f"Patientenbedingung ({html.escape(feld_name)}): {html.escape(str(cond_value_comp))}"
+            condition_html += translate('patient_condition', lang, field=html.escape(feld_name), value=html.escape(str(cond_value_comp)))
         
         elif cond_type_comp == 'ANZAHL_CHECK':
-            condition_html += f"Anzahlbedingung: {html.escape(str(cond_value_comp))}"
+            condition_html += translate('anzahl_condition', lang, value=html.escape(str(cond_value_comp)))
 
         elif cond_type_comp == 'SEITIGKEIT_CHECK':
-            condition_html += f"Seitigkeitsbedingung: {html.escape(str(cond_value_comp))}"
+            condition_html += translate('seitigkeit_condition', lang, value=html.escape(str(cond_value_comp)))
         
         elif cond_type_comp == 'GESCHLECHT_LIST_CHECK':
-            condition_html += f"Geschlecht aus Liste: "
-            if not cond_value_comp: condition_html += "<i>(Keine Geschlechter spezifiziert)</i>"
+            condition_html += translate('geschlecht_list', lang)
+            if not cond_value_comp: condition_html += f"<i>{translate('no_gender_spec', lang)}</i>"
             else: condition_html += html.escape(", ".join(cond_value_comp))
 
         else: # Allgemeiner Fallback für andere Typen aus get_simplified_conditions
