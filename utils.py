@@ -151,6 +151,56 @@ _TRANSLATIONS: Dict[str, Dict[str, str]] = {
         'de': '(Keine Geschlechter spezifiziert)',
         'fr': '(Aucun sexe spécifié)',
         'it': '(Nessun sesso specificato)'
+    },
+    'fulfilled_by': {
+        'de': '(Erfüllt durch: {items})',
+        'fr': '(Rempli par : {items})',
+        'it': '(Soddisfatto da: {items})'
+    },
+    'context_items_not_in_table': {
+        'de': '(Kontext-Element(e) {items} nicht in Regel-Tabelle(n) gefunden)',
+        'fr': '(Élément(s) du contexte {items} non trouvé(s) dans la/les table(s) de règle)',
+        'it': '(Elemento/i di contesto {items} non trovato/i nelle tabelle delle regole)'
+    },
+    'tables_empty': {
+        'de': '(Regel-Tabelle(n) leer oder nicht gefunden)',
+        'fr': '(Table(s) de règle vide(s) ou non trouvée(s))',
+        'it': '(Tabella/e delle regole vuota/e o non trovata/e)'
+    },
+    'context_items_not_in_list': {
+        'de': '(Kontext-Element(e) {items} nicht in Regel-Liste)',
+        'fr': '(Élément(s) du contexte {items} absent(s) de la liste de règle)',
+        'it': '(Elemento/i di contesto {items} non presente/i nell\'elenco della regola)'
+    },
+    'no_context_in_list': {
+        'de': '(Kein Kontext-Element in Regel-Liste)',
+        'fr': '(Aucun élément du contexte dans la liste de règle)',
+        'it': '(Nessun elemento di contesto nell\'elenco della regola)'
+    },
+    'rule_list_empty': {
+        'de': '(Regel-Liste leer)',
+        'fr': '(Liste de règle vide)',
+        'it': '(Elenco della regola vuoto)'
+    },
+    'entries_label': {
+        'de': 'Einträge',
+        'fr': 'entrées',
+        'it': 'voci'
+    },
+    'context_value': {
+        'de': '(Kontext: {value})',
+        'fr': '(Contexte : {value})',
+        'it': '(Contesto: {value})'
+    },
+    'diff_to': {
+        'de': 'Unterschiede zu',
+        'fr': 'Différences avec',
+        'it': 'Differenze rispetto a'
+    },
+    'or_separator': {
+        'de': 'ODER',
+        'fr': 'OU',
+        'it': 'OPPURE'
     }
 }
 
