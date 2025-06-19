@@ -201,12 +201,121 @@ _TRANSLATIONS: Dict[str, Dict[str, str]] = {
         'de': 'ODER',
         'fr': 'OU',
         'it': 'OPPURE'
+    },
+    'rule_qty_exceeded': {
+        'de': 'Mengenbeschränkung überschritten (max. {max}, angefragt {req})',
+        'fr': 'Limite de quantité dépassée (max. {max}, demandé {req})',
+        'it': 'Limite di quantità superata (max. {max}, richiesto {req})'
+    },
+    'rule_qty_reduced': {
+        'de': 'Menge auf {value} reduziert (Mengenbeschränkung)',
+        'fr': 'Quantité réduite à {value} (limitation de quantité)',
+        'it': 'Quantità ridotta a {value} (limitazione di quantità)'
+    },
+    'rule_only_supplement': {
+        'de': 'Nur als Zuschlag zu {code} zulässig (Basis fehlt)',
+        'fr': 'Uniquement comme supplément à {code} (base manquante)',
+        'it': 'Solo come supplemento a {code} (base mancante)'
+    },
+    'rule_not_cumulable': {
+        'de': 'Nicht kumulierbar mit: {codes}',
+        'fr': 'Non cumulable avec : {codes}',
+        'it': 'Non cumulabile con: {codes}'
+    },
+    'rule_patient_field_missing': {
+        'de': 'Patientenbedingung ({field}) nicht erfüllt: Kontextwert fehlt',
+        'fr': 'Condition patient ({field}) non remplie : valeur manquante',
+        'it': 'Condizione paziente ({field}) non soddisfatta: valore mancante'
+    },
+    'rule_patient_age': {
+        'de': 'Patientenbedingung ({detail}) nicht erfüllt (Patient: {value})',
+        'fr': 'Condition patient ({detail}) non remplie (patient : {value})',
+        'it': 'Condizione paziente ({detail}) non soddisfatta (paziente: {value})'
+    },
+    'rule_patient_age_invalid': {
+        'de': 'Patientenbedingung (Alter): Ungültiger Alterswert im Fall ({value})',
+        'fr': "Condition patient (âge) : valeur d'âge non valide ({value})",
+        'it': 'Condizione paziente (età): valore età non valido ({value})'
+    },
+    'rule_patient_gender_mismatch': {
+        'de': 'Patientenbedingung (Geschlecht): erwartet {exp}, gefunden {found}',
+        'fr': 'Condition patient (sexe) : attendu {exp}, trouvé {found}',
+        'it': 'Condizione paziente (sesso): atteso {exp}, trovato {found}'
+    },
+    'rule_patient_gender_invalid': {
+        'de': 'Patientenbedingung (Geschlecht): Ungültige Werte für Geschlechtsprüfung',
+        'fr': 'Condition patient (sexe) : valeurs non valides pour le contrôle du sexe',
+        'it': 'Condizione paziente (sesso): valori non validi per il controllo del sesso'
+    },
+    'rule_patient_gtin_missing': {
+        'de': 'Patientenbedingung (GTIN): Erwartet einen von {required}, nicht gefunden',
+        'fr': "Condition patient (GTIN) : attendu l'un de {required}, non trouvé",
+        'it': 'Condizione paziente (GTIN): previsto uno di {required}, non trovato'
+    },
+    'rule_diagnosis_missing': {
+        'de': 'Erforderliche Diagnose(n) nicht vorhanden (Benötigt: {codes})',
+        'fr': 'Diagnostic(s) requis absent(s) (nécessaire : {codes})',
+        'it': 'Diagnosi richiesta non presente (necessario: {codes})'
+    },
+    'rule_pauschale_exclusion': {
+        'de': 'Leistung nicht zulässig bei gleichzeitiger Abrechnung der Pauschale(n): {codes}',
+        'fr': 'Prestation non admise en cas de facturation simultanée du/des forfait(s) : {codes}',
+        'it': 'Prestazione non ammessa con fatturazione simultanea del/i forfait: {codes}'
+    },
+    'rule_internal_error': {
+        'de': 'Interner Fehler bei Regelprüfung: {error}',
+        'fr': 'Erreur interne lors du contrôle des règles : {error}',
+        'it': 'Errore interno durante il controllo delle regole: {error}'
+    },
+    'rule_check_not_available': {
+        'de': 'Regelprüfung nicht verfügbar.',
+        'fr': 'Contrôle des règles non disponible.',
+        'it': 'Controllo regole non disponibile.'
+    },
+    'rule_check_not_performed': {
+        'de': 'Regelprüfung nicht durchgeführt.',
+        'fr': 'Contrôle des règles non effectué.',
+        'it': 'Controllo regole non eseguito.'
+    },
+    'llm_no_lkn': {
+        'de': 'Keine LKN vom LLM identifiziert/validiert.',
+        'fr': 'Aucun NPL identifié/validé par le LLM.',
+        'it': 'Nessun NPL identificato/validato dal LLM.'
     }
-}
 
+}
 
 def translate(key: str, lang: str = 'de', **kwargs) -> str:
     """Einfache Übersetzung bestimmter Texte mit Platzhaltern."""
     lang = str(lang).lower()
     template = _TRANSLATIONS.get(key, {}).get(lang) or _TRANSLATIONS.get(key, {}).get('de') or key
     return template.format(**kwargs)
+
+def translate_rule_error_message(msg: str, lang: str = 'de') -> str:
+    """Übersetzt häufige Regelprüfer-Meldungen anhand einfacher Muster."""
+    if lang == 'de' or not msg:
+        return msg
+    import re
+    patterns = [
+        (r'^Mengenbeschränkung überschritten \(max\. (?P<max>\d+), angefragt (?P<req>\d+)\)$', 'rule_qty_exceeded'),
+        (r'^Menge auf (?P<value>\d+) reduziert \(Mengenbeschränkung\)$', 'rule_qty_reduced'),
+        (r'^Nur als Zuschlag zu (?P<code>[A-Z0-9.]+) zulässig \(Basis fehlt\)$', 'rule_only_supplement'),
+        (r'^Nicht kumulierbar mit: (?P<codes>.+)$', 'rule_not_cumulable'),
+        (r'^Patientenbedingung \((?P<field>[^)]+)\) nicht erfüllt: Kontextwert fehlt$', 'rule_patient_field_missing'),
+        (r'^Patientenbedingung \((?P<detail>[^)]+)\) nicht erfüllt \(Patient: (?P<value>[^)]+)\)$', 'rule_patient_age'),
+        (r'^Patientenbedingung \(Alter\): Ungültiger Alterswert im Fall \((?P<value>[^)]+)\)$', 'rule_patient_age_invalid'),
+        (r"^Patientenbedingung \(Geschlecht\): erwartet '(?P<exp>[^']+)', gefunden '(?P<found>[^']+)'$", 'rule_patient_gender_mismatch'),
+        (r'^Patientenbedingung \(Geschlecht\): Ungültige Werte für Geschlechtsprüfung$', 'rule_patient_gender_invalid'),
+        (r"^Patientenbedingung \(GTIN\): Erwartet einen von (?P<required>.+), nicht gefunden$", 'rule_patient_gtin_missing'),
+        (r'^Erforderliche Diagnose\(n\) nicht vorhanden \(Benötigt: (?P<codes>.+)\)$', 'rule_diagnosis_missing'),
+        (r'^Leistung nicht zulässig bei gleichzeitiger Abrechnung der Pauschale\(n\): (?P<codes>.+)$', 'rule_pauschale_exclusion'),
+        (r'^Interner Fehler bei Regelprüfung: (?P<error>.+)$', 'rule_internal_error'),
+        (r'^Regelprüfung nicht verfügbar\.$', 'rule_check_not_available'),
+        (r'^Regelprüfung nicht durchgeführt\.$', 'rule_check_not_performed'),
+        (r'^Keine LKN vom LLM identifiziert/validiert\.$', 'llm_no_lkn'),
+    ]
+    for pattern, key in patterns:
+        m = re.match(pattern, msg)
+        if m:
+            return translate(key, lang, **m.groupdict())
+    return msg

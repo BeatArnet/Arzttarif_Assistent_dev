@@ -1082,7 +1082,7 @@ function displayTardocTable(tardocLeistungen, ruleResultsDetailsList = []) {
         let hasHintForThisLKN = false;
         if (ruleResult && ruleResult.regelpruefung && ruleResult.regelpruefung.fehler && ruleResult.regelpruefung.fehler.length > 0) {
              if (regelnHtml) regelnHtml += "<hr style='margin: 5px 0; border-color: #eee;'>";
-             regelnHtml += `<p><b>Hinweise Backend-Regelprüfung:</b></p><ul>`;
+             regelnHtml += `<p><b>${tDyn('ruleHints')}</b></p><ul>`;
              ruleResult.regelpruefung.fehler.forEach(hinweis => {
                   const isReduction = hinweis.includes("Menge auf");
                   const style = isReduction ? "color: var(--danger); font-weight: bold;" : "";
