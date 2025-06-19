@@ -325,7 +325,8 @@ def get_stage1_prompt(user_input: str, katalog_context: str, lang: str) -> str:
     *   Lis le "Behandlungstext" attentivement.
     *   Identifie **tous** les codes LKN potentiels (format `XX.##.####`) pouvant représenter les actes décrits.
     *   Note que plusieurs prestations peuvent être documentées dans le texte et que plusieurs LKN peuvent être valides (p. ex. intervention chirurgicale plus anesthésie).
-    *   Si une anesthésie réalisée par un anesthésiste est mentionnée sans détails précis sur la classe d'effort ou la durée, tu peux choisir une LKN d'anesthésie générique. Utilise pour cela généralement `WA.05.0020`. Si une durée précise en minutes est donnée, utilise la LKN `WA.10.00x0` correspondante.
+    *   Si une anesthésie ou une narcose réalisée par un anesthésiste est mentionnée sans précisions sur la classe d’effort ou la durée, tu peux choisir un code LKN générique d'anesthésie. Utilise dans ce cas, en règle générale, WA.05.0020. Si une durée d'anesthésie précise en minutes est indiquée, emploie plutôt le code LKN correspondant WA.10.00x0.
+    *   Mets à profit tes connaissances médicales sur les synonymes et termes techniques usuels (p. ex. reconnais que « opération de la cataracte » = « phacoémulsification » / « extraction du cristallin » = « Extractio lentis »).
     *   **ABSOLUMENT CRITIQUE:** Pour CHAQUE code LKN potentiel, vérifie **LETTRE PAR LETTRE et CHIFFRE PAR CHIFFRE** que ce code existe **EXACTEMENT** comme 'LKN:' dans le catalogue ci-dessus. Ce n'est que si le code existe que tu compares la **description du catalogue** avec l'acte décrit.
     *   Crée une liste (`identified_leistungen`) **UNIQUEMENT** avec les LKN ayant passé cette vérification exacte et dont la description correspond au texte.
     *   Reconnais si les prestations relèvent du chapitre CA (médecine de famille).
@@ -394,7 +395,8 @@ Réponse JSON:"""
     *   Leggi attentamente il "Behandlungstext".
     *   Identifica **tutti** i possibili codici LKN (formato `XX.##.####`) che potrebbero rappresentare le attività descritte.
     *   Considera che nel testo possono essere documentate più prestazioni e quindi possono essere valide più LKN (ad es. intervento chirurgico più anestesia).
-    *   Se viene menzionata un'anestesia eseguita da un anestesista ma mancano dettagli sulla classe di impegno o sulla durata, puoi scegliere una LKN di anestesia generica. Usa di norma `WA.05.0020`. Se è indicato un tempo preciso in minuti, utilizza la relativa LKN `WA.10.00x0`.
+    *   Se un anestesista menziona un'anestesia o narcosi senza specificare la classe di impegno o la durata, puoi scegliere un LKN di anestesia generico. Di norma usa WA.05.0020. Se viene indicata una durata di anestesia precisa in minuti, utilizza invece il corrispondente LKN WA.10.00x0.
+    *   Sfrutta le tue conoscenze mediche su sinonimi e termini tecnici tipici (ad es. riconosci che « intervento di cataratta » = « facoemulsificazione » / « estrazione del cristallino » = « Extractio lentis »).
     *   **ASSOLUTAMENTE CRITICO:** Per OGNI codice LKN potenziale verifica **LETTERA PER LETTERA e CIFRA PER CIFRA** che esista **ESATTAMENTE** come 'LKN:' nel catalogo sopra. Solo se il codice esiste confronta la **descrizione del catalogo** con l'attività descritta.
     *   Crea un elenco (`identified_leistungen`) **SOLO** con le LKN che hanno superato questa verifica esatta e la cui descrizione corrisponde al testo.
     *   Riconosci se si tratta di prestazioni di medicina di base del capitolo CA.
@@ -464,7 +466,8 @@ Risposta JSON:"""
     *   Identifiziere **alle** potenziellen LKN-Codes (Format `XX.##.####`), die die beschriebenen Tätigkeiten repräsentieren könnten.
     *   Bedenke, dass im Text mehrere Leistungen dokumentiert  mehrere LKNs gültig sein können (z.B. chirurgischer Eingriff PLUS/und/mit/;/./, Anästhesie).
     *   Wird eine Anästhesie oder Narkose durch einen Anästhesisten erwähnt, aber es fehlen genaue Angaben zur Aufwandklasse oder Dauer, darfst du eine generische Anästhesie‑LKN wählen. Nutze hierfür in der Regel `WA.05.0020`. Wenn eine konkrete Anästhesiezeit in Minuten genannt wird, verwende stattdessen die entsprechende `WA.10.00x0`‑LKN.
-    *   **ABSOLUT KRITISCH:** Für JEDEN potenziellen LKN-Code: Überprüfe **BUCHSTABE FÜR BUCHSTABE und ZIFFER FÜR ZIFFER**, ob dieser Code **EXAKT** so im obigen "Leistungskatalog" als 'LKN:' vorkommt. Nur wenn der LKN-Code exakt existiert, prüfe, ob die **zugehörige Katalog-Beschreibung** zur im Text genannten Tätigkeit passt.
+    *   Nutze dein medizinisches Wissen zu **Synonymen und typischen Fachbegriffen** (z.B. erkenne, dass "Kataraktoperation" = "Phakoemulsifikation"/"Linsenextraktion" = "Extractio lentis").
+    *   ABSOLUT KRITISCH: Für JEDEN potenziellen LKN-Code prüfe BUCHSTABE FÜR BUCHSTABE und ZIFFER FÜR ZIFFER, dass dieser Code EXAKT als „LKN:“ im obigen Katalog existiert. Nur wenn der Code existiert, vergleichst du die Katalogbeschreibung mit der beschriebenen Leistung.
     *   Erstelle eine Liste (`identified_leistungen`) **AUSSCHLIESSLICH** mit den LKNs, die diese **exakte** Prüfung im Katalog bestanden haben UND deren Beschreibung zum Text passt.
     *   Erkenne, ob es sich um hausärztliche Leistungen im Kapitel CA handelt.
 
@@ -487,6 +490,7 @@ Risposta JSON:"""
     *   **Allgemein:** Wenn `menge_allgemein` (Z) extrahiert wurde UND LKN nicht zeitbasiert ist UND `anzahl_prozeduren` `null` ist (oder nicht passt), setze `menge` = Z.
     *   **Spezifische Anzahl Prozeduren:** Wenn `anzahl_prozeduren` extrahiert wurde und sich klar auf die aktuelle LKN bezieht (z.B. "zwei Injektionen" und LKN ist Injektion), setze `menge` = `anzahl_prozeduren`. Dies hat Vorrang vor `menge_allgemein` für diese LKN.
     *   Sicherstellen: `menge` >= 1.
+    *   Wenn eine Prozedur "Seitigkeit" verlangt, dann erzeuge bei "beidseits" statt  Menge = 2 "Seitigkeit" = "beidseits" .
 
 5.  **Begründung:**
     *   **Kurze** `begruendung_llm`, warum die **validierten** LKNs gewählt wurden. Beziehe dich auf Text und **Katalog-Beschreibungen**.
