@@ -10,7 +10,7 @@ import requests
 from dotenv import load_dotenv
 import regelpruefer # Dein Modul
 from typing import Dict, List, Any, Set, Tuple, Callable # Tuple und Callable hinzugefügt
-from utils import get_table_content # Angenommen, diese Funktion existiert in utils.py
+from utils import get_table_content, translate_rule_error_message # Angenommen, diese Funktion existiert in utils.py
 import html
 
 import logging
@@ -1265,7 +1265,8 @@ def analyze_billing():
     regel_ergebnisse_details_list: List[Dict[str, Any]] = []
     rule_checked_leistungen_list: List[Dict[str, Any]] = []
     if not final_validated_llm_leistungen:
-         regel_ergebnisse_details_list.append({"lkn": None, "initiale_menge": 0, "regelpruefung": {"abrechnungsfaehig": False, "fehler": ["Keine LKN vom LLM identifiziert/validiert."]}, "finale_menge": 0})
+         msg_none = translate_rule_error_message("Keine LKN vom LLM identifiziert/validiert.", lang)
+         regel_ergebnisse_details_list.append({"lkn": None, "initiale_menge": 0, "regelpruefung": {"abrechnungsfaehig": False, "fehler": [msg_none]}, "finale_menge": 0})
     else:
         alle_lkn_codes_fuer_regelpruefung = [str(l.get("lkn")) for l in final_validated_llm_leistungen if l.get("lkn")] # Sicherstellen, dass es Strings sind
         for leistung_data in final_validated_llm_leistungen:
@@ -1324,6 +1325,9 @@ def analyze_billing():
                 except Exception as e_rule: print(f"FEHLER bei Regelprüfung für LKN {lkn_code}: {e_rule}"); traceback.print_exc(); regel_ergebnis_dict = {"abrechnungsfaehig": False, "fehler": [f"Interner Fehler bei Regelprüfung: {e_rule}"]}
             else: print(f"WARNUNG: Keine Regelprüfung für LKN {lkn_code} durchgeführt (Regelprüfer oder Regelwerk fehlt)."); regel_ergebnis_dict = {"abrechnungsfaehig": False, "fehler": ["Regelprüfung nicht verfügbar."]}
             
+            if lang in ["fr", "it"]:
+                regel_ergebnis_dict["fehler"] = [translate_rule_error_message(m, lang) for m in regel_ergebnis_dict.get("fehler", [])]
+
             regel_ergebnisse_details_list.append({"lkn": lkn_code, "initiale_menge": menge_initial_val, "regelpruefung": regel_ergebnis_dict, "finale_menge": finale_menge_nach_regeln})
             if regel_ergebnis_dict.get("abrechnungsfaehig") and finale_menge_nach_regeln > 0:
                 rule_checked_leistungen_list.append({**leistung_data, "menge": finale_menge_nach_regeln})
