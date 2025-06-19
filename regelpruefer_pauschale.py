@@ -2,7 +2,7 @@
 import traceback
 import json
 from typing import Dict, List, Any, Set # <-- Set hier importieren
-from utils import escape, get_table_content, get_lang_field, translate
+from utils import escape, get_table_content, get_lang_field, translate, translate_condition_type
 import re, html
 
 # === FUNKTION ZUR PRÜFUNG EINER EINZELNEN BEDINGUNG ===
@@ -297,7 +297,8 @@ def check_pauschale_conditions(
         
         li_content = f"<div data-bedingung-id='{escape(str(bedingung_id))}' class='condition-item-row'>"
         li_content += icon_html
-        li_content += f"<span class='condition-type-display'>({escape(bedingungstyp)}):</span> "
+        translated_type = translate_condition_type(bedingungstyp, lang)
+        li_content += f"<span class='condition-type-display'>({escape(translated_type)}):</span> "
         
         specific_description_html = ""
         is_lkn_condition_type = False # Für trigger_lkn_condition_met (obwohl das hier nicht mehr direkt gesetzt wird)
@@ -509,7 +510,8 @@ def check_pauschale_conditions(
         
         # Fallback für noch nicht explizit behandelte Typen in der HTML-Generierung
         else:
-            specific_description_html += f"Bedingung: {escape(bedingungstyp)} - Wert: {escape(werte_aus_regel or feld_ref_patientenbed or 'N/A')}"
+            translated_type_fb = translate_condition_type(bedingungstyp, lang)
+            specific_description_html += f"Bedingung: {escape(translated_type_fb)} - Wert: {escape(werte_aus_regel or feld_ref_patientenbed or 'N/A')}"
             # Allgemeine Kontextanzeige
             kontext_wert_fallback = "N/A"
             if feld_ref_patientenbed and feld_ref_patientenbed in context:

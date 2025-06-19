@@ -285,6 +285,75 @@ _TRANSLATIONS: Dict[str, Dict[str, str]] = {
 
 }
 
+# Zusätzliche Übersetzungen für Bedingungstypen
+_COND_TYPE_TRANSLATIONS: Dict[str, Dict[str, str]] = {
+    'LEISTUNGSPOSITIONEN IN LISTE': {
+        'de': 'LEISTUNGSPOSITIONEN IN LISTE',
+        'fr': 'Positions de prestation dans une liste',
+        'it': 'Posizioni di prestazione in elenco'
+    },
+    'LEISTUNGSPOSITIONEN IN TABELLE': {
+        'de': 'LEISTUNGSPOSITIONEN IN TABELLE',
+        'fr': 'Positions de prestation dans une table',
+        'it': 'Posizioni di prestazione in tabella'
+    },
+    'TARIFPOSITIONEN IN TABELLE': {
+        'de': 'TARIFPOSITIONEN IN TABELLE',
+        'fr': 'Positions tarifaires dans une table',
+        'it': 'Posizioni tariffarie in tabella'
+    },
+    'LKN IN LISTE': {
+        'de': 'LKN IN LISTE',
+        'fr': 'NPL dans une liste',
+        'it': 'NPL in elenco'
+    },
+    'LKN IN TABELLE': {
+        'de': 'LKN IN TABELLE',
+        'fr': 'NPL dans une table',
+        'it': 'NPL in tabella'
+    },
+    'ICD IN LISTE': {
+        'de': 'ICD IN LISTE',
+        'fr': 'ICD dans une liste',
+        'it': 'ICD in elenco'
+    },
+    'ICD IN TABELLE': {
+        'de': 'ICD IN TABELLE',
+        'fr': 'ICD dans une table',
+        'it': 'ICD in tabella'
+    },
+    'HAUPTDIAGNOSE IN TABELLE': {
+        'de': 'HAUPTDIAGNOSE IN TABELLE',
+        'fr': 'Diagnostic principal dans une table',
+        'it': 'Diagnosi principale in tabella'
+    },
+    'MEDIKAMENTE IN LISTE': {
+        'de': 'MEDIKAMENTE IN LISTE',
+        'fr': 'Médicaments dans une liste',
+        'it': 'Farmaci in elenco'
+    },
+    'GESCHLECHT IN LISTE': {
+        'de': 'GESCHLECHT IN LISTE',
+        'fr': 'Sexe dans la liste',
+        'it': 'Sesso in elenco'
+    },
+    'ALTER IN JAHREN BEI EINTRITT': {
+        'de': 'ALTER IN JAHREN BEI EINTRITT',
+        'fr': "Âge en années à l'admission",
+        'it': "Età in anni all'ingresso"
+    },
+    'ANZAHL': {
+        'de': 'ANZAHL',
+        'fr': 'Quantité',
+        'it': 'Quantità'
+    },
+    'SEITIGKEIT': {
+        'de': 'SEITIGKEIT',
+        'fr': 'Latéralité',
+        'it': 'Lateralità'
+    }
+}
+
 def translate(key: str, lang: str = 'de', **kwargs) -> str:
     """Einfache Übersetzung bestimmter Texte mit Platzhaltern."""
     lang = str(lang).lower()
@@ -319,3 +388,13 @@ def translate_rule_error_message(msg: str, lang: str = 'de') -> str:
         if m:
             return translate(key, lang, **m.groupdict())
     return msg
+
+def translate_condition_type(cond_type: str, lang: str = 'de') -> str:
+    """Übersetzt bekannte Pauschalen-Bedingungstypen."""
+    if not cond_type:
+        return cond_type
+    translations = _COND_TYPE_TRANSLATIONS.get(cond_type)
+    if not translations:
+        return cond_type
+    lang = str(lang).lower()
+    return translations.get(lang, translations.get('de', cond_type))
