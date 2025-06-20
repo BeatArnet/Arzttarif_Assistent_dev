@@ -1,6 +1,7 @@
 # utils.py
 import html
 from typing import Dict, List, Any
+import re
 
 def escape(text: Any) -> str:
     """Escapes HTML special characters in a string."""
@@ -401,3 +402,38 @@ def translate_condition_type(cond_type: str, lang: str = 'de') -> str:
         return cond_type
     lang = str(lang).lower()
     return translations.get(lang, translations.get('de', cond_type))
+
+
+def expand_compound_words(text: str) -> str:
+    """Expand common German compound words with directional prefixes.
+
+    This helps the LLM and rule logic to recognise base terms that might
+    be hidden inside compounds (e.g. ``Linksherzkatheter`` -> ``Links herzkatheter``).
+    The function appends the decomposed variants to the original text.
+    """
+    if not isinstance(text, str):
+        return text
+
+    prefixes = [
+        "links",
+        "rechts",
+        "ober",
+        "unter",
+        "innen",
+        "aussen",
+    ]
+
+    additions: List[str] = []
+    for token in re.findall(r"\b\w+\b", text):
+        lowered = token.lower()
+        for pref in prefixes:
+            if lowered.startswith(pref) and len(lowered) > len(pref) + 2:
+                base = token[len(pref):]
+                additions.append(f"{pref} {base}")
+                additions.append(base)
+                break
+
+    if additions:
+        return text + " " + " ".join(additions)
+    return text
+
