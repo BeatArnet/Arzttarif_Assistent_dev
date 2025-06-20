@@ -472,7 +472,7 @@ Risposta JSON:"""
     *   Wird eine Anästhesie oder Narkose durch einen Anästhesisten erwähnt, aber es fehlen genaue Angaben zur Aufwandklasse oder Dauer, darfst du eine generische Anästhesie‑LKN wählen. Nutze hierfür in der Regel `WA.05.0020`. Wenn eine konkrete Anästhesiezeit in Minuten genannt wird, verwende stattdessen die entsprechende `WA.10.00x0`‑LKN.
     *   Nutze dein ausgeprägtes medizinisches Wissen zu **Synonymen und typischen Fachbegriffen** 
         (z.B. erkenne, dass "Kataraktoperation" = "Phakoemulsifikation"/"Linsenextraktion" = "Extractio lentis" 
-        oder dass "Linksherzkather" = "Koronarographie").
+        oder dass "Herzkatheter"/"Linksherzkather" = "Koronarographie").
     *   ABSOLUT KRITISCH: Für JEDEN potenziellen LKN-Code prüfe BUCHSTABE FÜR BUCHSTABE und ZIFFER FÜR ZIFFER, dass dieser Code EXAKT als „LKN:“ im obigen Katalog existiert. Nur wenn der Code existiert, vergleichst du die Katalogbeschreibung mit der beschriebenen Leistung.
     *   Erstelle eine Liste (`identified_leistungen`) **AUSSCHLIESSLICH** mit den LKNs, die diese **exakte** Prüfung im Katalog bestanden haben UND deren Beschreibung zum Text passt.
     *   Erkenne, ob es sich um hausärztliche Leistungen im Kapitel CA handelt.
