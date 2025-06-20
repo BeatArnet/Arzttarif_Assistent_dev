@@ -1184,10 +1184,13 @@ def analyze_billing():
 
     llm_stage1_result: Dict[str, Any] = {"identified_leistungen": [], "extracted_info": {}, "begruendung_llm": ""}
     try:
-        katalog_context_parts = [
-            f"LKN: {lkn_code}, Typ: {details.get('Typ', 'N/A')}, Beschreibung: {html.escape(str(details.get('Beschreibung', 'N/A')))}" # str() für Beschreibung
-            for lkn_code, details in leistungskatalog_dict.items() # Globale Variable hier OK
-        ]
+        katalog_context_parts = []
+        for lkn_code, details in leistungskatalog_dict.items():
+            raw_desc = str(details.get("Beschreibung", "N/A"))
+            expanded_desc = expand_compound_words(raw_desc)
+            katalog_context_parts.append(
+                f"LKN: {lkn_code}, Typ: {details.get('Typ', 'N/A')}, Beschreibung: {html.escape(expanded_desc)}"
+            )
         katalog_context_str = "\n".join(katalog_context_parts)
         if not katalog_context_str:
             raise ValueError("Leistungskatalog für LLM-Kontext (Stufe 1) ist leer.")
