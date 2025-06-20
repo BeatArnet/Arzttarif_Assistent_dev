@@ -9,7 +9,14 @@ Dies ist ein Prototyp einer Webanwendung zur Unterstützung bei der Abrechnung m
 - `server.py` sowie das README verwenden diese neuen Namen; `index.html` weist nun die Version "V1.1" aus.
 - `utils.py` bietet ein Übersetzungssystem für Regelmeldungen und Condition-Typen in Deutsch, Französisch und Italienisch.
 - In `regelpruefer_pauschale.py` sorgt eine Operator-Präzedenzlogik für korrektes "UND vor ODER" bei strukturierten Bedingungen.
-- Weitere Aktualisierungen umfassen interaktive Info-Pop-ups, mehrsprachige Oberfläche, erweiterte Suchhilfen, Fallback-Logik für Pauschalen, mobile Ansicht, zusätzliche Beispieldaten sowie Korrekturen bei Mengenbegrenzungen und ICD-Verarbeitung.
+- Funktionale Erweiterung umfassen:
+    - interaktive Info-Pop-ups, 
+    - mehrsprachige Oberfläche, 
+    - erweiterte Suchhilfen, 
+    - Fallback-Logik für Pauschalen, 
+    - mobile Ansicht, 
+    - zusätzliche Beispieldaten 
+    - sowie Korrekturen bei Mengenbegrenzungen und ICD-Verarbeitung.
 
 ### V1.0
 - Erste lauffähige Version des Prototyps.
