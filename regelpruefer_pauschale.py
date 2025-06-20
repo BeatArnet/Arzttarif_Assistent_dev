@@ -214,24 +214,25 @@ def evaluate_structured_conditions(
         if not conditions_in_group:
             continue  # Leere Gruppe überspringen
 
-        # Bedingungen sortieren, damit die Reihenfolge stabil bleibt
-        conditions_sorted = sorted(conditions_in_group, key=lambda x: x.get('BedingungsID', 0))
+        tokens = []
+        for cond_item in conditions_in_group:
+            result = check_single_condition(cond_item, context, tabellen_dict_by_table)
+            tokens.append((result, cond_item.get(OPERATOR_KEY, 'UND').upper()))
 
-        group_result = None
-        prev_operator = 'UND'
-        # print(f"  Prüfe Gruppe {gruppe_id} mit {len(conditions_sorted)} Bedingungen...")
-        for cond_item in conditions_sorted:
-            cond_result = check_single_condition(cond_item, context, tabellen_dict_by_table)
+        if not tokens:
+            continue
 
-            if group_result is None:
-                group_result = cond_result
-            else:
-                if prev_operator.upper() == 'ODER':
-                    group_result = group_result or cond_result
-                else:  # Default UND
-                    group_result = group_result and cond_result
+        # Evaluate AND before OR using the operators between conditions
+        partial_results = [tokens[0][0]]
+        for idx in range(1, len(tokens)):
+            prev_op = tokens[idx - 1][1]
+            current_res = tokens[idx][0]
+            if prev_op == 'UND':
+                partial_results[-1] = partial_results[-1] and current_res
+            else:  # ODER
+                partial_results.append(current_res)
 
-            prev_operator = cond_item.get(OPERATOR_KEY, 'UND').upper()
+        group_result = any(partial_results)
 
         if group_result:
             # print(f"  -> Gruppe {gruppe_id} ist erfüllt. Pauschale {pauschale_code} ist gültig.")
