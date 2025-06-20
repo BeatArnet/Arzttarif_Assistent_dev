@@ -150,11 +150,16 @@ def get_beschreibung_fuer_lkn_im_backend(lkn_code: str, leistungskatalog_dict: D
         return lkn_code
     return get_lang_field(details, 'Beschreibung', lang) or lkn_code
 
-def get_beschreibung_fuer_icd_im_backend(icd_code: str, tabellen_dict_by_table: Dict, spezifische_icd_tabelle: str | None = None) -> str:
+def get_beschreibung_fuer_icd_im_backend(
+    icd_code: str,
+    tabellen_dict_by_table: Dict,
+    spezifische_icd_tabelle: str | None = None,
+    lang: str = 'de'
+) -> str:
+    """Liefert die Beschreibung eines ICD-Codes in der gewünschten Sprache."""
     # Wenn eine spezifische Tabelle bekannt ist (z.B. aus der Bedingung), diese zuerst prüfen
     if spezifische_icd_tabelle:
-        # print(f"DEBUG: Suche ICD {icd_code} in spezifischer Tabelle {spezifische_icd_tabelle}")
-        icd_entries_specific = get_table_content(spezifische_icd_tabelle, "icd", tabellen_dict_by_table)
+        icd_entries_specific = get_table_content(spezifische_icd_tabelle, "icd", tabellen_dict_by_table, lang)
         for entry in icd_entries_specific:
             if entry.get('Code', '').upper() == icd_code.upper():
                 return entry.get('Code_Text', icd_code)
@@ -163,7 +168,7 @@ def get_beschreibung_fuer_icd_im_backend(icd_code: str, tabellen_dict_by_table: 
     # Du müsstest den Namen deiner Haupt-ICD-Tabelle hier eintragen, z.B. "icd10gm_codes"
     haupt_icd_tabelle_name = "icd_hauptkatalog" # Beispielname, anpassen!
     # print(f"DEBUG: Suche ICD {icd_code} in Haupttabelle {haupt_icd_tabelle_name}")
-    icd_entries_main = get_table_content(haupt_icd_tabelle_name, "icd", tabellen_dict_by_table)
+    icd_entries_main = get_table_content(haupt_icd_tabelle_name, "icd", tabellen_dict_by_table, lang)
     for entry in icd_entries_main:
         if entry.get('Code', '').upper() == icd_code.upper():
             return entry.get('Code_Text', icd_code)
@@ -326,7 +331,7 @@ def check_pauschale_conditions(
                 table_links_html_parts = []
                 all_codes_in_regel_tabellen = set() 
                 for table_name in table_names_list:
-                    table_content_entries = get_table_content(table_name, type_for_get_table_content, tabellen_dict_by_table)
+                    table_content_entries = get_table_content(table_name, type_for_get_table_content, tabellen_dict_by_table, lang)
                     entry_count = len(table_content_entries); details_content_html = ""
                     current_table_codes_with_desc = {}
                     if table_content_entries:
@@ -369,7 +374,12 @@ def check_pauschale_conditions(
                     # Zeige Kontext-Elemente, die NICHT in der Regel-Tabelle waren
                     for kontext_code in kontext_elemente_fuer_vergleich:
                         if kontext_code not in all_codes_in_regel_tabellen:
-                            desc = get_beschreibung_fuer_lkn_im_backend(kontext_code, leistungskatalog_dict, lang) if type_prefix == "LKN" else get_beschreibung_fuer_icd_im_backend(kontext_code, tabellen_dict_by_table, spezifische_icd_tabelle=aktuelle_tabelle_fuer_icd_fallback if aktuelle_tabelle_fuer_icd_fallback is not None else None)
+                            desc = get_beschreibung_fuer_lkn_im_backend(kontext_code, leistungskatalog_dict, lang) if type_prefix == "LKN" else get_beschreibung_fuer_icd_im_backend(
+                                kontext_code,
+                                tabellen_dict_by_table,
+                                spezifische_icd_tabelle=aktuelle_tabelle_fuer_icd_fallback if aktuelle_tabelle_fuer_icd_fallback is not None else None,
+                                lang=lang,
+                            )
                             fehlende_elemente_details.append(f"<b>{escape(kontext_code)}</b> ({escape(desc)})")
                     if fehlende_elemente_details:
                         kontext_erfuellungs_info_html = (
@@ -431,7 +441,11 @@ def check_pauschale_conditions(
                     erfuellende_details = []
                     for k_kontext in kontext_elemente_fuer_vergleich:
                         if k_kontext in regel_items_upper:
-                            desc = get_beschreibung_fuer_lkn_im_backend(k_kontext, leistungskatalog_dict, lang) if type_prefix == 'LKN' else get_beschreibung_fuer_icd_im_backend(k_kontext, tabellen_dict_by_table)
+                            desc = get_beschreibung_fuer_lkn_im_backend(k_kontext, leistungskatalog_dict, lang) if type_prefix == 'LKN' else get_beschreibung_fuer_icd_im_backend(
+                                k_kontext,
+                                tabellen_dict_by_table,
+                                lang=lang,
+                            )
                             erfuellende_details.append(f"<b>{escape(k_kontext)}</b> ({escape(desc)})")
                     if erfuellende_details:
                         kontext_erfuellungs_info_html = (
@@ -444,7 +458,11 @@ def check_pauschale_conditions(
                     # Zeige Kontext-Elemente, die NICHT in der Regel-Liste waren
                     for k_kontext in kontext_elemente_fuer_vergleich:
                         if k_kontext not in regel_items_upper:
-                             desc = get_beschreibung_fuer_lkn_im_backend(k_kontext, leistungskatalog_dict, lang) if type_prefix == 'LKN' else get_beschreibung_fuer_icd_im_backend(k_kontext, tabellen_dict_by_table)
+                             desc = get_beschreibung_fuer_lkn_im_backend(k_kontext, leistungskatalog_dict, lang) if type_prefix == 'LKN' else get_beschreibung_fuer_icd_im_backend(
+                                 k_kontext,
+                                 tabellen_dict_by_table,
+                                 lang=lang,
+                             )
                              fehlende_details.append(f"<b>{escape(k_kontext)}</b> ({escape(desc)})")
                     if fehlende_details:
                         kontext_erfuellungs_info_html = (
@@ -938,7 +956,7 @@ def determine_applicable_pauschale(
         if cond_item_icd.get(BED_TYP_KEY, "").upper() == "HAUPTDIAGNOSE IN TABELLE":
             tabelle_ref_icd = cond_item_icd.get(BED_WERTE_KEY)
             if tabelle_ref_icd:
-                icd_entries_list = get_table_content(tabelle_ref_icd, "icd", tabellen_dict_by_table)
+                icd_entries_list = get_table_content(tabelle_ref_icd, "icd", tabellen_dict_by_table, lang)
                 for entry_icd in icd_entries_list:
                     code_icd = entry_icd.get('Code'); text_icd = entry_icd.get('Code_Text')
                     if code_icd: potential_icds_list.append({"Code": code_icd, "Code_Text": text_icd or "N/A"})
@@ -1073,7 +1091,7 @@ def generate_condition_detail_html(
                     # Hole Original-Tabellenname, falls möglich (für Anzeige), sonst normalisierten
                     # Dies ist schwierig ohne die Original-Bedingungsdaten hier.
                     # Wir verwenden den normalisierten Namen für get_table_content.
-                    table_content_entries = get_table_content(table_name_norm, "service_catalog", tabellen_dict_by_table)
+                    table_content_entries = get_table_content(table_name_norm, "service_catalog", tabellen_dict_by_table, lang)
                     entry_count = len(table_content_entries)
                     details_content_html = ""
                     if table_content_entries:
@@ -1097,7 +1115,7 @@ def generate_condition_detail_html(
             else:
                 table_links_html_parts = []
                 for table_name_norm in cond_value_comp:
-                    table_content_entries = get_table_content(table_name_norm, "icd", tabellen_dict_by_table)
+                    table_content_entries = get_table_content(table_name_norm, "icd", tabellen_dict_by_table, lang)
                     entry_count = len(table_content_entries)
                     details_content_html = ""
                     if table_content_entries:
@@ -1121,7 +1139,7 @@ def generate_condition_detail_html(
             else:
                 icd_details_html_parts = []
                 for icd_code in cond_value_comp:
-                    beschreibung = get_beschreibung_fuer_icd_im_backend(icd_code, tabellen_dict_by_table)
+                    beschreibung = get_beschreibung_fuer_icd_im_backend(icd_code, tabellen_dict_by_table, lang=lang)
                     icd_details_html_parts.append(f"<b>{html.escape(icd_code)}</b> ({html.escape(beschreibung)})")
                 condition_html += ", ".join(icd_details_html_parts)
         

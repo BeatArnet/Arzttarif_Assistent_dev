@@ -6,8 +6,9 @@ def escape(text: Any) -> str:
     """Escapes HTML special characters in a string."""
     return html.escape(str(text))
 
-def get_table_content(table_ref: str, table_type: str, tabellen_dict_by_table: dict) -> list[dict]:
-    """Holt Einträge für eine Tabelle und einen Typ (Case-Insensitive)."""
+def get_table_content(table_ref: str, table_type: str, tabellen_dict_by_table: dict, lang: str = 'de') -> list[dict]:
+    """Holt Einträge für eine Tabelle und einen Typ (Case-Insensitive).
+    Berücksichtigt die Sprache für den Text."""
     content = []
     # Schlüssel für PAUSCHALEN_Tabellen - anpassen falls nötig!
     TAB_CODE_KEY = 'Code'; TAB_TEXT_KEY = 'Code_Text'; TAB_TYP_KEY = 'Tabelle_Typ'
@@ -24,8 +25,10 @@ def get_table_content(table_ref: str, table_type: str, tabellen_dict_by_table: d
             for entry in tabellen_dict_by_table[normalized_key]: # Greife direkt auf die Liste zu
                 entry_typ = entry.get(TAB_TYP_KEY)
                 if entry_typ and entry_typ.lower() == table_type.lower():
-                    code = entry.get(TAB_CODE_KEY); text = entry.get(TAB_TEXT_KEY)
-                    if code: all_entries_for_type.append({"Code": code, "Code_Text": text or "N/A"})
+                    code = entry.get(TAB_CODE_KEY)
+                    text = get_lang_field(entry, TAB_TEXT_KEY, lang)
+                    if code:
+                        all_entries_for_type.append({"Code": code, "Code_Text": text or "N/A"})
         else:
              print(f"WARNUNG (get_table_content): Normalisierter Schlüssel '{normalized_key}' (Original: '{name}') nicht in tabellen_dict_by_table gefunden.")
 
