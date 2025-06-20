@@ -1,4 +1,7 @@
 import unittest
+import sys
+import pathlib
+sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))
 from regelpruefer_pauschale import evaluate_structured_conditions
 
 class TestPauschaleLogic(unittest.TestCase):
