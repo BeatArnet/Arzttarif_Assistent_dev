@@ -2,6 +2,18 @@
 
 Dies ist ein Prototyp einer Webanwendung zur Unterstützung bei der Abrechnung medizinischer Leistungen nach dem neuen Schweizer Arzttarif (TARDOC und Pauschalen). Die Anwendung nimmt eine Freitextbeschreibung einer medizinischen Leistung entgegen und schlägt die optimale Abrechnungsart (Pauschale oder TARDOC-Einzelleistung) vor. Sie kombiniert eine KI-basierte Leistungsidentifikation mit detaillierter lokaler Regel- und Bedingungsprüfung.
 
+## Versionsübersicht
+
+### V1.1
+- JSON-Datendateien wurden umbenannt und der ehemals kombinierte TARDOC-Datensatz in **TARDOC_Tarifpositionen.json** und **TARDOC_Interpretationen.json** aufgeteilt.
+- `server.py` sowie das README verwenden diese neuen Namen; `index.html` weist nun die Version "V1.1" aus.
+- `utils.py` bietet ein Übersetzungssystem für Regelmeldungen und Condition-Typen in Deutsch, Französisch und Italienisch.
+- In `regelpruefer_pauschale.py` sorgt eine Operator-Präzedenzlogik für korrektes "UND vor ODER" bei strukturierten Bedingungen.
+- Weitere Aktualisierungen umfassen interaktive Info-Pop-ups, mehrsprachige Oberfläche, erweiterte Suchhilfen, Fallback-Logik für Pauschalen, mobile Ansicht, zusätzliche Beispieldaten sowie Korrekturen bei Mengenbegrenzungen und ICD-Verarbeitung.
+
+### V1.0
+- Erste lauffähige Version des Prototyps.
+
 ## Beschreibung
 
 Der Assistent analysiert die eingegebene Leistungsbeschreibung mithilfe eines Large Language Models (Google Gemini), um relevante Leistungspositionen (LKNs) zu identifizieren. Ein Backend-Regelwerk prüft die Konformität dieser LKNs (Mengen, Kumulationen etc.). Die Kernlogik entscheidet dann, ob eine Pauschale für die (regelkonformen) Leistungen anwendbar ist. Falls ja, wird die passendste Pauschale ausgewählt und deren Bedingungen detailliert geprüft. Falls keine Pauschale greift, wird eine Abrechnung nach TARDOC-Einzelleistungen vorbereitet.
