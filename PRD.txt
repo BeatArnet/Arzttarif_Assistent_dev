@@ -36,7 +36,7 @@ Hinweise:
      - **Aktion (Strukturierte Prüfung):** Wenn potenzielle Pauschalen gefunden wurden: Rufe für **jeden** potenziellen Code die Funktion `regelpruefer_pauschale.evaluate_structured_conditions` auf. Diese Funktion:
          - Nutzt `regelpruefer_pauschale.check_single_condition`, um jede einzelne Bedingungszeile zu prüfen (berücksichtigt `useIcd`-Flag: ICD-Bedingungen werden bei `useIcd=False` als `True` gewertet).
         - Wertet die **UND/ODER-Logik** basierend auf `Gruppe` und dem `Operator` jeder Bedingungszeile aus `PAUSCHALEN_Bedingungen.json` aus. `UND` hat Vorrang vor `ODER` innerhalb einer Gruppe.
-         - Gibt `True` zurück, wenn die **gesamte strukturierte Logik** für die Pauschale im gegebenen Kontext erfüllt ist, sonst `False`.
+        - Gibt `True` zurück, wenn die **gesamte strukturierte Logik** für die Pauschale im gegebenen Kontext erfüllt ist, sonst `False`.
      - **Aktion (Filtern & Priorisierte Auswahl):**
          - Filtere alle Kandidaten, für die `evaluate_structured_conditions` `True` zurückgegeben hat (`valid_candidates`).
          - Wenn `valid_candidates` leer ist -> **Fehler** (keine voll erfüllte Pauschale).
