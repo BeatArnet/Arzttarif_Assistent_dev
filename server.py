@@ -1088,6 +1088,41 @@ def get_LKNs_from_pauschalen_conditions(
 # Falls sie eine andere Logik hatte (z.B. alle Pauschalen durchsucht, nicht nur die potenziellen),
 # müsste sie wiederhergestellt und angepasst werden.
 
+def search_pauschalen(keyword: str) -> List[Dict[str, Any]]:
+    """Suche in den Pauschalen nach dem Stichwort und liefere Code + LKNs."""
+    if not keyword:
+        return []
+
+    pattern = re.compile(re.escape(keyword), re.IGNORECASE)
+    results: List[Dict[str, Any]] = []
+    for code, data in pauschalen_dict.items():
+        text_de = data.get("Pauschale_Text", "")
+        text_fr = data.get("Pauschale_Text_f", "")
+        text_it = data.get("Pauschale_Text_i", "")
+        if any(pattern.search(str(t) or "") for t in [text_de, text_fr, text_it]):
+            lkns: Set[str] = set()
+            for cond in pauschale_bedingungen_data:
+                if cond.get("Pauschale") != code:
+                    continue
+                typ = str(cond.get("Bedingungstyp", "")).upper()
+                werte = cond.get("Werte", "")
+                if not werte:
+                    continue
+                if typ in ["LEISTUNGSPOSITIONEN IN LISTE", "LKN"]:
+                    lkns.update(l.strip().upper() for l in str(werte).split(',') if l.strip())
+                elif typ in ["LEISTUNGSPOSITIONEN IN TABELLE", "TARIFPOSITIONEN IN TABELLE"]:
+                    for table_name in (t.strip() for t in str(werte).split(',') if t.strip()):
+                        for item in get_table_content(table_name, "service_catalog", tabellen_dict_by_table):
+                            code_item = item.get('Code')
+                            if code_item:
+                                lkns.add(str(code_item).upper())
+            results.append({
+                "code": code,
+                "text": text_de,
+                "lkns": sorted(lkns)
+            })
+    return results
+
 # --- API Endpunkt ---
 @app.route('/api/analyze-billing', methods=['POST'])
 def analyze_billing():
@@ -1199,21 +1234,7 @@ def analyze_billing():
     if not final_validated_llm_leistungen:
         fallback_pauschale_search = True
         try:
-            kandidaten_liste = [
-                {
-                    "code": code,
-                    "text": data.get("Pauschale_Text", "")
-                }
-                for code, data in pauschalen_dict.items()
-            ]
-
-            user_input_lower = user_input.lower()
-            gefilterte_kandidaten = [
-                k for k in kandidaten_liste
-                if any(word.lower() in user_input_lower for word in str(k["text"]).split())
-            ]
-            if gefilterte_kandidaten:
-                kandidaten_liste = gefilterte_kandidaten
+            kandidaten_liste = search_pauschalen(user_input)
 
             kandidaten_text = "\n".join(
                 f"{k['code']}: {k['text']}" for k in kandidaten_liste
