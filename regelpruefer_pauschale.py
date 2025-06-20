@@ -193,12 +193,14 @@ def evaluate_structured_conditions(
         # print(f"DEBUG evaluate_structured_conditions: Keine Bedingungen für Pauschale {pauschale_code} definiert -> True")
         return True # Keine Bedingungen = immer erfüllt
 
+    OPERATOR_KEY = 'Operator'
+
     grouped_conditions: Dict[Any, List[Dict]] = {}
     for cond in conditions_for_this_pauschale:
         gruppe_id = cond.get(GRUPPE_KEY)
         if gruppe_id is None:
             # print(f"WARNUNG evaluate_structured_conditions: Bedingung ohne Gruppe für Pauschale {pauschale_code}: {cond}")
-            continue # Bedingungen ohne Gruppe können nicht ausgewertet werden in dieser Logik
+            continue  # Bedingungen ohne Gruppe können nicht ausgewertet werden in dieser Logik
         grouped_conditions.setdefault(gruppe_id, []).append(cond)
 
     if not grouped_conditions:
@@ -209,20 +211,31 @@ def evaluate_structured_conditions(
 
     # print(f"DEBUG evaluate_structured_conditions: Pauschale {pauschale_code}, {len(grouped_conditions)} Gruppen gefunden.")
     for gruppe_id, conditions_in_group in grouped_conditions.items():
-        if not conditions_in_group: continue # Leere Gruppe überspringen
+        if not conditions_in_group:
+            continue  # Leere Gruppe überspringen
 
-        all_conditions_in_group_met = True
-        # print(f"  Prüfe Gruppe {gruppe_id} mit {len(conditions_in_group)} Bedingungen...")
-        for cond_item in conditions_in_group:
-            # print(f"    Prüfe Bedingung: {cond_item.get('Bedingungstyp')} {cond_item.get('Werte')}")
-            if not check_single_condition(cond_item, context, tabellen_dict_by_table):
-                all_conditions_in_group_met = False
-                # print(f"    -> Bedingung in Gruppe {gruppe_id} NICHT erfüllt. Gruppe gescheitert.")
-                break # Eine nicht erfüllte Bedingung in einer UND-Gruppe -> Gruppe nicht erfüllt
-        
-        if all_conditions_in_group_met:
-            # print(f"  -> Gruppe {gruppe_id} ist VOLLSTÄNDIG erfüllt. Pauschale {pauschale_code} ist gültig.")
-            return True # Eine erfüllte Gruppe reicht (ODER-Logik zwischen Gruppen)
+        # Bedingungen sortieren, damit die Reihenfolge stabil bleibt
+        conditions_sorted = sorted(conditions_in_group, key=lambda x: x.get('BedingungsID', 0))
+
+        group_result = None
+        prev_operator = 'UND'
+        # print(f"  Prüfe Gruppe {gruppe_id} mit {len(conditions_sorted)} Bedingungen...")
+        for cond_item in conditions_sorted:
+            cond_result = check_single_condition(cond_item, context, tabellen_dict_by_table)
+
+            if group_result is None:
+                group_result = cond_result
+            else:
+                if prev_operator.upper() == 'ODER':
+                    group_result = group_result or cond_result
+                else:  # Default UND
+                    group_result = group_result and cond_result
+
+            prev_operator = cond_item.get(OPERATOR_KEY, 'UND').upper()
+
+        if group_result:
+            # print(f"  -> Gruppe {gruppe_id} ist erfüllt. Pauschale {pauschale_code} ist gültig.")
+            return True  # Eine erfüllte Gruppe reicht (ODER-Logik zwischen Gruppen)
 
     # print(f"DEBUG evaluate_structured_conditions: Keine Gruppe für Pauschale {pauschale_code} war vollständig erfüllt -> False")
     return False # Keine Gruppe war vollständig erfüllt
