@@ -185,7 +185,22 @@ def evaluate_structured_conditions(
 ) -> bool:
     """
     Wertet die strukturierte Logik für eine Pauschale aus.
-    Logik: ODER zwischen Gruppen, UND innerhalb jeder Gruppe.
+
+    Zwischen Gruppen gilt **ODER**. Innerhalb einer Gruppe werden die
+    Zeilen strikt der Reihe nach verknüpft. Das Feld ``Operator`` einer
+    Zeile gibt an, ob sie mit der **folgenden** Zeile per ``UND`` oder
+    ``ODER`` verbunden wird (Groß-/Kleinschreibung ist egal). Ein
+    ungültiger Operatorwert kann zu einer falschen Auswertung führen.
+
+    Beispiel:
+
+        1. ``SEITIGKEIT = B``  (``Operator`` ``"ODER"``)
+        2. ``ANZAHL >= 2``   (``Operator`` ``"UND"``)
+        3. ``LKN IN LISTE OP``
+
+    Dies ergibt ``(SEITIGKEIT = B ODER ANZAHL >= 2) UND LKN IN LISTE OP``.
+    Gleichbedeutend ist ``(SEITIGKEIT = B UND LKN IN LISTE OP) ODER
+    (ANZAHL >= 2 UND LKN IN LISTE OP)``.
     """
     PAUSCHALE_KEY = 'Pauschale'; GRUPPE_KEY = 'Gruppe'
     conditions_for_this_pauschale = [cond for cond in pauschale_bedingungen_data if cond.get(PAUSCHALE_KEY) == pauschale_code]
