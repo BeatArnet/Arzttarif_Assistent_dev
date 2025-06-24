@@ -1,6 +1,7 @@
 import unittest
 import sys
 import pathlib
+import json
 sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))
 from regelpruefer_pauschale import evaluate_structured_conditions
 
@@ -26,7 +27,9 @@ class TestPauschaleLogic(unittest.TestCase):
             }
         ]
         context = {"Anzahl": 3, "ICD": []}
-        self.assertTrue(
+        # With the operator attached to the second rule, both conditions must
+        # be met. Only the count criterion is satisfied here.
+        self.assertFalse(
             evaluate_structured_conditions("TEST", context, conditions, {})
         )
 
@@ -60,7 +63,8 @@ class TestPauschaleLogic(unittest.TestCase):
             }
         ]
         context = {"Seitigkeit": "beidseits", "LKN": ["OP"]}
-        self.assertTrue(
+        # All rules must be met since the operators of the later rows are UND.
+        self.assertFalse(
             evaluate_structured_conditions("CAT", context, conditions, {})
         )
 
@@ -149,6 +153,26 @@ class TestPauschaleLogic(unittest.TestCase):
         context = {"ICD": [], "useIcd": False}
         self.assertTrue(
             evaluate_structured_conditions("ICDTEST", context, conditions, {})
+        )
+
+    def test_c00_10a_requires_operation_and_anesthesia(self):
+        """Real data for C00.10A should not match without a C00.70_11/12 code."""
+        root = pathlib.Path(__file__).resolve().parents[1]
+        with open(root / "data/PAUSCHALEN_Bedingungen.json", encoding="utf-8") as f:
+            bedingungen = json.load(f)
+        with open(root / "data/PAUSCHALEN_Tabellen.json", encoding="utf-8") as f:
+            tabellen = json.load(f)
+
+        tab_dict = {}
+        for row in tabellen:
+            name = row.get("Tabelle")
+            if name:
+                tab_dict.setdefault(name.lower(), []).append(row)
+
+        context = {"LKN": ["WA.10.0010", "C08.GD.0030"]}
+
+        self.assertFalse(
+            evaluate_structured_conditions("C00.10A", context, bedingungen, tab_dict)
         )
 
 if __name__ == "__main__":
