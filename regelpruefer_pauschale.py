@@ -214,22 +214,17 @@ def evaluate_structured_conditions(
         if not conditions_in_group:
             continue  # Leere Gruppe überspringen
 
-        # Link conditions strictly von links nach rechts. Der Operator einer
-        # Bedingungszeile verbindet diese mit der *nächsten* Zeile.
-        result_ltr = check_single_condition(
-            conditions_in_group[0], context, tabellen_dict_by_table
+        # Sort by BedingungsID to mirror the original row order from Excel
+        conditions_sorted = sorted(
+            conditions_in_group, key=lambda c: c.get("BedingungsID", 0)
         )
-        for idx in range(1, len(conditions_in_group)):
-            prev_op = conditions_in_group[idx - 1].get(OPERATOR_KEY, "UND").upper()
-            cur_res = check_single_condition(
-                conditions_in_group[idx], context, tabellen_dict_by_table
-            )
-            if prev_op == "UND":
-                result_ltr = result_ltr and cur_res
-            else:  # ODER
-                result_ltr = result_ltr or cur_res
 
-        group_result = result_ltr
+        group_result = True
+        for cond in conditions_sorted:
+            cur_res = check_single_condition(cond, context, tabellen_dict_by_table)
+            if not cur_res:
+                group_result = False
+                break
 
         if group_result:
             # print(f"  -> Gruppe {gruppe_id} ist erfüllt. Pauschale {pauschale_code} ist gültig.")
