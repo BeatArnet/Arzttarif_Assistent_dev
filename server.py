@@ -1188,6 +1188,18 @@ def analyze_billing():
     logger.info(f"Final response payload for /api/analyze-billing: {json.dumps(final_response_payload, ensure_ascii=False, indent=2)}")
     return jsonify(final_response_payload)
 
+@app.route('/api/quality', methods=['POST'])
+def quality_endpoint():
+    """Simple quality check endpoint returning baseline comparison."""
+    if not request.is_json:
+        return jsonify({"error": "Request must be JSON"}), 400
+    data = request.get_json() or {}
+    baseline = data.get("baseline")
+    # For now, echo baseline as result
+    result = baseline
+    match = result == baseline
+    return jsonify({"result": result, "baseline": baseline, "match": match})
+
 # --- Static‑Routes & Start ---
 @app.route("/")
 def index_route(): # Umbenannt, um Konflikt mit Modul 'index' zu vermeiden, falls es existiert
