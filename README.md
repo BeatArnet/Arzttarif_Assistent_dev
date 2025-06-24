@@ -58,7 +58,15 @@ Der Assistent ist in den drei Landessprachen DE, FR und IT verfügbar. Die Sprac
         *   Versucht, TARDOC E/EZ-LKNs auf funktional äquivalente LKNs (oft Typ P/PZ) zu mappen, die als Bedingungen in den potenziellen Pauschalen vorkommen. Die Kandidatenliste für das Mapping wird dynamisch aus den Bedingungen der potenziell relevanten Pauschalen generiert.
     *   **Pauschalen-Anwendbarkeitsprüfung (`regelpruefer_pauschale.py`):**
         *   **Potenzielle Pauschalen finden:** Identifiziert mögliche Pauschalen basierend auf den regelkonformen LKNs (aus `rule_checked_leistungen`) unter Verwendung von `PAUSCHALEN_Leistungspositionen.json` und den LKN-Bedingungen in `PAUSCHALEN_Bedingungen.json`.
-        *   **Strukturierte Bedingungsprüfung (`evaluate_structured_conditions`):** Prüft für jede potenzielle Pauschale, ob ihre Bedingungsgruppen erfüllt sind (ODER zwischen Gruppen, innerhalb einer Gruppe gemäß dem `Operator` jeder Zeile mit `UND`-Vorrang). Berücksichtigt das `useIcd`-Flag.
+        *   **Strukturierte Bedingungsprüfung (`evaluate_structured_conditions`):** Prüft, ob die Bedingungsgruppen einer Pauschale erfüllt sind. Zwischen Gruppen gilt **ODER**. Innerhalb einer Gruppe wird jede Zeile mit der nächsten verbunden; das Feld `Operator` bestimmt dabei, ob diese Verbindung `UND` oder `ODER` ist (Groß-/Kleinschreibung egal). Falsche Operatorwerte führen zu einer fehlerhaften Auswertung. Beispiel:
+
+            1. `SEITIGKEIT = B` (`Operator`: `ODER`)
+            2. `ANZAHL >= 2` (`Operator`: `UND`)
+            3. `LKN IN LISTE OP`
+
+            ergibt `(SEITIGKEIT = B ODER ANZAHL >= 2) UND LKN IN LISTE OP`.
+            Gleichbedeutend: `(SEITIGKEIT = B UND LKN IN LISTE OP) ODER (ANZAHL >= 2 UND LKN IN LISTE OP)`.
+            Das `useIcd`-Flag steuert dabei, ob ICD-Bedingungen berücksichtigt werden.
         *   **Auswahl der besten Pauschale (`determine_applicable_pauschale`):** Wählt aus den struktur-gültigen Pauschalen die "komplexeste passende" (niedrigster Suffix-Buchstabe, z.B. A vor B vor E) aus der bevorzugten Kategorie (spezifisch vor Fallback).
         *   Generiert detailliertes HTML für die Bedingungsprüfung und eine Begründung der Auswahl.
     *   **Entscheidung & TARDOC-Vorbereitung:** Entscheidet "Pauschale vor TARDOC". Wenn keine Pauschale anwendbar ist, bereitet es die TARDOC-Liste (`regelpruefer.prepare_tardoc_abrechnung`) vor.
