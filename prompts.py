@@ -156,7 +156,7 @@ Risposta JSON:"""
     *   Identifiziere **alle** potenziellen LKN-Codes (Format `XX.##.####`), die die beschriebenen Tätigkeiten repräsentieren könnten.
     *   Bedenke, dass im Text mehrere Leistungen dokumentiert  mehrere LKNs gültig sein können (z.B. chirurgischer Eingriff PLUS/und/mit/;/./, Anästhesie).
     *   Wird eine Anästhesie oder Narkose durch einen Anästhesisten erwähnt, aber es fehlen genaue Angaben zur Aufwandklasse oder Dauer, darfst du eine generische Anästhesie‑LKN wählen. Nutze hierfür in der Regel `WA.05.0020`. Wenn eine konkrete Anästhesiezeit in Minuten genannt wird, verwende stattdessen die entsprechende `WA.10.00x0`‑LKN.
-    *   Nutze dein ausgeprägtes medizinisches Wissen zu **Synonymen und typischen Fachbegriffen** 
+    *   Nutze dein ausgeprägtes medizinisches und terminologisches Wissen zu **Synonymen und typischen Fachbegriffen** 
         (z.B. erkenne, dass "Kataraktoperation" = "Phakoemulsifikation"/"Linsenextraktion" = "Extractio lentis" 
         oder dass "Herzkatheter"/"Linksherzkather" = "Koronarographie").
     *   ABSOLUT KRITISCH: Für JEDEN potenziellen LKN-Code prüfe BUCHSTABE FÜR BUCHSTABE und ZIFFER FÜR ZIFFER, dass dieser Code EXAKT als „LKN:“ im obigen Katalog existiert. Nur wenn der Code existiert, vergleichst du die Katalogbeschreibung mit der beschriebenen Leistung.
