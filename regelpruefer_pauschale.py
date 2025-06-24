@@ -214,25 +214,22 @@ def evaluate_structured_conditions(
         if not conditions_in_group:
             continue  # Leere Gruppe überspringen
 
-        tokens = []
-        for cond_item in conditions_in_group:
-            result = check_single_condition(cond_item, context, tabellen_dict_by_table)
-            tokens.append((result, cond_item.get(OPERATOR_KEY, 'UND').upper()))
-
-        if not tokens:
-            continue
-
-        # Evaluate AND before OR using the operators between conditions
-        partial_results = [tokens[0][0]]
-        for idx in range(1, len(tokens)):
-            prev_op = tokens[idx - 1][1]
-            current_res = tokens[idx][0]
-            if prev_op == 'UND':
-                partial_results[-1] = partial_results[-1] and current_res
+        # Link conditions strictly von links nach rechts. Der Operator einer
+        # Bedingungszeile verbindet diese mit der *nächsten* Zeile.
+        result_ltr = check_single_condition(
+            conditions_in_group[0], context, tabellen_dict_by_table
+        )
+        for idx in range(1, len(conditions_in_group)):
+            prev_op = conditions_in_group[idx - 1].get(OPERATOR_KEY, "UND").upper()
+            cur_res = check_single_condition(
+                conditions_in_group[idx], context, tabellen_dict_by_table
+            )
+            if prev_op == "UND":
+                result_ltr = result_ltr and cur_res
             else:  # ODER
-                partial_results.append(current_res)
+                result_ltr = result_ltr or cur_res
 
-        group_result = any(partial_results)
+        group_result = result_ltr
 
         if group_result:
             # print(f"  -> Gruppe {gruppe_id} ist erfüllt. Pauschale {pauschale_code} ist gültig.")

@@ -97,9 +97,42 @@ class TestPauschaleLogic(unittest.TestCase):
 
         context = {"Seitigkeit": "beidseits", "LKN": ["OP"], "Anzahl": 1}
 
-        # Should pass because first condition is true and combined with OR
-        self.assertTrue(
+        # Bei strikter Links-nach-rechts-Auswertung muss auch die letzte
+        # Bedingung erfüllt sein, da sie mit UND verknüpft wird.
+        self.assertFalse(
             evaluate_structured_conditions("CAT", context, conditions, {})
+        )
+
+    def test_or_then_and_requires_last_condition(self):
+        conditions = [
+            {
+                "BedingungsID": 1,
+                "Pauschale": "TEST2",
+                "Gruppe": 1,
+                "Operator": "ODER",
+                "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+                "Werte": "A",
+            },
+            {
+                "BedingungsID": 2,
+                "Pauschale": "TEST2",
+                "Gruppe": 1,
+                "Operator": "UND",
+                "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+                "Werte": "B",
+            },
+            {
+                "BedingungsID": 3,
+                "Pauschale": "TEST2",
+                "Gruppe": 1,
+                "Operator": "UND",
+                "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+                "Werte": "C",
+            },
+        ]
+        context = {"LKN": ["A", "B"]}
+        self.assertFalse(
+            evaluate_structured_conditions("TEST2", context, conditions, {})
         )
 
 if __name__ == "__main__":
