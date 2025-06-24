@@ -135,5 +135,21 @@ class TestPauschaleLogic(unittest.TestCase):
             evaluate_structured_conditions("TEST2", context, conditions, {})
         )
 
+    def test_icd_condition_ignored_when_use_icd_false(self):
+        conditions = [
+            {
+                "BedingungsID": 1,
+                "Pauschale": "ICDTEST",
+                "Gruppe": 1,
+                "Operator": "UND",
+                "Bedingungstyp": "ICD",
+                "Werte": "A12"
+            }
+        ]
+        context = {"ICD": [], "useIcd": False}
+        self.assertTrue(
+            evaluate_structured_conditions("ICDTEST", context, conditions, {})
+        )
+
 if __name__ == "__main__":
     unittest.main()

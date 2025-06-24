@@ -36,13 +36,13 @@ def check_single_condition(
 
     try:
         if bedingungstyp == "ICD": # ICD IN LISTE
-            if not check_icd_conditions_at_all: return False
+            if not check_icd_conditions_at_all: return True
             required_icds_in_rule_list = {w.strip().upper() for w in str(werte_str).split(',') if w.strip()}
             if not required_icds_in_rule_list: return True # Leere Regel-Liste ist immer erfüllt
             return any(req_icd in provided_icds_upper for req_icd in required_icds_in_rule_list)
 
         elif bedingungstyp == "HAUPTDIAGNOSE IN TABELLE": # ICD IN TABELLE
-            if not check_icd_conditions_at_all: return False
+            if not check_icd_conditions_at_all: return True
             table_ref = werte_str
             icd_codes_in_rule_table = {entry['Code'].upper() for entry in get_table_content(table_ref, "icd", tabellen_dict_by_table) if entry.get('Code')}
             if not icd_codes_in_rule_table: # Wenn Tabelle leer oder nicht gefunden
