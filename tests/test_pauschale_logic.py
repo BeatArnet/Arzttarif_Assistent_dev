@@ -175,5 +175,25 @@ class TestPauschaleLogic(unittest.TestCase):
             evaluate_structured_conditions("C00.10A", context, bedingungen, tab_dict)
         )
 
+    def test_c03_26d_requires_all_conditions(self):
+        """C03.26D should not match when only anesthesia and a wrong LKN are present."""
+        root = pathlib.Path(__file__).resolve().parents[1]
+        with open(root / "data/PAUSCHALEN_Bedingungen.json", encoding="utf-8") as f:
+            bedingungen = json.load(f)
+        with open(root / "data/PAUSCHALEN_Tabellen.json", encoding="utf-8") as f:
+            tabellen = json.load(f)
+
+        tab_dict = {}
+        for row in tabellen:
+            name = row.get("Tabelle")
+            if name:
+                tab_dict.setdefault(name.lower(), []).append(row)
+
+        context = {"LKN": ["WA.10.0010", "C08.GD.0030"]}
+
+        self.assertFalse(
+            evaluate_structured_conditions("C03.26D", context, bedingungen, tab_dict)
+        )
+
 if __name__ == "__main__":
     unittest.main()
