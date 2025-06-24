@@ -50,7 +50,7 @@ Der Assistent ist in den drei Landessprachen DE, FR und IT verfügbar. Die Sprac
 
 2.  **Backend (Python/Flask - `server.py`):**
     *   Empfängt Anfragen vom Frontend.
-    *   **LLM Stufe 1 (`call_gemini_stage1`):** Identifiziert LKNs und extrahiert Kontext aus dem Benutzertest mithilfe von Google Gemini. Der übergebene Ausschnitt aus `LKAAT_Leistungskatalog.json` wird nun anhand der Benutzereingabe gefiltert (max. 200 Treffer).
+    *   **LLM Stufe 1 (`call_gemini_stage1`):** Identifiziert LKNs und extrahiert Kontext aus dem Benutzertest mithilfe von Google Gemini. Der übergebene Ausschnitt aus `LKAAT_Leistungskatalog.json` wird nun anhand der Benutzereingabe gefiltert (max. 200 Treffer). Sehr häufige Wörter werden dabei ignoriert.
     *   **Regelprüfung LKN (`regelpruefer.py`):** Prüft die identifizierten LKNs auf Konformität mit TARDOC-Regeln (Menge, Kumulation etc.) basierend auf den im TARDOC-Datensatz eingebetteten Regeldefinitionen.
     *   **Pauschalenpotenzial-Prüfung:** Stellt frühzeitig fest, ob aufgrund der von LLM Stufe 1 gefundenen LKN-Typen überhaupt eine Pauschale in Frage kommt.
     *   **Kontextanreicherung (LKN-Mapping - `call_gemini_stage2_mapping`):**
