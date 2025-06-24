@@ -42,6 +42,8 @@ PAUSCHALE_LP_PATH = DATA_DIR / "PAUSCHALEN_Leistungspositionen.json"
 PAUSCHALEN_PATH = DATA_DIR / "PAUSCHALEN_Pauschalen.json"
 PAUSCHALE_BED_PATH = DATA_DIR / "PAUSCHALEN_Bedingungen.json"
 TABELLEN_PATH = DATA_DIR / "PAUSCHALEN_Tabellen.json"
+BASELINE_RESULTS_PATH = DATA_DIR / "baseline_results.json"
+BEISPIELE_PATH = DATA_DIR / "beispiele.json"
 
 # --- Typ-Aliase für Klarheit ---
 EvaluateStructuredConditionsType = Callable[[str, Dict[Any, Any], List[Dict[Any, Any]], Dict[str, List[Dict[Any, Any]]]], bool]
@@ -191,6 +193,8 @@ pauschale_bedingungen_data: list[dict] = []
 tabellen_data: list[dict] = []
 tabellen_dict_by_table: dict[str, list[dict]] = {}
 daten_geladen: bool = False
+baseline_results: dict[str, dict] = {}
+examples_data: list[dict] = []
 
 def create_app() -> Flask:
     """
@@ -286,6 +290,24 @@ def load_data() -> bool:
              print(f"  FEHLER beim Laden/Verarbeiten von {name} ({path}): {e}")
              all_loaded_successfully = False
              traceback.print_exc()
+
+    # Zusätzliche optionale Dateien laden
+    try:
+        global baseline_results
+        with open(BASELINE_RESULTS_PATH, 'r', encoding='utf-8') as f:
+            baseline_results = json.load(f)
+        print(f"  ✓ Baseline-Ergebnisse geladen ({len(baseline_results)}) Beispiele.)")
+    except Exception as e:
+        print(f"  WARNUNG: Baseline-Resultate konnten nicht geladen werden: {e}")
+        baseline_results = {}
+    try:
+        global examples_data
+        with open(BEISPIELE_PATH, 'r', encoding='utf-8') as f:
+            examples_data = json.load(f)
+        print(f"  ✓ Beispiel-Daten geladen ({len(examples_data)}) Einträge.)")
+    except Exception as e:
+        print(f"  WARNUNG: Beispiel-Daten konnten nicht geladen werden: {e}")
+        examples_data = []
 
     # Regelwerk direkt aus TARDOC_Tarifpositionen extrahieren
     try:
@@ -1188,6 +1210,39 @@ def analyze_billing():
     logger.info(f"Final response payload for /api/analyze-billing: {json.dumps(final_response_payload, ensure_ascii=False, indent=2)}")
     return jsonify(final_response_payload)
 
+@app.route('/api/test-example', methods=['POST'])
+def test_example():
+    """Vergleicht das Ergebnis einer Beispielanalyse mit dem Baseline-Resultat."""
+    data = request.get_json() or {}
+    example_id = str(data.get('id'))
+    lang = data.get('lang', 'de')
+    if not daten_geladen:
+        if not load_data():
+            return jsonify({'error': 'Data not available'}), 500
+    baseline_entry = baseline_results.get(example_id)
+    if not baseline_entry:
+        return jsonify({'error': 'Baseline not found'}), 404
+    baseline = baseline_entry.get('baseline', {}).get(lang)
+    if baseline is None:
+        return jsonify({'error': 'Baseline missing for language'}), 404
+
+    # TODO: Implement real analysis. For now use baseline as dummy result
+    result = baseline
+
+    # Speichere aktuelles Ergebnis im Arbeitsspeicher
+    baseline_entry.setdefault('current', {})[lang] = result
+
+    passed = result == baseline
+    diff = ''
+    return jsonify({
+        'id': example_id,
+        'lang': lang,
+        'passed': passed,
+        'baseline': baseline,
+        'result': result,
+        'diff': diff
+    })
+
 # --- Static‑Routes & Start ---
 @app.route("/")
 def index_route(): # Umbenannt, um Konflikt mit Modul 'index' zu vermeiden, falls es existiert
@@ -1203,7 +1258,7 @@ def favicon_svg():
 
 @app.route("/<path:filename>")
 def serve_static(filename: str): # Typ hinzugefügt
-    allowed_files = {'calculator.js'}
+    allowed_files = {'calculator.js', 'quality.js', 'quality.html'}
     allowed_dirs = {'data'} # Erlaube Zugriff auf data-Ordner
     file_path = Path(filename)
 

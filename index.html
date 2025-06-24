@@ -304,6 +304,8 @@
         font-size: 0.75em;
         color: #555;
     }
+    #qualityLink { color: var(--primary); text-decoration:none; }
+    #qualityLink:hover { text-decoration: underline; }
     @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
@@ -341,6 +343,7 @@
             <a href="https://www.arkons.ch/" target="_blank">https://www.arkons.ch/</a>,
             2025
         </div>
+        <a id="qualityLink" href="quality.html">Qualitätskontrolle</a>
     </div>
 
     <h1 id="mainHeader">Neuer Arzttarif Schweiz: TARDOC und Pauschalen</h1>
@@ -395,7 +398,12 @@
                 loading: 'Wird geladen...',
                 resultsPlaceholder: 'Hier erscheinen die Ergebnisse...',
                 disclaimer: '<strong>Haftungsausschluss:</strong> Alle Auskünfte erfolgen ohne Gewähr... (<a href="https://tarifbrowser.oaat-otma.ch/startPortal" target="_blank">OAAT-OTMA Online-Portal</a>).',
-                clickFind: "<i>Bitte 'Tarifpositionen finden' klicken.</i>"
+                clickFind: "<i>Bitte 'Tarifpositionen finden' klicken.</i>",
+                qualityLink: 'Qualitätskontrolle',
+                testExample: 'Beispiel testen',
+                testAll: 'Alle Beispiele testen',
+                pass: 'OK',
+                fail: 'Fehler'
             },
             fr: {
                 langLabel: 'Langue :',
@@ -416,7 +424,12 @@
                 loading: 'Chargement...',
                 resultsPlaceholder: "Les résultats s'affichent ici...",
                 disclaimer: '<strong>Clause de non-responsabilité :</strong> Toutes les informations sont fournies sans garantie... (<a href="https://tarifbrowser.oaat-otma.ch/startPortal" target="_blank">Portail en ligne OAAT-OTMA</a>).',
-                clickFind: "<i>Veuillez cliquer sur 'Trouver les positions tarifaires'.</i>"
+                clickFind: "<i>Veuillez cliquer sur 'Trouver les positions tarifaires'.</i>",
+                qualityLink: 'Contrôle de qualité',
+                testExample: 'Tester exemple',
+                testAll: 'Tester tous les exemples',
+                pass: 'OK',
+                fail: 'Erreur'
             },
             it: {
                 langLabel: 'Lingua:',
@@ -436,7 +449,12 @@
                 loading: 'Caricamento...',
                 resultsPlaceholder: 'Qui verranno visualizzati i risultati...',
                 disclaimer: '<strong>Clausola di esclusione della responsabilità:</strong> tutte le informazioni sono fornite senza garanzia... (<a href="https://tarifbrowser.oaat-otma.ch/startPortal" target="_blank">Portale online OAAT-OTMA</a>).',
-                clickFind: "<i>Fare clic su 'Trova le posizioni tariffarie'.</i>"
+                clickFind: "<i>Fare clic su 'Trova le posizioni tariffarie'.</i>",
+                qualityLink: 'Controllo qualità',
+                testExample: 'Prova esempio',
+                testAll: 'Testa tutti gli esempi',
+                pass: 'OK',
+                fail: 'Errore'
             }
         };
         let examplesData = [];
@@ -485,6 +503,8 @@
             document.getElementById('useIcdLabel').textContent = t.useIcd;
             document.getElementById('analyzeButton').textContent = t.analyzeButton;
             document.getElementById('spinner').textContent = t.loading;
+            const qLink = document.getElementById('qualityLink');
+            if(qLink) qLink.textContent = t.qualityLink;
             const out = document.getElementById('output');
             if(out){
                 const prev = translations[prevLang];

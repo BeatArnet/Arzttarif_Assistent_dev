@@ -1,0 +1,797 @@
+{
+  "1": {
+    "baseline": {
+      "de": {
+        "pauschale": {
+          "code": "P1",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E1a",
+            "qty": 1
+          },
+          {
+            "code": "E1b",
+            "qty": 2
+          }
+        ]
+      },
+      "fr": {
+        "pauschale": {
+          "code": "P1",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E1a",
+            "qty": 1
+          },
+          {
+            "code": "E1b",
+            "qty": 2
+          }
+        ]
+      },
+      "it": {
+        "pauschale": {
+          "code": "P1",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E1a",
+            "qty": 1
+          },
+          {
+            "code": "E1b",
+            "qty": 2
+          }
+        ]
+      }
+    },
+    "current": {}
+  },
+  "2": {
+    "baseline": {
+      "de": {
+        "pauschale": {
+          "code": "P2",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E2a",
+            "qty": 1
+          },
+          {
+            "code": "E2b",
+            "qty": 2
+          }
+        ]
+      },
+      "fr": {
+        "pauschale": {
+          "code": "P2",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E2a",
+            "qty": 1
+          },
+          {
+            "code": "E2b",
+            "qty": 2
+          }
+        ]
+      },
+      "it": {
+        "pauschale": {
+          "code": "P2",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E2a",
+            "qty": 1
+          },
+          {
+            "code": "E2b",
+            "qty": 2
+          }
+        ]
+      }
+    },
+    "current": {}
+  },
+  "3": {
+    "baseline": {
+      "de": {
+        "pauschale": {
+          "code": "P3",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E3a",
+            "qty": 1
+          },
+          {
+            "code": "E3b",
+            "qty": 2
+          }
+        ]
+      },
+      "fr": {
+        "pauschale": {
+          "code": "P3",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E3a",
+            "qty": 1
+          },
+          {
+            "code": "E3b",
+            "qty": 2
+          }
+        ]
+      },
+      "it": {
+        "pauschale": {
+          "code": "P3",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E3a",
+            "qty": 1
+          },
+          {
+            "code": "E3b",
+            "qty": 2
+          }
+        ]
+      }
+    },
+    "current": {}
+  },
+  "4": {
+    "baseline": {
+      "de": {
+        "pauschale": {
+          "code": "P4",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E4a",
+            "qty": 1
+          },
+          {
+            "code": "E4b",
+            "qty": 2
+          }
+        ]
+      },
+      "fr": {
+        "pauschale": {
+          "code": "P4",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E4a",
+            "qty": 1
+          },
+          {
+            "code": "E4b",
+            "qty": 2
+          }
+        ]
+      },
+      "it": {
+        "pauschale": {
+          "code": "P4",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E4a",
+            "qty": 1
+          },
+          {
+            "code": "E4b",
+            "qty": 2
+          }
+        ]
+      }
+    },
+    "current": {}
+  },
+  "5": {
+    "baseline": {
+      "de": {
+        "pauschale": {
+          "code": "P5",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E5a",
+            "qty": 1
+          },
+          {
+            "code": "E5b",
+            "qty": 2
+          }
+        ]
+      },
+      "fr": {
+        "pauschale": {
+          "code": "P5",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E5a",
+            "qty": 1
+          },
+          {
+            "code": "E5b",
+            "qty": 2
+          }
+        ]
+      },
+      "it": {
+        "pauschale": {
+          "code": "P5",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E5a",
+            "qty": 1
+          },
+          {
+            "code": "E5b",
+            "qty": 2
+          }
+        ]
+      }
+    },
+    "current": {}
+  },
+  "6": {
+    "baseline": {
+      "de": {
+        "pauschale": {
+          "code": "P6",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E6a",
+            "qty": 1
+          },
+          {
+            "code": "E6b",
+            "qty": 2
+          }
+        ]
+      },
+      "fr": {
+        "pauschale": {
+          "code": "P6",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E6a",
+            "qty": 1
+          },
+          {
+            "code": "E6b",
+            "qty": 2
+          }
+        ]
+      },
+      "it": {
+        "pauschale": {
+          "code": "P6",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E6a",
+            "qty": 1
+          },
+          {
+            "code": "E6b",
+            "qty": 2
+          }
+        ]
+      }
+    },
+    "current": {}
+  },
+  "7": {
+    "baseline": {
+      "de": {
+        "pauschale": {
+          "code": "P7",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E7a",
+            "qty": 1
+          },
+          {
+            "code": "E7b",
+            "qty": 2
+          }
+        ]
+      },
+      "fr": {
+        "pauschale": {
+          "code": "P7",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E7a",
+            "qty": 1
+          },
+          {
+            "code": "E7b",
+            "qty": 2
+          }
+        ]
+      },
+      "it": {
+        "pauschale": {
+          "code": "P7",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E7a",
+            "qty": 1
+          },
+          {
+            "code": "E7b",
+            "qty": 2
+          }
+        ]
+      }
+    },
+    "current": {}
+  },
+  "8": {
+    "baseline": {
+      "de": {
+        "pauschale": {
+          "code": "P8",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E8a",
+            "qty": 1
+          },
+          {
+            "code": "E8b",
+            "qty": 2
+          }
+        ]
+      },
+      "fr": {
+        "pauschale": {
+          "code": "P8",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E8a",
+            "qty": 1
+          },
+          {
+            "code": "E8b",
+            "qty": 2
+          }
+        ]
+      },
+      "it": {
+        "pauschale": {
+          "code": "P8",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E8a",
+            "qty": 1
+          },
+          {
+            "code": "E8b",
+            "qty": 2
+          }
+        ]
+      }
+    },
+    "current": {}
+  },
+  "9": {
+    "baseline": {
+      "de": {
+        "pauschale": {
+          "code": "P9",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E9a",
+            "qty": 1
+          },
+          {
+            "code": "E9b",
+            "qty": 2
+          }
+        ]
+      },
+      "fr": {
+        "pauschale": {
+          "code": "P9",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E9a",
+            "qty": 1
+          },
+          {
+            "code": "E9b",
+            "qty": 2
+          }
+        ]
+      },
+      "it": {
+        "pauschale": {
+          "code": "P9",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E9a",
+            "qty": 1
+          },
+          {
+            "code": "E9b",
+            "qty": 2
+          }
+        ]
+      }
+    },
+    "current": {}
+  },
+  "10": {
+    "baseline": {
+      "de": {
+        "pauschale": {
+          "code": "P10",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E10a",
+            "qty": 1
+          },
+          {
+            "code": "E10b",
+            "qty": 2
+          }
+        ]
+      },
+      "fr": {
+        "pauschale": {
+          "code": "P10",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E10a",
+            "qty": 1
+          },
+          {
+            "code": "E10b",
+            "qty": 2
+          }
+        ]
+      },
+      "it": {
+        "pauschale": {
+          "code": "P10",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E10a",
+            "qty": 1
+          },
+          {
+            "code": "E10b",
+            "qty": 2
+          }
+        ]
+      }
+    },
+    "current": {}
+  },
+  "11": {
+    "baseline": {
+      "de": {
+        "pauschale": {
+          "code": "P11",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E11a",
+            "qty": 1
+          },
+          {
+            "code": "E11b",
+            "qty": 2
+          }
+        ]
+      },
+      "fr": {
+        "pauschale": {
+          "code": "P11",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E11a",
+            "qty": 1
+          },
+          {
+            "code": "E11b",
+            "qty": 2
+          }
+        ]
+      },
+      "it": {
+        "pauschale": {
+          "code": "P11",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E11a",
+            "qty": 1
+          },
+          {
+            "code": "E11b",
+            "qty": 2
+          }
+        ]
+      }
+    },
+    "current": {}
+  },
+  "12": {
+    "baseline": {
+      "de": {
+        "pauschale": {
+          "code": "P12",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E12a",
+            "qty": 1
+          },
+          {
+            "code": "E12b",
+            "qty": 2
+          }
+        ]
+      },
+      "fr": {
+        "pauschale": {
+          "code": "P12",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E12a",
+            "qty": 1
+          },
+          {
+            "code": "E12b",
+            "qty": 2
+          }
+        ]
+      },
+      "it": {
+        "pauschale": {
+          "code": "P12",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E12a",
+            "qty": 1
+          },
+          {
+            "code": "E12b",
+            "qty": 2
+          }
+        ]
+      }
+    },
+    "current": {}
+  },
+  "13": {
+    "baseline": {
+      "de": {
+        "pauschale": {
+          "code": "P13",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E13a",
+            "qty": 1
+          },
+          {
+            "code": "E13b",
+            "qty": 2
+          }
+        ]
+      },
+      "fr": {
+        "pauschale": {
+          "code": "P13",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E13a",
+            "qty": 1
+          },
+          {
+            "code": "E13b",
+            "qty": 2
+          }
+        ]
+      },
+      "it": {
+        "pauschale": {
+          "code": "P13",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E13a",
+            "qty": 1
+          },
+          {
+            "code": "E13b",
+            "qty": 2
+          }
+        ]
+      }
+    },
+    "current": {}
+  },
+  "14": {
+    "baseline": {
+      "de": {
+        "pauschale": {
+          "code": "P14",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E14a",
+            "qty": 1
+          },
+          {
+            "code": "E14b",
+            "qty": 2
+          }
+        ]
+      },
+      "fr": {
+        "pauschale": {
+          "code": "P14",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E14a",
+            "qty": 1
+          },
+          {
+            "code": "E14b",
+            "qty": 2
+          }
+        ]
+      },
+      "it": {
+        "pauschale": {
+          "code": "P14",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E14a",
+            "qty": 1
+          },
+          {
+            "code": "E14b",
+            "qty": 2
+          }
+        ]
+      }
+    },
+    "current": {}
+  },
+  "15": {
+    "baseline": {
+      "de": {
+        "pauschale": {
+          "code": "P15",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E15a",
+            "qty": 1
+          },
+          {
+            "code": "E15b",
+            "qty": 2
+          }
+        ]
+      },
+      "fr": {
+        "pauschale": {
+          "code": "P15",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E15a",
+            "qty": 1
+          },
+          {
+            "code": "E15b",
+            "qty": 2
+          }
+        ]
+      },
+      "it": {
+        "pauschale": {
+          "code": "P15",
+          "qty": 1
+        },
+        "einzelleistungen": [
+          {
+            "code": "E15a",
+            "qty": 1
+          },
+          {
+            "code": "E15b",
+            "qty": 2
+          }
+        ]
+      }
+    },
+    "current": {}
+  }
+}
