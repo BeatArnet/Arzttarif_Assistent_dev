@@ -1,6 +1,6 @@
 # utils.py
 import html
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Set
 import re
 
 def escape(text: Any) -> str:
@@ -436,4 +436,37 @@ def expand_compound_words(text: str) -> str:
     if additions:
         return text + " " + " ".join(additions)
     return text
+
+
+# Sehr allgemeine deutsche Wörter, die bei der Keyword-Extraktion ignoriert
+# werden sollen. Nur Kleinschreibung verwenden, da ``extract_keywords`` die
+# Tokens bereits konvertiert.
+STOPWORDS: Set[str] = {
+    "und",
+    "oder",
+    "die",
+    "der",
+    "das",
+    "des",
+    "durch",
+    "mit",
+    "von",
+    "im",
+    "in",
+    "für",
+    "per",
+}
+
+
+def extract_keywords(text: str) -> Set[str]:
+    """Return significant keywords from ``text``.
+
+    Das Eingabewort wird zunächst mit :func:`expand_compound_words` erweitert.
+    Anschließend werden alle Tokens in Kleinschreibung extrahiert und solche mit
+    weniger als vier Buchstaben oder in :data:`STOPWORDS` verworfen.
+    """
+
+    expanded = expand_compound_words(text)
+    tokens = re.findall(r"\b\w+\b", expanded.lower())
+    return {t for t in tokens if len(t) >= 4 and t not in STOPWORDS}
 

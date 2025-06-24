@@ -14,6 +14,7 @@ from utils import (
     get_table_content,
     translate_rule_error_message,
     expand_compound_words,
+    extract_keywords,
 )
 import html
 from prompts import get_stage1_prompt, get_stage2_mapping_prompt, get_stage2_ranking_prompt
@@ -850,7 +851,7 @@ def analyze_billing():
     try:
         katalog_context_parts = []
         preprocessed_input = expand_compound_words(user_input)
-        tokens = set(re.findall(r"\b\w+\b", preprocessed_input.lower()))
+        tokens = extract_keywords(user_input)
         for lkn_code, details in leistungskatalog_dict.items():
             raw_desc = str(details.get("Beschreibung", "N/A"))
             expanded_desc = expand_compound_words(raw_desc)
