@@ -180,7 +180,6 @@ except Exception as e_gen: # Fängt auch andere Fehler während des Imports
     rpp_module = None # Sicherstellen, dass es definiert ist, auch wenn der Import fehlschlug
 
 # --- Globale Datencontainer ---
-app = Flask(__name__, static_folder='.', static_url_path='') # Flask App Instanz
 leistungskatalog_data: list[dict] = []
 leistungskatalog_dict: dict[str, dict] = {}
 regelwerk_dict: dict[str, list] = {} # Annahme: lade_regelwerk gibt List[RegelDict] pro LKN
@@ -332,7 +331,6 @@ def load_data() -> bool:
     return all_loaded_successfully
 
 # Einsatz von Flask
-app = Flask(__name__, static_folder='.', static_url_path='') # Flask App Instanz
 # Die App-Instanz, auf die Gunicorn zugreift
 app: Flask = create_app()
 
