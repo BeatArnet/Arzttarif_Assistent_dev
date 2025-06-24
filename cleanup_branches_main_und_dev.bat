@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-REM Batch-Datei zur Bereinigung von lokalen und Remote-Branches ausser 'main'
+REM Batch-Datei zur Bereinigung von lokalen und Remote-Branches ausser 'main' und 'dev'
 
 REM Hole ersten Remote-Namen
 FOR /F "delims=" %%r IN ('git remote') DO (
@@ -21,13 +21,13 @@ git checkout main
 REM Entferne verwaiste Remote-Referenzen
 git remote prune %REMOTE%
 
-REM Lösche alle lokalen Branches ausser main
-FOR /F "tokens=*" %%b IN ('git branch ^| findstr /V "main"') DO (
+REM Lösche alle lokalen Branches ausser main und dev
+FOR /F "tokens=*" %%b IN ('git branch ^| findstr /V "main" ^| findstr /V "dev"') DO (
     git branch -D %%b
 )
 
-REM Lösche alle Remote-Branches ausser main
-FOR /F "tokens=*" %%r IN ('git branch -r ^| findstr /V "%REMOTE%/main" ^| findstr /V "HEAD"') DO (
+REM Lösche alle Remote-Branches ausser main und dev
+FOR /F "tokens=*" %%r IN ('git branch -r ^| findstr /V "%REMOTE%/main" ^| findstr /V "%REMOTE%/dev" ^| findstr /V "HEAD"') DO (
     SETLOCAL ENABLEDELAYEDEXPANSION
     SET "rb=%%r"
     SET "branch=!rb:%REMOTE%/=!"
@@ -40,7 +40,7 @@ REM Git intern aufräumen
 git gc --prune=now
 
 echo.
-echo ✅ Alle lokalen und Remote-Branches ausser 'main' wurden gelöscht.
+echo ✅ Alle lokalen und Remote-Branches ausser 'main' und 'dev' wurden gelöscht.
 echo ✅ Verwaiste Referenzen entfernt.
 echo ✅ Git-Repository bereinigt.
 pause
