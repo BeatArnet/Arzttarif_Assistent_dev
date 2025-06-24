@@ -1210,6 +1210,18 @@ def analyze_billing():
     logger.info(f"Final response payload for /api/analyze-billing: {json.dumps(final_response_payload, ensure_ascii=False, indent=2)}")
     return jsonify(final_response_payload)
 
+@app.route('/api/quality', methods=['POST'])
+def quality_endpoint():
+    """Simple quality check endpoint returning baseline comparison."""
+    if not request.is_json:
+        return jsonify({"error": "Request must be JSON"}), 400
+    data = request.get_json() or {}
+    baseline = data.get("baseline")
+    # For now, echo baseline as result
+    result = baseline
+    match = result == baseline
+    return jsonify({"result": result, "baseline": baseline, "match": match})
+
 @app.route('/api/test-example', methods=['POST'])
 def test_example():
     """Vergleicht das Ergebnis einer Beispielanalyse mit dem Baseline-Resultat."""
