@@ -497,21 +497,33 @@ function buildGroupInfoHtml(code) {
 }
 
 function renderAdditionalPauschalen(list) {
-    const container = $('additionalPauschalen');
-    if (!container) return;
-    if (!Array.isArray(list) || list.length === 0) {
-        container.innerHTML = '';
-        return;
-    }
-    let html = `<h4>${tDyn('morePauschalen')}</h4><ul>`;
-    list.forEach((p, i) => {
-        const code = escapeHtml(p.details?.Pauschale || `#${i+1}`);
-        const text = escapeHtml(getLangField(p.details, 'Pauschale_Text') || '');
-        html += `<li><a href="#" class="other-pauschale-link" data-idx="${i}">${code} - ${text}</a></li>`;
+    const out = $('output');
+    if (!out) return;
+
+    // Entferne evtl. vorhandene Links (Reset)
+    out.querySelectorAll('a.other-pauschale-link').forEach(a => {
+        const li = a.closest('li');
+        if (li) li.innerHTML = a.innerHTML;
     });
-    html += '</ul>';
-    container.innerHTML = html;
-    container.querySelectorAll('.other-pauschale-link').forEach(a => {
+
+    if (!Array.isArray(list) || list.length === 0) return;
+
+    const codeMap = {};
+    list.forEach((p, i) => {
+        const c = String(p.details?.Pauschale || p.code || '').trim();
+        if (c) codeMap[c] = i;
+    });
+
+    out.querySelectorAll('li').forEach(li => {
+        const b = li.querySelector('b');
+        if (!b) return;
+        const c = b.textContent.trim();
+        if (codeMap.hasOwnProperty(c)) {
+            li.innerHTML = `<a href="#" class="other-pauschale-link" data-idx="${codeMap[c]}">${li.innerHTML}</a>`;
+        }
+    });
+
+    out.querySelectorAll('a.other-pauschale-link').forEach(a => {
         a.addEventListener('click', (e) => {
             e.preventDefault();
             const idx = parseInt(a.dataset.idx);
