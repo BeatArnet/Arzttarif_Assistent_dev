@@ -82,8 +82,8 @@
     "extendedValue_IT": "Articolazione temporo-mandibolare, lussazione, riduzione a cielo chiuso con anestesia eseguita dall'anestesista"
   },
   {
-    "label": "Aufklärung des Patienten und Leberbiopsie durch die Haut",
-    "value_DE": "Aufklärung des Patienten und Leberbiopsie durch die Haut",
+    "label": "Aufklärung des Patienten und Leberbiopsie perkutan",
+    "value_DE": "Aufklärung des Patienten und Leberbiopsie perkutan",
     "extendedValue_DE": "Aufklärung des Patienten und Leberbiopsie durch die Haut",
     "value_FR": "Explication au patient et biopsie hépatique transcutanée",
     "extendedValue_FR": "Information du patient et biopsie hépatique percutanée",
@@ -116,5 +116,32 @@
     "extendedValue_FR": "Bronchoscopie avec lavage",
     "value_IT": "Broncoscopia con lavaggio",
     "extendedValue_IT": "Broncoscopia con lavaggio"
+  },
+  {
+    "label": "Linksherzkatheter",
+    "value_DE": "Linksherzkatheter",
+    "extendedValue_DE": "Linksherzkatheter",
+    "value_FR": "Cathétérisme cardiaque gauche",
+    "extendedValue_FR": "Cathétérisme cardiaque gauche",
+    "value_IT": "Cateterismo cardiaco sinistro",
+    "extendedValue_IT": "Cateterismo cardiaco sinistro"
+  },
+  {
+    "label": "Fingerfraktur, Nagelung",
+    "value_DE": "Fingerfraktur, Nagelung",
+    "extendedValue_DE": "Fingerfraktur, Nagelung",
+    "value_FR": "Fracture du doigt, enclouage",
+    "extendedValue_FR": "Fracture du doigt, enclouage",
+    "value_IT": "Frattura del dito, chiodaggio",
+    "extendedValue_IT": "Frattura del dito, chiodaggio"
+  },
+  {
+    "label": "Fingerfraktur, Nagelung mit Anästhesie",
+    "value_DE": "Fingerfraktur, Nagelung mit Anästhesie",
+    "extendedValue_DE": "Fingerfraktur, Nagelung mit Anästhesie",
+    "value_FR": "Fracture du doigt, enclouage avec anesthésie",
+    "extendedValue_FR": "Fracture du doigt, enclouage avec anesthésie",
+    "value_IT": "Frattura del dito, chiodaggio  con anestesia",
+    "extendedValue_IT": "Frattura del dito, chiodaggio  con anestesia"
   }
 ]

@@ -14,6 +14,7 @@ from utils import (
     get_table_content,
     translate_rule_error_message,
     expand_compound_words,
+    extract_keywords,
 )
 import html
 from prompts import get_stage1_prompt, get_stage2_mapping_prompt, get_stage2_ranking_prompt
@@ -30,9 +31,9 @@ logger = logging.getLogger('app') # Create a logger instance
 # --- Konfiguration ---
 load_dotenv()
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-GEMINI_MODEL = os.getenv('GEMINI_MODEL', "gemini-1.5-flash-latest")
+# GEMINI_MODEL = os.getenv('GEMINI_MODEL', "gemini-1.5-flash-latest")
 # Wollen wir später testen
-# GEMINI_MODEL = os.getenv('GEMINI_MODEL', "gemini-2.5-flash-lite-preview-06-17")
+GEMINI_MODEL = os.getenv('GEMINI_MODEL', "gemini-2.5-flash")
 DATA_DIR = Path("data")
 LEISTUNGSKATALOG_PATH = DATA_DIR / "LKAAT_Leistungskatalog.json"
 TARDOC_TARIF_PATH = DATA_DIR / "TARDOC_Tarifpositionen.json"
@@ -41,6 +42,8 @@ PAUSCHALE_LP_PATH = DATA_DIR / "PAUSCHALEN_Leistungspositionen.json"
 PAUSCHALEN_PATH = DATA_DIR / "PAUSCHALEN_Pauschalen.json"
 PAUSCHALE_BED_PATH = DATA_DIR / "PAUSCHALEN_Bedingungen.json"
 TABELLEN_PATH = DATA_DIR / "PAUSCHALEN_Tabellen.json"
+BASELINE_RESULTS_PATH = DATA_DIR / "baseline_results.json"
+BEISPIELE_PATH = DATA_DIR / "beispiele.json"
 
 # --- Typ-Aliase für Klarheit ---
 EvaluateStructuredConditionsType = Callable[[str, Dict[Any, Any], List[Dict[Any, Any]], Dict[str, List[Dict[Any, Any]]]], bool]
@@ -177,7 +180,6 @@ except Exception as e_gen: # Fängt auch andere Fehler während des Imports
     rpp_module = None # Sicherstellen, dass es definiert ist, auch wenn der Import fehlschlug
 
 # --- Globale Datencontainer ---
-app = Flask(__name__, static_folder='.', static_url_path='') # Flask App Instanz
 leistungskatalog_data: list[dict] = []
 leistungskatalog_dict: dict[str, dict] = {}
 regelwerk_dict: dict[str, list] = {} # Annahme: lade_regelwerk gibt List[RegelDict] pro LKN
@@ -190,6 +192,8 @@ pauschale_bedingungen_data: list[dict] = []
 tabellen_data: list[dict] = []
 tabellen_dict_by_table: dict[str, list[dict]] = {}
 daten_geladen: bool = False
+baseline_results: dict[str, dict] = {}
+examples_data: list[dict] = []
 
 def create_app() -> Flask:
     """
@@ -286,6 +290,24 @@ def load_data() -> bool:
              all_loaded_successfully = False
              traceback.print_exc()
 
+    # Zusätzliche optionale Dateien laden
+    try:
+        global baseline_results
+        with open(BASELINE_RESULTS_PATH, 'r', encoding='utf-8') as f:
+            baseline_results = json.load(f)
+        print(f"  ✓ Baseline-Ergebnisse geladen ({len(baseline_results)}) Beispiele.)")
+    except Exception as e:
+        print(f"  WARNUNG: Baseline-Resultate konnten nicht geladen werden: {e}")
+        baseline_results = {}
+    try:
+        global examples_data
+        with open(BEISPIELE_PATH, 'r', encoding='utf-8') as f:
+            examples_data = json.load(f)
+        print(f"  ✓ Beispiel-Daten geladen ({len(examples_data)}) Einträge.)")
+    except Exception as e:
+        print(f"  WARNUNG: Beispiel-Daten konnten nicht geladen werden: {e}")
+        examples_data = []
+
     # Regelwerk direkt aus TARDOC_Tarifpositionen extrahieren
     try:
         regelwerk_dict.clear()
@@ -309,7 +331,6 @@ def load_data() -> bool:
     return all_loaded_successfully
 
 # Einsatz von Flask
-app = Flask(__name__, static_folder='.', static_url_path='') # Flask App Instanz
 # Die App-Instanz, auf die Gunicorn zugreift
 app: Flask = create_app()
 
@@ -849,17 +870,21 @@ def analyze_billing():
     llm_stage1_result: Dict[str, Any] = {"identified_leistungen": [], "extracted_info": {}, "begruendung_llm": ""}
     try:
         katalog_context_parts = []
+        preprocessed_input = expand_compound_words(user_input)
+        tokens = extract_keywords(user_input)
         for lkn_code, details in leistungskatalog_dict.items():
             raw_desc = str(details.get("Beschreibung", "N/A"))
             expanded_desc = expand_compound_words(raw_desc)
-            katalog_context_parts.append(
-                f"LKN: {lkn_code}, Typ: {details.get('Typ', 'N/A')}, Beschreibung: {html.escape(expanded_desc)}"
-            )
+            if any(t in expanded_desc.lower() for t in tokens):
+                katalog_context_parts.append(
+                    f"LKN: {lkn_code}, Typ: {details.get('Typ', 'N/A')}, Beschreibung: {html.escape(expanded_desc)}"
+                )
+            if len(katalog_context_parts) >= 200:
+                break
         katalog_context_str = "\n".join(katalog_context_parts)
         if not katalog_context_str:
             raise ValueError("Leistungskatalog für LLM-Kontext (Stufe 1) ist leer.")
 
-        preprocessed_input = expand_compound_words(user_input)
         llm_stage1_result = call_gemini_stage1(preprocessed_input, katalog_context_str, lang)
     except ConnectionError as e: print(f"FEHLER: Verbindung zu LLM1 fehlgeschlagen: {e}"); return jsonify({"error": f"Verbindungsfehler zum Analyse-Service (Stufe 1): {e}"}), 504
     except ValueError as e: print(f"FEHLER: Verarbeitung LLM1 fehlgeschlagen: {e}"); return jsonify({"error": f"Fehler bei der Leistungsanalyse (Stufe 1): {e}"}), 400
@@ -1183,6 +1208,51 @@ def analyze_billing():
     logger.info(f"Final response payload for /api/analyze-billing: {json.dumps(final_response_payload, ensure_ascii=False, indent=2)}")
     return jsonify(final_response_payload)
 
+@app.route('/api/quality', methods=['POST'])
+def quality_endpoint():
+    """Simple quality check endpoint returning baseline comparison."""
+    if not request.is_json:
+        return jsonify({"error": "Request must be JSON"}), 400
+    data = request.get_json() or {}
+    baseline = data.get("baseline")
+    # For now, echo baseline as result
+    result = baseline
+    match = result == baseline
+    return jsonify({"result": result, "baseline": baseline, "match": match})
+
+@app.route('/api/test-example', methods=['POST'])
+def test_example():
+    """Vergleicht das Ergebnis einer Beispielanalyse mit dem Baseline-Resultat."""
+    data = request.get_json() or {}
+    example_id = str(data.get('id'))
+    lang = data.get('lang', 'de')
+    if not daten_geladen:
+        if not load_data():
+            return jsonify({'error': 'Data not available'}), 500
+    baseline_entry = baseline_results.get(example_id)
+    if not baseline_entry:
+        return jsonify({'error': 'Baseline not found'}), 404
+    baseline = baseline_entry.get('baseline', {}).get(lang)
+    if baseline is None:
+        return jsonify({'error': 'Baseline missing for language'}), 404
+
+    # TODO: Implement real analysis. For now use baseline as dummy result
+    result = baseline
+
+    # Speichere aktuelles Ergebnis im Arbeitsspeicher
+    baseline_entry.setdefault('current', {})[lang] = result
+
+    passed = result == baseline
+    diff = ''
+    return jsonify({
+        'id': example_id,
+        'lang': lang,
+        'passed': passed,
+        'baseline': baseline,
+        'result': result,
+        'diff': diff
+    })
+
 # --- Static‑Routes & Start ---
 @app.route("/")
 def index_route(): # Umbenannt, um Konflikt mit Modul 'index' zu vermeiden, falls es existiert
@@ -1198,7 +1268,7 @@ def favicon_svg():
 
 @app.route("/<path:filename>")
 def serve_static(filename: str): # Typ hinzugefügt
-    allowed_files = {'calculator.js'}
+    allowed_files = {'calculator.js', 'quality.js', 'quality.html'}
     allowed_dirs = {'data'} # Erlaube Zugriff auf data-Ordner
     file_path = Path(filename)
 

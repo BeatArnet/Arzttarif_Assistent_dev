@@ -36,13 +36,13 @@ def check_single_condition(
 
     try:
         if bedingungstyp == "ICD": # ICD IN LISTE
-            if not check_icd_conditions_at_all: return False
+            if not check_icd_conditions_at_all: return True
             required_icds_in_rule_list = {w.strip().upper() for w in str(werte_str).split(',') if w.strip()}
             if not required_icds_in_rule_list: return True # Leere Regel-Liste ist immer erfüllt
             return any(req_icd in provided_icds_upper for req_icd in required_icds_in_rule_list)
 
         elif bedingungstyp == "HAUPTDIAGNOSE IN TABELLE": # ICD IN TABELLE
-            if not check_icd_conditions_at_all: return False
+            if not check_icd_conditions_at_all: return True
             table_ref = werte_str
             icd_codes_in_rule_table = {entry['Code'].upper() for entry in get_table_content(table_ref, "icd", tabellen_dict_by_table) if entry.get('Code')}
             if not icd_codes_in_rule_table: # Wenn Tabelle leer oder nicht gefunden
@@ -185,7 +185,21 @@ def evaluate_structured_conditions(
 ) -> bool:
     """
     Wertet die strukturierte Logik für eine Pauschale aus.
-    Logik: ODER zwischen Gruppen, UND innerhalb jeder Gruppe.
+    Zwischen Gruppen gilt **ODER**. Innerhalb einer Gruppe werden die
+    Zeilen strikt der Reihe nach verknüpft. Das Feld ``Operator`` einer
+    Zeile gibt an, ob sie mit der **folgenden** Zeile per ``UND`` oder
+    ``ODER`` verbunden wird (Groß-/Kleinschreibung ist egal). Ein
+    ungültiger Operatorwert kann zu einer falschen Auswertung führen.
+
+    Beispiel:
+
+        1. ``SEITIGKEIT = B``  (``Operator`` ``"ODER"``)
+        2. ``ANZAHL >= 2``   (``Operator`` ``"UND"``)
+        3. ``LKN IN LISTE OP``
+
+    Dies ergibt ``(SEITIGKEIT = B ODER ANZAHL >= 2) UND LKN IN LISTE OP``.
+    Gleichbedeutend ist ``(SEITIGKEIT = B UND LKN IN LISTE OP) ODER
+    (ANZAHL >= 2 UND LKN IN LISTE OP)``.
     """
     PAUSCHALE_KEY = 'Pauschale'; GRUPPE_KEY = 'Gruppe'
     conditions_for_this_pauschale = [cond for cond in pauschale_bedingungen_data if cond.get(PAUSCHALE_KEY) == pauschale_code]
@@ -214,25 +228,17 @@ def evaluate_structured_conditions(
         if not conditions_in_group:
             continue  # Leere Gruppe überspringen
 
-        tokens = []
-        for cond_item in conditions_in_group:
-            result = check_single_condition(cond_item, context, tabellen_dict_by_table)
-            tokens.append((result, cond_item.get(OPERATOR_KEY, 'UND').upper()))
+        # Sort by BedingungsID to mirror the original row order from Excel
+        conditions_sorted = sorted(
+            conditions_in_group, key=lambda c: c.get("BedingungsID", 0)
+        )
 
-        if not tokens:
-            continue
-
-        # Evaluate AND before OR using the operators between conditions
-        partial_results = [tokens[0][0]]
-        for idx in range(1, len(tokens)):
-            prev_op = tokens[idx - 1][1]
-            current_res = tokens[idx][0]
-            if prev_op == 'UND':
-                partial_results[-1] = partial_results[-1] and current_res
-            else:  # ODER
-                partial_results.append(current_res)
-
-        group_result = any(partial_results)
+        group_result = True
+        for cond in conditions_sorted:
+            cur_res = check_single_condition(cond, context, tabellen_dict_by_table)
+            if not cur_res:
+                group_result = False
+                break
 
         if group_result:
             # print(f"  -> Gruppe {gruppe_id} ist erfüllt. Pauschale {pauschale_code} ist gültig.")
