@@ -1254,7 +1254,8 @@ def analyze_billing():
         "llm_ergebnis_stufe1": llm_stage1_result,
         "regel_ergebnisse_details": regel_ergebnisse_details_list,
         "abrechnung": finale_abrechnung_obj,
-        "llm_ergebnis_stufe2": llm_stage2_mapping_results
+        "llm_ergebnis_stufe2": llm_stage2_mapping_results,
+        "evaluated_pauschalen": finale_abrechnung_obj.get("evaluated_pauschalen", [])
     }
     if fallback_pauschale_search:
         final_response_payload["fallback_pauschale_search"] = True
