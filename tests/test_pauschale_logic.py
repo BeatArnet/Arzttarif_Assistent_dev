@@ -30,26 +30,6 @@ class TestPauschaleLogic(unittest.TestCase):
             evaluate_structured_conditions("TEST", context, conditions, {})
         )
 
-    def test_group_operator_oder_between_groups(self):
-        conditions = [
-            {"BedingungsID": 1, "Pauschale": "TEST", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "ANZAHL", "Vergleichsoperator": ">=", "Werte": "2"},
-            {"BedingungsID": 2, "Pauschale": "TEST", "Gruppe": 2, "Operator": "UND", "Bedingungstyp": "ANZAHL", "Vergleichsoperator": ">=", "Werte": "1"},
-        ]
-        context = {"Anzahl": 1}
-        self.assertTrue(
-            evaluate_structured_conditions("TEST", context, conditions, {}, group_operator="ODER")
-        )
-
-    def test_group_operator_und_between_groups(self):
-        conditions = [
-            {"BedingungsID": 1, "Pauschale": "TEST", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "ANZAHL", "Vergleichsoperator": ">=", "Werte": "1"},
-            {"BedingungsID": 2, "Pauschale": "TEST", "Gruppe": 2, "Operator": "UND", "Bedingungstyp": "ICD", "Werte": "A12"},
-        ]
-        context = {"Anzahl": 1, "ICD": []}
-        self.assertFalse(
-            evaluate_structured_conditions("TEST", context, conditions, {}, group_operator="UND")
-        )
-
     def test_bilateral_cataract_example(self):
         conditions = [
             {
