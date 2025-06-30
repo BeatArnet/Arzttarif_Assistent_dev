@@ -5,6 +5,14 @@ from typing import Dict, List, Any, Set # <-- Set hier importieren
 from utils import escape, get_table_content, get_lang_field, translate, translate_condition_type
 import re, html
 
+__all__ = [
+    "evaluate_structured_conditions",
+    "check_pauschale_conditions",
+    "get_simplified_conditions",
+    "generate_condition_detail_html",
+    "determine_applicable_pauschale",
+]
+
 # === FUNKTION ZUR PRÜFUNG EINER EINZELNEN BEDINGUNG ===
 def check_single_condition(
     condition: Dict,
