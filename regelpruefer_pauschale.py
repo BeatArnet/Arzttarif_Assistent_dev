@@ -752,7 +752,7 @@ def determine_applicable_pauschale(
 
 
     if not potential_pauschale_codes:
-        return {"type": "Error", "message": "Keine potenziellen Pauschalen für die erbrachten Leistungen und den Kontext gefunden."}
+        return {"type": "Error", "message": "Keine potenziellen Pauschalen für die erbrachten Leistungen und den Kontext gefunden.", "evaluated_pauschalen": []}
 
     evaluated_candidates = []
     # print(f"INFO: Werte strukturierte Bedingungen für {len(potential_pauschale_codes)} potenzielle Pauschalen aus...")
@@ -763,22 +763,37 @@ def determine_applicable_pauschale(
             continue
         
         is_pauschale_valid_structured = False
+        bedingungs_html = ""
         try:
-            # print(f"  Prüfe Pauschale: {code}...")
             grp_op = get_group_operator_for_pauschale(code, pauschale_bedingungen_data, default="UND")
             is_pauschale_valid_structured = evaluate_structured_conditions(
                 code, context, pauschale_bedingungen_data, tabellen_dict_by_table, grp_op
             )
-            # print(f"    -> Ergebnis für {code}: {is_pauschale_valid_structured}")
+            check_res = check_pauschale_conditions(
+                code,
+                context,
+                pauschale_bedingungen_data,
+                tabellen_dict_by_table,
+                leistungskatalog_dict,
+                lang,
+            )
+            bedingungs_html = check_res.get("html", "")
         except Exception as e_eval:
             print(f"FEHLER bei evaluate_structured_conditions für Pauschale {code}: {e_eval}")
             traceback.print_exc()
-            # Behandle als nicht valide, wenn Fehler auftritt
-        
+
+        tp_raw = pauschalen_dict[code].get("Taxpunkte")
+        try:
+            tp_val = float(tp_raw) if tp_raw is not None else 0.0
+        except (ValueError, TypeError):
+            tp_val = 0.0
+
         evaluated_candidates.append({
             "code": code,
             "details": pauschalen_dict[code],
-            "is_valid_structured": is_pauschale_valid_structured
+            "is_valid_structured": is_pauschale_valid_structured,
+            "bedingungs_pruef_html": bedingungs_html,
+            "taxpunkte": tp_val,
         })
 
     valid_candidates = [cand for cand in evaluated_candidates if cand["is_valid_structured"]]
@@ -816,7 +831,7 @@ def determine_applicable_pauschale(
             # print(f"   DEBUG: Sortierte Kandidatenliste ({selection_type_message}): {[c['code'] for c in chosen_list_for_selection]}")
         else:
              # Sollte nicht passieren, wenn valid_candidates nicht leer war, aber zur Sicherheit
-             return {"type": "Error", "message": "Interner Fehler bei der Pauschalenauswahl (Kategorisierung fehlgeschlagen)."}
+             return {"type": "Error", "message": "Interner Fehler bei der Pauschalenauswahl (Kategorisierung fehlgeschlagen).", "evaluated_pauschalen": evaluated_candidates}
     else: # Keine valid_candidates (keine Pauschale hat die strukturierte Prüfung bestanden)
         print("INFO: Keine Pauschale erfüllt die strukturierten Bedingungen.")
         # Erstelle eine informativere Nachricht, wenn potenzielle Kandidaten da waren
@@ -828,12 +843,12 @@ def determine_applicable_pauschale(
             if gepruefte_codes_namen:
                 msg_details = " Folgende potenziellen Pauschalen wurden geprüft, aber deren Bedingungen waren nicht erfüllt: " + ", ".join(gepruefte_codes_namen)
 
-            return {"type": "Error", "message": f"Keine der potenziellen Pauschalen erfüllte die detaillierten UND/ODER-Bedingungen.{msg_details}"}
+            return {"type": "Error", "message": f"Keine der potenziellen Pauschalen erfüllte die detaillierten UND/ODER-Bedingungen.{msg_details}", "evaluated_pauschalen": evaluated_candidates}
         else: # Sollte durch die Prüfung am Anfang von potential_pauschale_codes abgedeckt sein
-            return {"type": "Error", "message": "Keine passende Pauschale gefunden (keine potenziellen Kandidaten)."}
+            return {"type": "Error", "message": "Keine passende Pauschale gefunden (keine potenziellen Kandidaten).", "evaluated_pauschalen": evaluated_candidates}
 
     if not selected_candidate_info: # Doppelte Sicherheit
-        return {"type": "Error", "message": "Interner Fehler: Keine Pauschale nach Auswahlprozess selektiert."}
+        return {"type": "Error", "message": "Interner Fehler: Keine Pauschale nach Auswahlprozess selektiert.", "evaluated_pauschalen": evaluated_candidates}
 
     best_pauschale_code = selected_candidate_info["code"]
     best_pauschale_details = selected_candidate_info["details"].copy() # Kopie für Modifikationen
@@ -1015,7 +1030,8 @@ def determine_applicable_pauschale(
         "details": best_pauschale_details,
         "bedingungs_pruef_html": bedingungs_pruef_html_result,
         "bedingungs_fehler": condition_errors_html_gen, # Fehler aus der HTML-Generierung
-        "conditions_met": True # Da wir hier nur landen, wenn eine Pauschale als gültig ausgewählt wurde
+        "conditions_met": True, # Da wir hier nur landen, wenn eine Pauschale als gültig ausgewählt wurde
+        "evaluated_pauschalen": evaluated_candidates
     }
     return final_result_dict
 
