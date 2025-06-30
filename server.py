@@ -1168,13 +1168,16 @@ def analyze_billing():
 
                 # Nach dem Mapping: potenzielle Pauschalen anhand des erweiterten
                 # LKN-Sets erneut suchen (inkl. gemappter LKNs)
-                erweiterte_lkn_suchmenge = final_lkn_context_for_pauschale_set
+                erweiterte_lkn_suchmenge = {str(l).upper() for l in final_lkn_context_for_pauschale_set}
 
                 neu_gefundene_codes: Set[str] = set()
 
                 for item_lp in pauschale_lp_data:
                     lkn_in_lp_db_val = item_lp.get('Leistungsposition')
-                    if isinstance(lkn_in_lp_db_val, str) and lkn_in_lp_db_val in erweiterte_lkn_suchmenge:
+                    if (
+                        isinstance(lkn_in_lp_db_val, str)
+                        and lkn_in_lp_db_val.upper() in erweiterte_lkn_suchmenge
+                    ):
                         pc_code = item_lp.get('Pauschale')
                         if pc_code and str(pc_code) in pauschalen_dict:
                             neu_gefundene_codes.add(str(pc_code))
@@ -1198,7 +1201,7 @@ def analyze_billing():
                         table_refs_cond_set = {t.strip().lower() for t in str(werte_cond_str).split(',') if t.strip()}
                         for lkn_raw in erweiterte_lkn_suchmenge:
                             if isinstance(lkn_raw, str):
-                                lkn_str = lkn_raw
+                                lkn_str = lkn_raw.upper()
                                 if lkn_str not in erweiterte_lkns_in_tables_cache:
                                     tables_for_lkn_set = set()
                                     for table_name_key_norm, table_entries_list in tabellen_dict_by_table.items():
