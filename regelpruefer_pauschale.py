@@ -184,20 +184,31 @@ def get_beschreibung_fuer_icd_im_backend(
     # print(f"DEBUG: ICD {icd_code} nicht in spezifischer oder Haupttabelle gefunden.")
     return icd_code # Wenn nirgends gefunden, Code selbst zurückgeben
 
+def get_group_operator_for_pauschale(
+    pauschale_code: str, bedingungen_data: List[Dict], default: str = "ODER"
+) -> str:
+    """Liefert den Gruppenoperator (UND/ODER) fuer eine Pauschale."""
+    for cond in bedingungen_data:
+        if cond.get("Pauschale") == pauschale_code and "GruppenOperator" in cond:
+            op = str(cond.get("GruppenOperator", "")).strip().upper()
+            if op in ("UND", "ODER"):
+                return op
+    return default
+
 # === FUNKTION ZUR AUSWERTUNG DER STRUKTURIERTEN LOGIK (UND/ODER) ===
 def evaluate_structured_conditions(
     pauschale_code: str,
     context: Dict,
     pauschale_bedingungen_data: List[Dict],
-    tabellen_dict_by_table: Dict[str, List[Dict]]
-) -> bool:
+    tabellen_dict_by_table: Dict[str, List[Dict]],
+    group_operator: str = "ODER",
+    ) -> bool:
     """
     Wertet die strukturierte Logik für eine Pauschale aus.
-    Zwischen Gruppen gilt **ODER**. Innerhalb einer Gruppe werden die
-    Zeilen strikt der Reihe nach verknüpft. Das Feld ``Operator`` einer
-    Zeile gibt an, ob sie mit der **folgenden** Zeile per ``UND`` oder
-    ``ODER`` verbunden wird (Groß-/Kleinschreibung ist egal). Ein
-    ungültiger Operatorwert kann zu einer falschen Auswertung führen.
+    Logik: ODER zwischen Gruppen, UND innerhalb jeder Gruppe.
+    Logik: Standardmäßig ODER zwischen Gruppen (oder UND, wenn
+    ``group_operator`` entsprechend gesetzt ist), UND innerhalb
+    jeder Gruppe.
 
     Beispiel:
 
@@ -232,6 +243,8 @@ def evaluate_structured_conditions(
         return False
 
     # print(f"DEBUG evaluate_structured_conditions: Pauschale {pauschale_code}, {len(grouped_conditions)} Gruppen gefunden.")
+    group_results = []
+    
     for gruppe_id, conditions_in_group in grouped_conditions.items():
         if not conditions_in_group:
             continue  # Leere Gruppe überspringen
