@@ -1141,59 +1141,6 @@ def analyze_billing():
                 final_lkn_context_list_for_pauschale = list(final_lkn_context_for_pauschale_set)
                 print(f"INFO: Finaler LKN-Kontext für Pauschalen-Hauptprüfung ({len(final_lkn_context_list_for_pauschale)} LKNs): {final_lkn_context_list_for_pauschale}")
 
-                # Nach dem Mapping: potenzielle Pauschalen anhand des erweiterten
-                # LKN-Sets erneut suchen (inkl. gemappter LKNs)
-                erweiterte_lkn_suchmenge = final_lkn_context_for_pauschale_set
-
-                neu_gefundene_codes: Set[str] = set()
-
-                for item_lp in pauschale_lp_data:
-                    lkn_in_lp_db_val = item_lp.get('Leistungsposition')
-                    if isinstance(lkn_in_lp_db_val, str) and lkn_in_lp_db_val in erweiterte_lkn_suchmenge:
-                        pc_code = item_lp.get('Pauschale')
-                        if pc_code and str(pc_code) in pauschalen_dict:
-                            neu_gefundene_codes.add(str(pc_code))
-
-                erweiterte_lkns_in_tables_cache: Dict[str, Set[str]] = {}
-                for cond_data in pauschale_bedingungen_data:
-                    pc_code_cond_val = cond_data.get('Pauschale')
-                    if not (pc_code_cond_val and str(pc_code_cond_val) in pauschalen_dict):
-                        continue
-                    pc_code_cond = str(pc_code_cond_val)
-
-                    bedingungstyp_cond_str = cond_data.get('Bedingungstyp', "").upper()
-                    werte_cond_str = cond_data.get('Werte', "")
-
-                    if bedingungstyp_cond_str in ["LEISTUNGSPOSITIONEN IN LISTE", "LKN"]:
-                        werte_liste_cond_set = {w.strip().upper() for w in str(werte_cond_str).split(',') if w.strip()}
-                        if not erweiterte_lkn_suchmenge.isdisjoint(werte_liste_cond_set):
-                            neu_gefundene_codes.add(pc_code_cond)
-
-                    elif bedingungstyp_cond_str in ["LEISTUNGSPOSITIONEN IN TABELLE", "TARIFPOSITIONEN IN TABELLE"]:
-                        table_refs_cond_set = {t.strip().lower() for t in str(werte_cond_str).split(',') if t.strip()}
-                        for lkn_raw in erweiterte_lkn_suchmenge:
-                            if isinstance(lkn_raw, str):
-                                lkn_str = lkn_raw
-                                if lkn_str not in erweiterte_lkns_in_tables_cache:
-                                    tables_for_lkn_set = set()
-                                    for table_name_key_norm, table_entries_list in tabellen_dict_by_table.items():
-                                        for entry_item in table_entries_list:
-                                            if entry_item.get('Code', '').upper() == lkn_str and \
-                                               entry_item.get('Tabelle_Typ', '').lower() == "service_catalog":
-                                                tables_for_lkn_set.add(table_name_key_norm)
-                                    erweiterte_lkns_in_tables_cache[lkn_str] = tables_for_lkn_set
-
-                                if not table_refs_cond_set.isdisjoint(erweiterte_lkns_in_tables_cache[lkn_str]):
-                                    neu_gefundene_codes.add(pc_code_cond)
-                                    break
-
-                if neu_gefundene_codes:
-                    potential_pauschale_codes_set.update(neu_gefundene_codes)
-                print(
-                    f"DEBUG: {len(potential_pauschale_codes_set)} potenzielle Pauschalen nach erweiterter Suche: "
-                    f"{potential_pauschale_codes_set}"
-                )
-
                 pauschale_haupt_pruef_kontext = {
                     "ICD": icd_input, "GTIN": gtin_input, "Alter": alter_context_val,
                     "Geschlecht": geschlecht_context_val, "useIcd": use_icd_flag,
