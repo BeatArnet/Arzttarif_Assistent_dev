@@ -176,29 +176,15 @@ def get_beschreibung_fuer_icd_im_backend(
     # print(f"DEBUG: ICD {icd_code} nicht in spezifischer oder Haupttabelle gefunden.")
     return icd_code # Wenn nirgends gefunden, Code selbst zurückgeben
 
-
-def get_group_operator_for_pauschale(
-    pauschale_code: str, bedingungen_data: List[Dict], default: str = "ODER"
-) -> str:
-    """Liefert den Gruppenoperator (UND/ODER) fuer eine Pauschale."""
-    for cond in bedingungen_data:
-        if cond.get("Pauschale") == pauschale_code and "GruppenOperator" in cond:
-            op = str(cond.get("GruppenOperator", "")).strip().upper()
-            if op in ("UND", "ODER"):
-                return op
-    return default
-
 # === FUNKTION ZUR AUSWERTUNG DER STRUKTURIERTEN LOGIK (UND/ODER) ===
 def evaluate_structured_conditions(
     pauschale_code: str,
     context: Dict,
     pauschale_bedingungen_data: List[Dict],
-    tabellen_dict_by_table: Dict[str, List[Dict]],
-    group_operator: str = "ODER",
+    tabellen_dict_by_table: Dict[str, List[Dict]]
 ) -> bool:
     """
     Wertet die strukturierte Logik für eine Pauschale aus.
-
     Zwischen Gruppen gilt **ODER**. Innerhalb einer Gruppe werden die
     Zeilen strikt der Reihe nach verknüpft. Das Feld ``Operator`` einer
     Zeile gibt an, ob sie mit der **folgenden** Zeile per ``UND`` oder
@@ -238,8 +224,6 @@ def evaluate_structured_conditions(
         return False
 
     # print(f"DEBUG evaluate_structured_conditions: Pauschale {pauschale_code}, {len(grouped_conditions)} Gruppen gefunden.")
-    group_results = []
-
     for gruppe_id, conditions_in_group in grouped_conditions.items():
         if not conditions_in_group:
             continue  # Leere Gruppe überspringen
@@ -298,7 +282,6 @@ def check_pauschale_conditions(
     errors: list[str] = []
     grouped_html_parts: Dict[Any, List[str]] = {}
     trigger_lkn_condition_met = False # Wird nicht mehr direkt hier gesetzt, sondern von aufrufender Funktion
-    group_operator = get_group_operator_for_pauschale(pauschale_code, pauschale_bedingungen_data)
 
     PAUSCHALE_KEY_IN_BEDINGUNGEN = 'Pauschale'; BED_ID_KEY = 'BedingungsID'
     BED_TYP_KEY = 'Bedingungstyp'; BED_WERTE_KEY = 'Werte'; BED_FELD_KEY = 'Feld'
@@ -654,13 +637,7 @@ def check_pauschale_conditions(
     # Fürs Erste lassen wir es hier, aber es ist nicht ganz präzise.
     # Besser: determine_applicable_pauschale prüft, ob die gewählte Pauschale eine LKN-Bedingung hatte, die erfüllt wurde.
     final_trigger_lkn_met = False
-    if evaluate_structured_conditions(
-        pauschale_code,
-        context,
-        pauschale_bedingungen_data,
-        tabellen_dict_by_table,
-        group_operator=group_operator,
-    ):
+    if evaluate_structured_conditions(pauschale_code, context, pauschale_bedingungen_data, tabellen_dict_by_table):
         # Prüfe, ob irgendeine erfüllte LKN-Bedingung in den *gültigen* Gruppen existiert
         for cond_def in conditions_for_this_pauschale:
             cond_typ = cond_def.get(BED_TYP_KEY, "").upper()
@@ -763,13 +740,8 @@ def determine_applicable_pauschale(
         is_pauschale_valid_structured = False
         try:
             # print(f"  Prüfe Pauschale: {code}...")
-            group_operator = get_group_operator_for_pauschale(code, pauschale_bedingungen_data)
             is_pauschale_valid_structured = evaluate_structured_conditions(
-                code,
-                context,
-                pauschale_bedingungen_data,
-                tabellen_dict_by_table,
-                group_operator=group_operator,
+                code, context, pauschale_bedingungen_data, tabellen_dict_by_table
             )
             # print(f"    -> Ergebnis für {code}: {is_pauschale_valid_structured}")
         except Exception as e_eval:
