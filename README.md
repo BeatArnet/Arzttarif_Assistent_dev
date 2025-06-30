@@ -10,7 +10,7 @@ Dies ist ein Prototyp einer Webanwendung zur Unterstützung bei der Abrechnung m
 - `utils.py` bietet ein Übersetzungssystem für Regelmeldungen und Condition-Typen in Deutsch, Französisch und Italienisch.
 - In `regelpruefer_pauschale.py` sorgt eine Operator-Präzedenzlogik für korrektes "UND vor ODER" bei strukturierten Bedingungen.
 - `evaluate_structured_conditions` unterstützt einen konfigurierbaren
-  `GruppenOperator` (Standard `ODER`) für die Verknüpfung der Bedingungsgruppen.
+  `GruppenOperator` (Standard `UND`) für die Verknüpfung der Bedingungsgruppen.
 - Die mehrsprachigen Prompts für LLM Stufe 1 und Stufe wurden in  `prompts.py` ausgelagert
 - Funktionale Erweiterung umfassen:
     - interaktive Info-Pop-ups, 
@@ -60,7 +60,7 @@ Der Assistent ist in den drei Landessprachen DE, FR und IT verfügbar. Die Sprac
         *   Versucht, TARDOC E/EZ-LKNs auf funktional äquivalente LKNs (oft Typ P/PZ) zu mappen, die als Bedingungen in den potenziellen Pauschalen vorkommen. Die Kandidatenliste für das Mapping wird dynamisch aus den Bedingungen der potenziell relevanten Pauschalen generiert.
     *   **Pauschalen-Anwendbarkeitsprüfung (`regelpruefer_pauschale.py`):**
         *   **Potenzielle Pauschalen finden:** Identifiziert mögliche Pauschalen basierend auf den regelkonformen LKNs (aus `rule_checked_leistungen`) unter Verwendung von `PAUSCHALEN_Leistungspositionen.json` und den LKN-Bedingungen in `PAUSCHALEN_Bedingungen.json`.
-        *   **Strukturierte Bedingungsprüfung (`evaluate_structured_conditions`):** Prüft für jede potenzielle Pauschale, ob ihre Bedingungsgruppen erfüllt sind. Zwischen den Gruppen gilt ein konfigurierbarer `GruppenOperator` (Standard `ODER`), innerhalb einer Gruppe wird der `Operator` jeder Zeile mit `UND`-Vorrang ausgewertet. Berücksichtigt das `useIcd`-Flag.
+        *   **Strukturierte Bedingungsprüfung (`evaluate_structured_conditions`):** Prüft für jede potenzielle Pauschale, ob ihre Bedingungsgruppen erfüllt sind. Zwischen den Gruppen gilt ein konfigurierbarer `GruppenOperator` (Standard `UND`), innerhalb einer Gruppe wird der `Operator` jeder Zeile mit `UND`-Vorrang ausgewertet. Berücksichtigt das `useIcd`-Flag.
         *   **Auswahl der besten Pauschale (`determine_applicable_pauschale`):** Wählt aus den struktur-gültigen Pauschalen die "komplexeste passende" (niedrigster Suffix-Buchstabe, z.B. A vor B vor E) aus der bevorzugten Kategorie (spezifisch vor Fallback).
         *   Generiert detailliertes HTML für die Bedingungsprüfung und eine Begründung der Auswahl.
     *   **Entscheidung & TARDOC-Vorbereitung:** Entscheidet "Pauschale vor TARDOC". Wenn keine Pauschale anwendbar ist, bereitet es die TARDOC-Liste (`regelpruefer.prepare_tardoc_abrechnung`) vor.
