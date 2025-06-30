@@ -13,6 +13,10 @@ let data_interpretationen = {};
 let interpretationMap = {};
 let groupInfoMap = {};
 
+// Zusätzliche Pauschalen-Infos
+let selectedPauschaleDetails = null;
+let evaluatedPauschalenList = [];
+
 // Dynamische Übersetzungen
 const DYN_TEXT = {
     de: {
@@ -60,7 +64,10 @@ const DYN_TEXT = {
         groupNoData: 'Keine Daten zur Leistungsgruppe {code}.',
         potentialIcds: 'Mögliche ICD-Diagnosen',
         thIcdCode: 'ICD Code',
-        thIcdText: 'Beschreibung'
+        thIcdText: 'Beschreibung',
+        morePauschalen: 'Weitere Pauschalen',
+        backToSelPauschale: 'Zurück zur gewählten Pauschale',
+        diffTaxpoints: 'Differenz Taxpunkte'
     },
     fr: {
         spinnerWorking: 'Vérification en cours...',
@@ -107,7 +114,10 @@ const DYN_TEXT = {
         groupNoData: 'Aucune donnée pour le groupe de prestations {code}.',
         potentialIcds: 'Diagnostics ICD possibles',
         thIcdCode: 'Code ICD',
-        thIcdText: 'Description'
+        thIcdText: 'Description',
+        morePauschalen: 'Autres forfaits',
+        backToSelPauschale: 'Retour au forfait choisi',
+        diffTaxpoints: 'Différence points tarifaires'
     },
     it: {
         spinnerWorking: 'Verifica in corso...',
@@ -154,8 +164,11 @@ const DYN_TEXT = {
         groupNoData: 'Nessun dato per il gruppo di prestazioni {code}.',
         potentialIcds: 'Possibili diagnosi ICD',
         thIcdCode: 'Codice ICD',
-        thIcdText: 'Descrizione'
-    } 
+        thIcdText: 'Descrizione',
+        morePauschalen: 'Altri forfait',
+        backToSelPauschale: 'Torna al forfait scelto',
+        diffTaxpoints: 'Differenza punti tariffari'
+    }
 };
 
 const RULE_TRANSLATIONS = {
@@ -483,6 +496,47 @@ function buildGroupInfoHtml(code) {
            `<p><b>Enthaltene LKN:</b> ${links}</p>`;
 }
 
+function renderAdditionalPauschalen(list) {
+    const container = $('additionalPauschalen');
+    if (!container) return;
+    if (!Array.isArray(list) || list.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+    let html = `<h4>${tDyn('morePauschalen')}</h4><ul>`;
+    list.forEach((p, i) => {
+        const code = escapeHtml(p.details?.Pauschale || `#${i+1}`);
+        const text = escapeHtml(getLangField(p.details, 'Pauschale_Text') || '');
+        html += `<li><a href="#" class="other-pauschale-link" data-idx="${i}">${code} - ${text}</a></li>`;
+    });
+    html += '</ul>';
+    container.innerHTML = html;
+    container.querySelectorAll('.other-pauschale-link').forEach(a => {
+        a.addEventListener('click', (e) => {
+            e.preventDefault();
+            const idx = parseInt(a.dataset.idx);
+            showPauschaleComparison(idx);
+        });
+    });
+}
+
+function showPauschaleComparison(idx) {
+    const container = $('pauschaleComparison');
+    if (!container || !evaluatedPauschalenList[idx]) return;
+    const p = evaluatedPauschalenList[idx];
+    const parse = v => parseFloat(String(v).replace(',', '.')) || 0;
+    const selTp = parse(selectedPauschaleDetails?.Taxpunkte);
+    const otherTp = parse(p.details?.Taxpunkte);
+    const diff = otherTp - selTp;
+    const diffTxt = `${diff >= 0 ? '+' : ''}${diff.toFixed(2)}`;
+    let html = `<h4>${escapeHtml(p.details?.Pauschale || '')} <small>${tDyn('diffTaxpoints')}: ${diffTxt}</small></h4>`;
+    html += p.bedingungs_pruef_html || '';
+    html += `<p><a href="#" id="backToSelPauschaleLink">${tDyn('backToSelPauschale')}</a></p>`;
+    container.innerHTML = html;
+    const back = $('backToSelPauschaleLink');
+    if (back) back.addEventListener('click', (ev) => { ev.preventDefault(); container.innerHTML = ''; });
+}
+
 
 function displayOutput(html, type = "info") {
     const out = $("output");
@@ -775,8 +829,12 @@ async function getBillingAnalysis() {
                 finalResultHeader = `<p class="final-result-header success"><b>${tDyn('billingPauschale')}</b></p>`;
                 if (abrechnung.details) {
                     finalResultDetailsHtml = displayPauschale(abrechnung);
+                    selectedPauschaleDetails = abrechnung.details;
+                    evaluatedPauschalenList = Array.isArray(abrechnung.evaluated_pauschalen) ? abrechnung.evaluated_pauschalen : [];
                 } else {
                     finalResultDetailsHtml = `<p class='error'>${tDyn('errorPauschaleMissing')}</p>`;
+                    selectedPauschaleDetails = null;
+                    evaluatedPauschalenList = [];
                 }
                 break;
             case "TARDOC":
@@ -787,8 +845,8 @@ async function getBillingAnalysis() {
                  } else {
                      finalResultDetailsHtml = `<p><i>${tDyn('noTardoc')}</i></p>`;
                  }
-                 break;
-             case "Error":
+                break;
+            case "Error":
                 console.error("[getBillingAnalysis] Abrechnungstyp: Error", abrechnung.message);
                 finalResultHeader = `<p class="final-result-header error"><b>${tDyn('billingError')}</b></p>`;
                 finalResultDetailsHtml = `<p><i>Grund: ${escapeHtml(abrechnung.message || 'Unbekannter Fehler')}</i></p>`;
@@ -814,6 +872,13 @@ async function getBillingAnalysis() {
 
         // --- Finalen Output anzeigen ---
         displayOutput(htmlOutput);
+        if (abrechnung.type === 'Pauschale') {
+            renderAdditionalPauschalen(evaluatedPauschalenList);
+        } else {
+            renderAdditionalPauschalen([]);
+            const comp = $('pauschaleComparison');
+            if (comp) comp.innerHTML = '';
+        }
         console.log("[getBillingAnalysis] Frontend-Verarbeitung abgeschlossen.");
         hideSpinner();
 
