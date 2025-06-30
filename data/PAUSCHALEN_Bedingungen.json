@@ -90,15 +90,6 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 4,
-        "Pauschale": "C00.10D",
-        "Gruppe": 4,
-        "Operator": "ODER",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C00.70_10",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 5,
         "Pauschale": "C00.10D",
         "Gruppe": 4,
@@ -114,6 +105,15 @@
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C00.70_2",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 4,
+        "Pauschale": "C00.10D",
+        "Gruppe": 4,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C00.70_10",
         "Ebene": null
     },
     {
@@ -198,15 +198,6 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 2,
-        "Pauschale": "C00.20A",
-        "Gruppe": 3,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C00.70_20",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 3,
         "Pauschale": "C00.20A",
         "Gruppe": 3,
@@ -216,10 +207,10 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 4,
+        "BedingungsID": 2,
         "Pauschale": "C00.20A",
-        "Gruppe": 4,
-        "Operator": "ODER",
+        "Gruppe": 3,
+        "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C00.70_20",
         "Ebene": null
@@ -231,6 +222,15 @@
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C00.70_3",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 4,
+        "Pauschale": "C00.20A",
+        "Gruppe": 4,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C00.70_20",
         "Ebene": null
     },
     {
@@ -432,21 +432,21 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 5,
-        "Pauschale": "C00.20D",
-        "Gruppe": 4,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C00.70_2",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 4,
         "Pauschale": "C00.20D",
         "Gruppe": 4,
         "Operator": "ODER",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C00.70_25",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 5,
+        "Pauschale": "C00.20D",
+        "Gruppe": 4,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C00.70_2",
         "Ebene": null
     },
     {
@@ -468,21 +468,21 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 2,
-        "Pauschale": "C00.20E",
-        "Gruppe": 3,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C00.70_25",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 3,
         "Pauschale": "C00.20E",
         "Gruppe": 3,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C00.70_1",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 2,
+        "Pauschale": "C00.20E",
+        "Gruppe": 3,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C00.70_25",
         "Ebene": null
     },
     {
@@ -531,6 +531,24 @@
         "Ebene": null
     },
     {
+        "BedingungsID": 2,
+        "Pauschale": "C00.30B",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C00.70_30",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 3,
+        "Pauschale": "C00.30B",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C00.70_0",
+        "Ebene": null
+    },
+    {
         "BedingungsID": 4,
         "Pauschale": "C00.30B",
         "Gruppe": 1,
@@ -541,20 +559,11 @@
     },
     {
         "BedingungsID": 2,
-        "Pauschale": "C00.30B",
+        "Pauschale": "C00.30C",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C00.70_30",
-        "Ebene": null
-    },
-    {
-        "BedingungsID": 3,
-        "Pauschale": "C00.30B",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C00.70_0",
         "Ebene": null
     },
     {
@@ -564,15 +573,6 @@
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C00.70_0",
-        "Ebene": null
-    },
-    {
-        "BedingungsID": 2,
-        "Pauschale": "C00.30C",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C00.70_30",
         "Ebene": null
     },
     {
@@ -666,21 +666,21 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 6,
-        "Pauschale": "C00.40A",
-        "Gruppe": 4,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C00.70_2",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 5,
         "Pauschale": "C00.40A",
         "Gruppe": 4,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C00.70_0",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 6,
+        "Pauschale": "C00.40A",
+        "Gruppe": 4,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C00.70_2",
         "Ebene": null
     },
     {
@@ -783,15 +783,6 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 5,
-        "Pauschale": "C00.50A",
-        "Gruppe": 4,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C00.70_0",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 6,
         "Pauschale": "C00.50A",
         "Gruppe": 4,
@@ -810,6 +801,15 @@
         "Ebene": null
     },
     {
+        "BedingungsID": 5,
+        "Pauschale": "C00.50A",
+        "Gruppe": 4,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C00.70_0",
+        "Ebene": null
+    },
+    {
         "BedingungsID": 1,
         "Pauschale": "C00.50B",
         "Gruppe": 1,
@@ -819,21 +819,21 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 2,
-        "Pauschale": "C00.50B",
-        "Gruppe": 3,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C00.70_50",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 3,
         "Pauschale": "C00.50B",
         "Gruppe": 3,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C00.70_0",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 2,
+        "Pauschale": "C00.50B",
+        "Gruppe": 3,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C00.70_50",
         "Ebene": null
     },
     {
@@ -954,6 +954,15 @@
         "Ebene": null
     },
     {
+        "BedingungsID": 1,
+        "Pauschale": "C00.80A",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "NUKLEARMEDIZIN",
+        "Ebene": null
+    },
+    {
         "BedingungsID": 3,
         "Pauschale": "C00.80A",
         "Gruppe": 1,
@@ -964,7 +973,7 @@
     },
     {
         "BedingungsID": 1,
-        "Pauschale": "C00.80A",
+        "Pauschale": "C00.80B",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
@@ -978,15 +987,6 @@
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C00.80_55,C00.80_53",
-        "Ebene": null
-    },
-    {
-        "BedingungsID": 1,
-        "Pauschale": "C00.80B",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "NUKLEARMEDIZIN",
         "Ebene": null
     },
     {
@@ -1243,21 +1243,21 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 2,
-        "Pauschale": "C02.05A",
-        "Gruppe": 3,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C02.05_1",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 3,
         "Pauschale": "C02.05A",
         "Gruppe": 3,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "ANAST",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 2,
+        "Pauschale": "C02.05A",
+        "Gruppe": 3,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C02.05_1",
         "Ebene": null
     },
     {
@@ -1389,16 +1389,6 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 3,
-        "Pauschale": "C02.20A",
-        "Gruppe": 3,
-        "Operator": "ODER",
-        "Bedingungstyp": "SEITIGKEIT",
-        "Vergleichsoperator": "=",
-        "Werte": "B",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 2,
         "Pauschale": "C02.20A",
         "Gruppe": 3,
@@ -1406,6 +1396,16 @@
         "Bedingungstyp": "ANZAHL",
         "Vergleichsoperator": ">=",
         "Werte": "2",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 3,
+        "Pauschale": "C02.20A",
+        "Gruppe": 3,
+        "Operator": "ODER",
+        "Bedingungstyp": "SEITIGKEIT",
+        "Vergleichsoperator": "=",
+        "Werte": "B",
         "Ebene": null
     },
     {
@@ -1436,6 +1436,15 @@
         "Ebene": null
     },
     {
+        "BedingungsID": 3,
+        "Pauschale": "C02.25A",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C02.CQ.0010",
+        "Ebene": null
+    },
+    {
         "BedingungsID": 2,
         "Pauschale": "C02.25A",
         "Gruppe": 1,
@@ -1446,12 +1455,13 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 3,
-        "Pauschale": "C02.25A",
+        "BedingungsID": 2,
+        "Pauschale": "C02.25B",
         "Gruppe": 1,
         "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "C02.CQ.0010",
+        "Bedingungstyp": "ANZAHL",
+        "Vergleichsoperator": "=",
+        "Werte": "2",
         "Ebene": null
     },
     {
@@ -1461,16 +1471,6 @@
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C02.25_30",
-        "Ebene": null
-    },
-    {
-        "BedingungsID": 2,
-        "Pauschale": "C02.25B",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "ANZAHL",
-        "Vergleichsoperator": "=",
-        "Werte": "2",
         "Ebene": null
     },
     {
@@ -1564,6 +1564,15 @@
         "Ebene": null
     },
     {
+        "BedingungsID": 3,
+        "Pauschale": "C03.10B",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "ANAST",
+        "Ebene": null
+    },
+    {
         "BedingungsID": 2,
         "Pauschale": "C03.10B",
         "Gruppe": 1,
@@ -1574,7 +1583,7 @@
     },
     {
         "BedingungsID": 3,
-        "Pauschale": "C03.10B",
+        "Pauschale": "C03.10C",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
@@ -1588,15 +1597,6 @@
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
         "Werte": "C03.GE.0010",
-        "Ebene": null
-    },
-    {
-        "BedingungsID": 3,
-        "Pauschale": "C03.10C",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "ANAST",
         "Ebene": null
     },
     {
@@ -1782,22 +1782,31 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 1,
+        "BedingungsID": 3,
         "Pauschale": "C03.26D",
         "Gruppe": 1,
         "Operator": "UND",
-        "Bedingungstyp": "ALTER IN JAHREN BEI EINTRITT",
-        "Vergleichsoperator": "<",
-        "Werte": "16",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "ANAST",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 1,
+        "Pauschale": "C03.26D",
+        "Gruppe": 2,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C03.26_34",
         "Ebene": null
     },
     {
         "BedingungsID": 2,
         "Pauschale": "C03.26D",
-        "Gruppe": 1,
+        "Gruppe": 2,
         "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C03.26_34",
+        "Bedingungstyp": "ALTER IN JAHREN BEI EINTRITT",
+        "Vergleichsoperator": ">=",
+        "Werte": "16",
         "Ebene": null
     },
     {
@@ -1892,12 +1901,21 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 1,
+        "BedingungsID": 2,
         "Pauschale": "C03.31C",
-        "Gruppe": 1,
+        "Gruppe": 2,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C03.31_32",
+        "Werte": "C03.31_30,C03.31_31",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 3,
+        "Pauschale": "C03.31C",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C03.GG.0140",
         "Ebene": null
     },
     {
@@ -1991,6 +2009,15 @@
         "Ebene": null
     },
     {
+        "BedingungsID": 3,
+        "Pauschale": "C04.50A",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C04.BRONCHOSKOPIE_TBB",
+        "Ebene": null
+    },
+    {
         "BedingungsID": 1,
         "Pauschale": "C04.50A",
         "Gruppe": 1,
@@ -2009,12 +2036,12 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 3,
-        "Pauschale": "C04.50A",
+        "BedingungsID": 1,
+        "Pauschale": "C04.50B",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C04.BRONCHOSKOPIE_TBB",
+        "Werte": "C04.BRONCHOSKOPIE",
         "Ebene": null
     },
     {
@@ -2033,15 +2060,6 @@
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C04.BRONCHOSKOPIE_TBNA",
-        "Ebene": null
-    },
-    {
-        "BedingungsID": 1,
-        "Pauschale": "C04.50B",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C04.BRONCHOSKOPIE",
         "Ebene": null
     },
     {
@@ -2090,6 +2108,15 @@
         "Ebene": null
     },
     {
+        "BedingungsID": 3,
+        "Pauschale": "C04.51A",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C04.BRONCHOSKOPIE_LASERTH",
+        "Ebene": null
+    },
+    {
         "BedingungsID": 1,
         "Pauschale": "C04.51A",
         "Gruppe": 2,
@@ -2108,12 +2135,12 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 3,
+        "BedingungsID": 5,
         "Pauschale": "C04.51A",
-        "Gruppe": 2,
-        "Operator": "ODER",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C04.BRONCHOSKOPIE_LASERTH",
+        "Gruppe": 4,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C04.GC.Z007",
         "Ebene": null
     },
     {
@@ -2126,30 +2153,12 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 5,
-        "Pauschale": "C04.51A",
-        "Gruppe": 4,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "C04.GC.Z007",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 1,
         "Pauschale": "C04.51B",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C04.BRONCHOSKOPIE",
-        "Ebene": null
-    },
-    {
-        "BedingungsID": 3,
-        "Pauschale": "C04.51B",
-        "Gruppe": 2,
-        "Operator": "ODER",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "C04.GC.Z001",
         "Ebene": null
     },
     {
@@ -2162,6 +2171,15 @@
         "Ebene": null
     },
     {
+        "BedingungsID": 3,
+        "Pauschale": "C04.51B",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C04.GC.Z001",
+        "Ebene": null
+    },
+    {
         "BedingungsID": 1,
         "Pauschale": "C04.51C",
         "Gruppe": 1,
@@ -2171,21 +2189,21 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 3,
-        "Pauschale": "C04.51C",
-        "Gruppe": 2,
-        "Operator": "ODER",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "C04.GC.Z013",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 2,
         "Pauschale": "C04.51C",
         "Gruppe": 2,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C04.BRONCHOSKOPIE_2,C04.BRONCHOSKOPIE_TBNA",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 3,
+        "Pauschale": "C04.51C",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C04.GC.Z013",
         "Ebene": null
     },
     {
@@ -2225,21 +2243,21 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 2,
-        "Pauschale": "C04.60A",
-        "Gruppe": 3,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "GK.35.0010",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 3,
         "Pauschale": "C04.60A",
         "Gruppe": 3,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
         "Werte": "C04.GD.0010",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 2,
+        "Pauschale": "C04.60A",
+        "Gruppe": 3,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "GK.35.0010",
         "Ebene": null
     },
     {
@@ -2379,6 +2397,15 @@
         "Ebene": null
     },
     {
+        "BedingungsID": 4,
+        "Pauschale": "C05.11B",
+        "Gruppe": 3,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C05.KC.Z007",
+        "Ebene": null
+    },
+    {
         "BedingungsID": 2,
         "Pauschale": "C05.11B",
         "Gruppe": 3,
@@ -2395,15 +2422,6 @@
         "Bedingungstyp": "ANZAHL",
         "Vergleichsoperator": "=",
         "Werte": "2",
-        "Ebene": null
-    },
-    {
-        "BedingungsID": 4,
-        "Pauschale": "C05.11B",
-        "Gruppe": 3,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "C05.KC.Z007",
         "Ebene": null
     },
     {
@@ -2425,15 +2443,6 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 4,
-        "Pauschale": "C05.11C",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "C05.KC.Z007",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 2,
         "Pauschale": "C05.11C",
         "Gruppe": 1,
@@ -2450,6 +2459,15 @@
         "Bedingungstyp": "ANZAHL",
         "Vergleichsoperator": "=",
         "Werte": "1",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 4,
+        "Pauschale": "C05.11C",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C05.KC.Z007",
         "Ebene": null
     },
     {
@@ -2480,15 +2498,6 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 3,
-        "Pauschale": "C05.15A",
-        "Gruppe": 2,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C05.15_2",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 4,
         "Pauschale": "C05.15A",
         "Gruppe": 2,
@@ -2498,21 +2507,21 @@
         "Ebene": null
     },
     {
+        "BedingungsID": 3,
+        "Pauschale": "C05.15A",
+        "Gruppe": 2,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C05.15_2",
+        "Ebene": null
+    },
+    {
         "BedingungsID": 2,
         "Pauschale": "C05.15B",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C05.15_1",
-        "Ebene": null
-    },
-    {
-        "BedingungsID": 4,
-        "Pauschale": "C05.20A",
-        "Gruppe": 2,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "ANAST",
         "Ebene": null
     },
     {
@@ -2531,6 +2540,15 @@
         "Operator": "ODER",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
         "Werte": "C05.GC.0051",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 4,
+        "Pauschale": "C05.20A",
+        "Gruppe": 2,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "ANAST",
         "Ebene": null
     },
     {
@@ -2785,6 +2803,34 @@
         "Ebene": null
     },
     {
+        "BedingungsID": 3,
+        "Pauschale": "C05.30A",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "ANZAHL",
+        "Vergleichsoperator": ">",
+        "Werte": "2",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 6,
+        "Pauschale": "C05.30A",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C05.RE.Z004",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 4,
+        "Pauschale": "C05.30A",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C05.30",
+        "Ebene": null
+    },
+    {
         "BedingungsID": 2,
         "Pauschale": "C05.30A",
         "Gruppe": 1,
@@ -2794,21 +2840,22 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 3,
+        "BedingungsID": 5,
         "Pauschale": "C05.30A",
         "Gruppe": 1,
         "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "C05.RE.Z006",
+        "Bedingungstyp": "ANZAHL",
+        "Vergleichsoperator": ">",
+        "Werte": "3",
         "Ebene": null
     },
     {
-        "BedingungsID": 4,
+        "BedingungsID": 2,
         "Pauschale": "C05.30B",
         "Gruppe": 1,
         "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "C05.RE.Z004",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C05.30",
         "Ebene": null
     },
     {
@@ -2822,12 +2869,12 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 2,
+        "BedingungsID": 4,
         "Pauschale": "C05.30B",
         "Gruppe": 1,
         "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C05.30",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C05.RE.Z004",
         "Ebene": null
     },
     {
@@ -2895,12 +2942,12 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 2,
+        "BedingungsID": 3,
         "Pauschale": "C06.00A",
         "Gruppe": 1,
         "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C07.49",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C06.CE.0010",
         "Ebene": null
     },
     {
@@ -2922,15 +2969,6 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 2,
-        "Pauschale": "C06.05A",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C06.05_2,C06.05_1",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 5,
         "Pauschale": "C06.05A",
         "Gruppe": 1,
@@ -2949,6 +2987,15 @@
         "Ebene": null
     },
     {
+        "BedingungsID": 2,
+        "Pauschale": "C06.05A",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C06.05_2,C06.05_1",
+        "Ebene": null
+    },
+    {
         "BedingungsID": 3,
         "Pauschale": "C06.05A",
         "Gruppe": 2,
@@ -2969,16 +3016,16 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 2,
+        "BedingungsID": 4,
         "Pauschale": "C06.05B",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C06.05_2,C06.05_1",
+        "Werte": "C06.05_LAP",
         "Ebene": null
     },
     {
-        "BedingungsID": 5,
+        "BedingungsID": 2,
         "Pauschale": "C06.05B",
         "Gruppe": 1,
         "Operator": "UND",
@@ -2989,30 +3036,10 @@
     {
         "BedingungsID": 3,
         "Pauschale": "C06.05B",
-        "Gruppe": 2,
-        "Operator": "UND",
-        "Bedingungstyp": "SEITIGKEIT",
-        "Vergleichsoperator": "=",
-        "Werte": "B",
-        "Ebene": null
-    },
-    {
-        "BedingungsID": 4,
-        "Pauschale": "C06.05B",
-        "Gruppe": 3,
-        "Operator": "ODER",
-        "Bedingungstyp": "ANZAHL",
-        "Vergleichsoperator": ">",
-        "Werte": "1",
-        "Ebene": null
-    },
-    {
-        "BedingungsID": 2,
-        "Pauschale": "C06.05C",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C06.05_2,C06.05_1",
+        "Werte": "C06.05_1,C06.05_2",
         "Ebene": null
     },
     {
@@ -3022,6 +3049,15 @@
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C06.05_1,C06.05_2",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 2,
+        "Pauschale": "C06.05C",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C06.05_2,C06.05_1",
         "Ebene": null
     },
     {
@@ -3043,21 +3079,21 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 5,
-        "Pauschale": "C06.10A",
-        "Gruppe": 5,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C06.25D",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 6,
         "Pauschale": "C06.10A",
         "Gruppe": 5,
         "Operator": "ODER",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "ANAST",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 5,
+        "Pauschale": "C06.10A",
+        "Gruppe": 5,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C06.25D",
         "Ebene": null
     },
     {
@@ -3152,21 +3188,21 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 1,
-        "Pauschale": "C07.60A",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C07.ERCP",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 2,
         "Pauschale": "C07.60A",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "ANAST",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 1,
+        "Pauschale": "C07.60A",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C07.ERCP",
         "Ebene": null
     },
     {
@@ -3208,7 +3244,7 @@
     {
         "BedingungsID": 1,
         "Pauschale": "C07.60C",
-        "Gruppe": 1,
+        "Gruppe": 2,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C07.ERCP",
@@ -3217,6 +3253,15 @@
     {
         "BedingungsID": 2,
         "Pauschale": "C07.60C",
+        "Gruppe": 2,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "ANAST",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 3,
+        "Pauschale": "C07.60C",
         "Gruppe": 3,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
@@ -3224,7 +3269,7 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 3,
+        "BedingungsID": 4,
         "Pauschale": "C07.60C",
         "Gruppe": 4,
         "Operator": "ODER",
@@ -3233,12 +3278,30 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 1,
-        "Pauschale": "C07.60D",
-        "Gruppe": 2,
+        "BedingungsID": 5,
+        "Pauschale": "C07.60C",
+        "Gruppe": 5,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C07.ERCP",
+        "Werte": "C07.ERCP_LITHOTRIPSIE",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 7,
+        "Pauschale": "C07.60C",
+        "Gruppe": 6,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C07.AB.0060",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 6,
+        "Pauschale": "C07.60C",
+        "Gruppe": 7,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C07.ERCP_LITHOTRIPSIE",
         "Ebene": null
     },
     {
@@ -3248,6 +3311,15 @@
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "ANAST",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 1,
+        "Pauschale": "C07.60D",
+        "Gruppe": 2,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C07.ERCP",
         "Ebene": null
     },
     {
@@ -3503,21 +3575,21 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 3,
-        "Pauschale": "C08.00A",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "ANAST",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 2,
         "Pauschale": "C08.00A",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C08.00",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 3,
+        "Pauschale": "C08.00A",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "ANAST",
         "Ebene": null
     },
     {
@@ -3539,12 +3611,12 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 2,
+        "BedingungsID": 3,
         "Pauschale": "C08.02Z",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C08.02",
+        "Werte": "C08.02_1",
         "Ebene": null
     },
     {
@@ -3575,21 +3647,21 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 3,
-        "Pauschale": "C08.10A",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C08.10_1",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 2,
         "Pauschale": "C08.10A",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C08.10",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 3,
+        "Pauschale": "C08.10A",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C08.10_1",
         "Ebene": null
     },
     {
@@ -3679,16 +3751,16 @@
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C08.21_1,C08.21_2",
+        "Werte": "C08.21_9,C08.21_10",
         "Ebene": null
     },
     {
-        "BedingungsID": 2,
+        "BedingungsID": 4,
         "Pauschale": "C08.21C",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C08.21_1,C08.21_2",
+        "Werte": "ANAST",
         "Ebene": null
     },
     {
@@ -3701,21 +3773,21 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 3,
+        "BedingungsID": 4,
         "Pauschale": "C08.22A",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C08.25_1",
+        "Werte": "C08.22_3",
         "Ebene": null
     },
     {
-        "BedingungsID": 3,
+        "BedingungsID": 4,
         "Pauschale": "C08.22B",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C08.22_1",
+        "Werte": "C08.22_5",
         "Ebene": null
     },
     {
@@ -3782,21 +3854,21 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 2,
-        "Pauschale": "C08.30A",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C08.10",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 3,
         "Pauschale": "C08.30A",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C08.10B",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 2,
+        "Pauschale": "C08.30A",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C08.10",
         "Ebene": null
     },
     {
@@ -3832,7 +3904,16 @@
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C08.30_10,C08.30_12",
+        "Werte": "C08.30_5",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 4,
+        "Pauschale": "C08.30E",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "ANAST",
         "Ebene": null
     },
     {
@@ -3854,12 +3935,12 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 2,
+        "BedingungsID": 3,
         "Pauschale": "C08.33B",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C08.33_12",
+        "Werte": "C08.33_1,C08.33_4,C08.33_5,C08.33_8",
         "Ebene": null
     },
     {
@@ -3890,21 +3971,21 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 1,
+        "BedingungsID": 3,
         "Pauschale": "C08.33D",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C08.33G",
+        "Werte": "C08.33_11",
         "Ebene": null
     },
     {
-        "BedingungsID": 3,
+        "BedingungsID": 4,
         "Pauschale": "C08.35A",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C08.35_1",
+        "Werte": "C08.35_3",
         "Ebene": null
     },
     {
@@ -3935,21 +4016,12 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 1,
+        "BedingungsID": 3,
         "Pauschale": "C08.35E",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C08.35_11",
-        "Ebene": null
-    },
-    {
-        "BedingungsID": 2,
-        "Pauschale": "C08.35E",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "ANAST",
+        "Werte": "C08.35_9",
         "Ebene": null
     },
     {
@@ -4034,15 +4106,6 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 4,
-        "Pauschale": "C08.40E",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "ANAST",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 3,
         "Pauschale": "C08.40E",
         "Gruppe": 1,
@@ -4052,12 +4115,12 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 3,
-        "Pauschale": "C08.40F",
+        "BedingungsID": 4,
+        "Pauschale": "C08.40E",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C08.40_11",
+        "Werte": "ANAST",
         "Ebene": null
     },
     {
@@ -4067,6 +4130,15 @@
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "ANAST",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 3,
+        "Pauschale": "C08.40F",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C08.40_11",
         "Ebene": null
     },
     {
@@ -4151,6 +4223,15 @@
         "Ebene": null
     },
     {
+        "BedingungsID": 1,
+        "Pauschale": "C08.50A",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C08.50",
+        "Ebene": null
+    },
+    {
         "BedingungsID": 2,
         "Pauschale": "C08.50A",
         "Gruppe": 1,
@@ -4161,7 +4242,7 @@
     },
     {
         "BedingungsID": 1,
-        "Pauschale": "C08.50A",
+        "Pauschale": "C08.50B",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
@@ -4175,15 +4256,6 @@
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C00.95_10,C00.95_11",
-        "Ebene": null
-    },
-    {
-        "BedingungsID": 1,
-        "Pauschale": "C08.50B",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C08.50",
         "Ebene": null
     },
     {
@@ -4232,7 +4304,7 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 1,
+        "BedingungsID": 2,
         "Pauschale": "C08.80A",
         "Gruppe": 1,
         "Operator": "UND",
@@ -4241,7 +4313,7 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 2,
+        "BedingungsID": 3,
         "Pauschale": "C08.80A",
         "Gruppe": 1,
         "Operator": "UND",
@@ -4250,7 +4322,7 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 1,
+        "BedingungsID": 2,
         "Pauschale": "C08.80B",
         "Gruppe": 1,
         "Operator": "UND",
@@ -4277,24 +4349,6 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 2,
-        "Pauschale": "C09.12B",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C09.EXZISION",
-        "Ebene": null
-    },
-    {
-        "BedingungsID": 3,
-        "Pauschale": "C09.12B",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C09.EXZISION_GROSSFL,C09.ULCUSDEKUBITUS",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 4,
         "Pauschale": "C09.12B",
         "Gruppe": 1,
@@ -4315,11 +4369,29 @@
     },
     {
         "BedingungsID": 2,
+        "Pauschale": "C09.12B",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C09.EXZISION",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 3,
+        "Pauschale": "C09.12B",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C09.EXZISION_GROSSFL,C09.ULCUSDEKUBITUS",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 2,
         "Pauschale": "C09.12C",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C09.WUNDVERSCHLUSS",
+        "Werte": "C09.EXZISION",
         "Ebene": null
     },
     {
@@ -4328,7 +4400,25 @@
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C09.EXZISION_GROSSFL,C09.ULCUSDEKUBITUS",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 4,
+        "Pauschale": "C09.12C",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "ANAST",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 4,
+        "Pauschale": "C09.12D",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "ANAST,C30.MRI,C30.CT",
         "Ebene": null
     },
     {
@@ -4337,34 +4427,61 @@
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C09.TRANSPLANTATENTNAHME,C09.TRANSPLANTATENTNAHME_GROSSFL",
-        "Ebene": null
-    },
-    {
-        "BedingungsID": 2,
-        "Pauschale": "C09.12E",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C09.LAPPENHEBUNGLAPPENPREP,C09.LAPPENHEBUNG_GROSSFL",
-        "Ebene": null
-    },
-    {
-        "BedingungsID": 2,
-        "Pauschale": "C09.12F",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C09.EXZISION",
         "Ebene": null
     },
     {
-        "BedingungsID": 1,
+        "BedingungsID": 3,
+        "Pauschale": "C09.12D",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C09.DEBRIDEMENT_KOMPLEX",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 3,
+        "Pauschale": "C09.12E",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C09.WUNDVERSORGUNG_KOMPLEX",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 5,
+        "Pauschale": "C09.12E",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "AA.20.0020",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 4,
+        "Pauschale": "C09.12E",
+        "Gruppe": 2,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C30.MRI,C30.CT",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 3,
+        "Pauschale": "C09.12F",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C09.WUNDVERSORGUNG_KOMPLEX",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 3,
         "Pauschale": "C09.12G",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C09.DEBRIDWUNDV",
+        "Werte": "C09.FREMDKOERPER",
         "Ebene": null
     },
     {
@@ -4386,21 +4503,21 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 2,
-        "Pauschale": "C09.30A",
-        "Gruppe": 2,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C09.30A",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 5,
         "Pauschale": "C09.30A",
         "Gruppe": 2,
         "Operator": "ODER",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C09.30A_1",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 2,
+        "Pauschale": "C09.30A",
+        "Gruppe": 2,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C09.30A",
         "Ebene": null
     },
     {
@@ -4433,6 +4550,15 @@
         "Ebene": null
     },
     {
+        "BedingungsID": 2,
+        "Pauschale": "C09.40A",
+        "Gruppe": 2,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C09.40A",
+        "Ebene": null
+    },
+    {
         "BedingungsID": 3,
         "Pauschale": "C09.40A",
         "Gruppe": 2,
@@ -4449,15 +4575,6 @@
         "Operator": "ODER",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C09.40A_1",
-        "Ebene": null
-    },
-    {
-        "BedingungsID": 2,
-        "Pauschale": "C09.40A",
-        "Gruppe": 2,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C09.40A",
         "Ebene": null
     },
     {
@@ -4506,16 +4623,6 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 3,
-        "Pauschale": "C09.41A",
-        "Gruppe": 4,
-        "Operator": "UND",
-        "Bedingungstyp": "SEITIGKEIT",
-        "Vergleichsoperator": "=",
-        "Werte": "B",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 4,
         "Pauschale": "C09.41A",
         "Gruppe": 4,
@@ -4523,6 +4630,16 @@
         "Bedingungstyp": "ANZAHL",
         "Vergleichsoperator": ">",
         "Werte": "1",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 3,
+        "Pauschale": "C09.41A",
+        "Gruppe": 4,
+        "Operator": "UND",
+        "Bedingungstyp": "SEITIGKEIT",
+        "Vergleichsoperator": "=",
+        "Werte": "B",
         "Ebene": null
     },
     {
@@ -4670,21 +4787,21 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 1,
-        "Pauschale": "C11.50C",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C11.URETEROSKOPIE",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 2,
         "Pauschale": "C11.50C",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "ANAST",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 1,
+        "Pauschale": "C11.50C",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C11.URETEROSKOPIE",
         "Ebene": null
     },
     {
@@ -4743,21 +4860,31 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 1,
-        "Pauschale": "C11.51B",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C11.ZYSTOSKOPIE",
-        "Ebene": null
-    },
-    {
-        "BedingungsID": 2,
+        "BedingungsID": 3,
         "Pauschale": "C11.51B",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "ANAST",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 1,
+        "Pauschale": "C11.51B",
+        "Gruppe": 2,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C11.URETHROSKOPIE",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 2,
+        "Pauschale": "C11.51B",
+        "Gruppe": 2,
+        "Operator": "UND",
+        "Bedingungstyp": "ALTER IN JAHREN BEI EINTRITT",
+        "Vergleichsoperator": ">=",
+        "Werte": "16",
         "Ebene": null
     },
     {
@@ -4788,22 +4915,31 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 1,
+        "BedingungsID": 2,
         "Pauschale": "C11.55Z",
         "Gruppe": 1,
         "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "C11.EB.0030",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "ANAST",
         "Ebene": null
     },
     {
-        "BedingungsID": 2,
+        "BedingungsID": 3,
         "Pauschale": "C11.55Z",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "ALTER IN JAHREN BEI EINTRITT",
         "Vergleichsoperator": "<",
         "Werte": "16",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 1,
+        "Pauschale": "C11.55Z",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C11.URETEROSKOPIE",
         "Ebene": null
     },
     {
@@ -4818,25 +4954,16 @@
     {
         "BedingungsID": 2,
         "Pauschale": "C11.65A",
-        "Gruppe": 2,
+        "Gruppe": 1,
         "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C11.65A",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C11.ED.0040",
         "Ebene": null
     },
     {
         "BedingungsID": 3,
         "Pauschale": "C11.65A",
-        "Gruppe": 2,
-        "Operator": "ODER",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "C11.ED.0080",
-        "Ebene": null
-    },
-    {
-        "BedingungsID": 4,
-        "Pauschale": "C11.65A",
-        "Gruppe": 2,
+        "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "ANAST",
@@ -4865,8 +4992,8 @@
         "Pauschale": "C11.65C",
         "Gruppe": 1,
         "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C11.65D",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C11.ED.0040",
         "Ebene": null
     },
     {
@@ -4997,12 +5124,21 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 1,
+        "BedingungsID": 2,
         "Pauschale": "C12.19Z",
-        "Gruppe": 1,
+        "Gruppe": 2,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "C12.EA.0100",
+        "Werte": "C12.EA.0110",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 3,
+        "Pauschale": "C12.19Z",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C12.14",
         "Ebene": null
     },
     {
@@ -5042,7 +5178,7 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 1,
+        "BedingungsID": 2,
         "Pauschale": "C12.65Z",
         "Gruppe": 1,
         "Operator": "UND",
@@ -5267,21 +5403,21 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 3,
-        "Pauschale": "C13.40B",
-        "Gruppe": 2,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "C13.GB.0070",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 4,
         "Pauschale": "C13.40B",
         "Gruppe": 2,
         "Operator": "ODER",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C13.40C_1",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 3,
+        "Pauschale": "C13.40B",
+        "Gruppe": 2,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C13.GB.0070",
         "Ebene": null
     },
     {
@@ -5366,21 +5502,21 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 3,
-        "Pauschale": "C14.20A",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C30.US",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 2,
         "Pauschale": "C14.20A",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C14.20_1",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 3,
+        "Pauschale": "C14.20A",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C30.US",
         "Ebene": null
     },
     {
@@ -5407,7 +5543,16 @@
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C14.50",
+        "Werte": "C14.SPONTANGEBURT",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 3,
+        "Pauschale": "C14.40B",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C14.KC.0010",
         "Ebene": null
     },
     {
@@ -5438,21 +5583,21 @@
         "Ebene": null
     },
     {
-        "BedingungsID": 2,
-        "Pauschale": "C23.90A",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "C23.GC.0010",
-        "Ebene": null
-    },
-    {
         "BedingungsID": 3,
         "Pauschale": "C23.90A",
         "Gruppe": 1,
         "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "ANAST",
+        "Ebene": null
+    },
+    {
+        "BedingungsID": 2,
+        "Pauschale": "C23.90A",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C23.GC.0010",
         "Ebene": null
     },
     {
