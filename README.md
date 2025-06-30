@@ -9,6 +9,8 @@ Dies ist ein Prototyp einer Webanwendung zur Unterstützung bei der Abrechnung m
 - `server.py` sowie das README verwenden diese neuen Namen; `index.html` weist nun die Version "V1.1" aus.
 - `utils.py` bietet ein Übersetzungssystem für Regelmeldungen und Condition-Typen in Deutsch, Französisch und Italienisch.
 - In `regelpruefer_pauschale.py` sorgt eine Operator-Präzedenzlogik für korrektes "UND vor ODER" bei strukturierten Bedingungen.
+- `evaluate_structured_conditions` unterstützt einen konfigurierbaren
+  `GruppenOperator` (Standard `ODER`) für die Verknüpfung der Bedingungsgruppen.
 - Die mehrsprachigen Prompts für LLM Stufe 1 und Stufe wurden in  `prompts.py` ausgelagert
 - Funktionale Erweiterung umfassen:
     - interaktive Info-Pop-ups, 
