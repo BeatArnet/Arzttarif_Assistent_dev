@@ -154,19 +154,19 @@ try:
     else: print("FEHLER: 'evaluate_structured_conditions' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv.")
 
     if rpp_module and hasattr(rpp_module, 'check_pauschale_conditions'):
-        check_pauschale_conditions = rpp_module.check_pauschale_conditions
+        check_pauschale_conditions = rpp_module.check_pauschale_conditions  # type: ignore[attr-defined]
     else: print("FEHLER: 'check_pauschale_conditions' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv.")
 
     if rpp_module and hasattr(rpp_module, 'get_simplified_conditions'):
-        get_simplified_conditions = rpp_module.get_simplified_conditions
+        get_simplified_conditions = rpp_module.get_simplified_conditions  # type: ignore[attr-defined]
     else: print("FEHLER: 'get_simplified_conditions' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv.")
 
     if rpp_module and hasattr(rpp_module, 'generate_condition_detail_html'):
-        generate_condition_detail_html = rpp_module.generate_condition_detail_html
+        generate_condition_detail_html = rpp_module.generate_condition_detail_html  # type: ignore[attr-defined]
     else: print("FEHLER: 'generate_condition_detail_html' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv.")
 
     if rpp_module and hasattr(rpp_module, 'determine_applicable_pauschale'):
-        determine_applicable_pauschale_func = rpp_module.determine_applicable_pauschale
+        determine_applicable_pauschale_func = rpp_module.determine_applicable_pauschale  # type: ignore[attr-defined]
         print("DEBUG: 'determine_applicable_pauschale' aus regelpruefer_pauschale.py zugewiesen.")
     else: print("FEHLER: 'determine_applicable_pauschale' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv.")
 
