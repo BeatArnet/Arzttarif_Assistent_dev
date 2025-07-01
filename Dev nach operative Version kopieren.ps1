@@ -42,9 +42,9 @@ try {
 }
 
 git add .
-git commit -m "Release Version V1.1"
+git commit -m "Release Version V1.2"
 git push origin $Branch
 git tag v1.1
 git push origin v1.1
 
-Write-Host "Deployment von Version V1.1 abgeschlossen."
+Write-Host "Deployment von Version V1.2 abgeschlossen."
