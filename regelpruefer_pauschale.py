@@ -904,8 +904,10 @@ def determine_applicable_pauschale(
         else:
             status = translate('conditions_not_met', lang)
             status_text = f"<span style=\"color:red;\">{status}</span>"
+        code_str = escape(cand_eval['code'])
+        link = f"<a href='#' class='pauschale-exp-link' data-code='{code_str}'>{code_str}</a>"
         pauschale_erklaerung_html += (
-            f"<li><b>{escape(cand_eval['code'])}</b>: "
+            f"<li><b>{link}</b>: "
             f"{escape(get_lang_field(cand_eval['details'], PAUSCHALE_TEXT_KEY_IN_PAUSCHALEN, lang) or 'N/A')} "
             f"{status_text}</li>"
         )
