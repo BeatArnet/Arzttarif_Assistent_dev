@@ -254,14 +254,19 @@ def evaluate_structured_conditions(
             conditions_in_group, key=lambda c: c.get("BedingungsID", 0)
         )
 
-        group_result = True
-        for cond in conditions_sorted:
-            cur_res = check_single_condition(cond, context, tabellen_dict_by_table)
-            if not cur_res:
-                group_result = False
-                break
+        # Erste Bedingung auswerten
+        first_res = check_single_condition(conditions_sorted[0], context, tabellen_dict_by_table)
+        result = first_res
+        # Nachfolgende Bedingungen sequentiell mit Operator der vorigen Zeile verknüpfen
+        for idx in range(1, len(conditions_sorted)):
+            prev_op = str(conditions_sorted[idx-1].get(OPERATOR_KEY, "UND")).upper()
+            cur_res = check_single_condition(conditions_sorted[idx], context, tabellen_dict_by_table)
+            if prev_op == "UND":
+                result = result and cur_res
+            else:
+                result = result or cur_res
 
-        group_results.append(group_result)
+        group_results.append(bool(result))
     if not group_results:
         return False
 
