@@ -65,8 +65,6 @@ const DYN_TEXT = {
         potentialIcds: 'Mögliche ICD-Diagnosen',
         thIcdCode: 'ICD Code',
         thIcdText: 'Beschreibung',
-        morePauschalen: 'Weitere Pauschalen',
-        backToSelPauschale: 'Zurück zur gewählten Pauschale',
         diffTaxpoints: 'Differenz Taxpunkte'
     },
     fr: {
@@ -115,8 +113,6 @@ const DYN_TEXT = {
         potentialIcds: 'Diagnostics ICD possibles',
         thIcdCode: 'Code ICD',
         thIcdText: 'Description',
-        morePauschalen: 'Autres forfaits',
-        backToSelPauschale: 'Retour au forfait choisi',
         diffTaxpoints: 'Différence points tarifaires'
     },
     it: {
@@ -165,8 +161,6 @@ const DYN_TEXT = {
         potentialIcds: 'Possibili diagnosi ICD',
         thIcdCode: 'Codice ICD',
         thIcdText: 'Descrizione',
-        morePauschalen: 'Altri forfait',
-        backToSelPauschale: 'Torna al forfait scelto',
         diffTaxpoints: 'Differenza punti tariffari'
     }
 };
@@ -496,46 +490,6 @@ function buildGroupInfoHtml(code) {
            `<p><b>Enthaltene LKN:</b> ${links}</p>`;
 }
 
-function renderAdditionalPauschalen(list) {
-    const container = $('additionalPauschalen');
-    if (!container) return;
-    if (!Array.isArray(list) || list.length === 0) {
-        container.innerHTML = '';
-        return;
-    }
-    let html = `<h4>${tDyn('morePauschalen')}</h4><ul>`;
-    list.forEach((p, i) => {
-        const code = escapeHtml(p.details?.Pauschale || `#${i+1}`);
-        const text = escapeHtml(getLangField(p.details, 'Pauschale_Text') || '');
-        html += `<li><a href="#" class="other-pauschale-link" data-idx="${i}">${code} - ${text}</a></li>`;
-    });
-    html += '</ul>';
-    container.innerHTML = html;
-    container.querySelectorAll('.other-pauschale-link').forEach(a => {
-        a.addEventListener('click', (e) => {
-            e.preventDefault();
-            const idx = parseInt(a.dataset.idx);
-            showPauschaleComparison(idx);
-        });
-    });
-}
-
-function showPauschaleComparison(idx) {
-    const container = $('pauschaleComparison');
-    if (!container || !evaluatedPauschalenList[idx]) return;
-    const p = evaluatedPauschalenList[idx];
-    const parse = v => parseFloat(String(v).replace(',', '.')) || 0;
-    const selTp = parse(selectedPauschaleDetails?.Taxpunkte);
-    const otherTp = parse(p.details?.Taxpunkte);
-    const diff = otherTp - selTp;
-    const diffTxt = `${diff >= 0 ? '+' : ''}${diff.toFixed(2)}`;
-    let html = `<h4>${escapeHtml(p.details?.Pauschale || '')} <small>${tDyn('diffTaxpoints')}: ${diffTxt}</small></h4>`;
-    html += p.bedingungs_pruef_html || '';
-    html += `<p><a href="#" id="backToSelPauschaleLink">${tDyn('backToSelPauschale')}</a></p>`;
-    container.innerHTML = html;
-    const back = $('backToSelPauschaleLink');
-    if (back) back.addEventListener('click', (ev) => { ev.preventDefault(); container.innerHTML = ''; });
-}
 
 function buildPauschaleInfoHtml(idx) {
     if (!evaluatedPauschalenList[idx]) return '';
@@ -900,13 +854,6 @@ async function getBillingAnalysis() {
 
         // --- Finalen Output anzeigen ---
         displayOutput(htmlOutput);
-        if (abrechnung.type === 'Pauschale') {
-            renderAdditionalPauschalen(evaluatedPauschalenList);
-        } else {
-            renderAdditionalPauschalen([]);
-            const comp = $('pauschaleComparison');
-            if (comp) comp.innerHTML = '';
-        }
         console.log("[getBillingAnalysis] Frontend-Verarbeitung abgeschlossen.");
         hideSpinner();
 
