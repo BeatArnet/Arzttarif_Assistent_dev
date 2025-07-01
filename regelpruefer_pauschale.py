@@ -254,19 +254,47 @@ def evaluate_structured_conditions(
             conditions_in_group, key=lambda c: c.get("BedingungsID", 0)
         )
 
-        # Erste Bedingung auswerten
-        first_res = check_single_condition(conditions_sorted[0], context, tabellen_dict_by_table)
-        result = first_res
-        # Nachfolgende Bedingungen sequentiell mit Operator der vorigen Zeile verknüpfen
-        for idx in range(1, len(conditions_sorted)):
-            prev_op = str(conditions_sorted[idx-1].get(OPERATOR_KEY, "UND")).upper()
-            cur_res = check_single_condition(conditions_sorted[idx], context, tabellen_dict_by_table)
-            if prev_op == "UND":
-                result = result and cur_res
-            else:
-                result = result or cur_res
+        baseline_level = 1
+        first_level = conditions_sorted[0].get("Ebene")
+        if first_level is None:
+            first_level = baseline_level
 
-        group_results.append(bool(result))
+        # Erste Bedingung auswerten
+        first_res = check_single_condition(
+            conditions_sorted[0], context, tabellen_dict_by_table
+        )
+
+        expr_parts: List[str] = ["(" * (first_level - baseline_level), str(bool(first_res))]
+        prev_level = first_level
+
+        for idx in range(1, len(conditions_sorted)):
+            prev_op = str(conditions_sorted[idx - 1].get(OPERATOR_KEY, "UND")).upper()
+            cur_cond = conditions_sorted[idx]
+            cur_level = cur_cond.get("Ebene")
+            if cur_level is None:
+                cur_level = baseline_level
+
+            if cur_level < prev_level:
+                expr_parts.append(")" * (prev_level - cur_level))
+
+            expr_parts.append(" and " if prev_op == "UND" else " or ")
+
+            if cur_level > prev_level:
+                expr_parts.append("(" * (cur_level - prev_level))
+
+            cur_res = check_single_condition(cur_cond, context, tabellen_dict_by_table)
+            expr_parts.append(str(bool(cur_res)))
+            prev_level = cur_level
+
+        expr_parts.append(")" * (prev_level - baseline_level))
+        expr_str = "".join(expr_parts)
+        try:
+            result = bool(eval(expr_str))
+        except Exception as e_eval:
+            print(f"FEHLER bei Gruppenlogik-Ausdruck '{expr_str}': {e_eval}")
+            result = False
+
+        group_results.append(result)
     if not group_results:
         return False
 

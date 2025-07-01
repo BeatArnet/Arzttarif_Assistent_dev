@@ -227,5 +227,47 @@ class TestPauschaleLogic(unittest.TestCase):
             evaluate_structured_conditions("C04.51B", context_missing_lavage, bedingungen, tab_dict)
         )
 
+    def test_nested_levels(self):
+        """Conditions with different Ebenen should respect parenthesis."""
+        conditions = [
+            {
+                "BedingungsID": 1,
+                "Pauschale": "NEST",
+                "Gruppe": 1,
+                "Operator": "ODER",
+                "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+                "Werte": "A",
+                "Ebene": 2,
+            },
+            {
+                "BedingungsID": 2,
+                "Pauschale": "NEST",
+                "Gruppe": 1,
+                "Operator": "UND",
+                "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+                "Werte": "B",
+                "Ebene": 2,
+            },
+            {
+                "BedingungsID": 3,
+                "Pauschale": "NEST",
+                "Gruppe": 1,
+                "Operator": "UND",
+                "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+                "Werte": "C",
+                "Ebene": 1,
+            },
+        ]
+
+        context_ok = {"LKN": ["B", "C"]}
+        self.assertTrue(
+            evaluate_structured_conditions("NEST", context_ok, conditions, {})
+        )
+
+        context_missing_c = {"LKN": ["B"]}
+        self.assertFalse(
+            evaluate_structured_conditions("NEST", context_missing_c, conditions, {})
+        )
+
 if __name__ == "__main__":
     unittest.main()
