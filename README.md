@@ -190,6 +190,20 @@ der Klartext der jeweiligen Frage gespeichert, sodass die passenden Baselines
 einfach gefunden werden können. Über `quality.html` lassen sich diese Beispiele
 gegen die Baselines testen.
 
+## Unittests mit `pytest`
+
+Die Python-Tests liegen im Verzeichnis `tests/` und werden mit `pytest`
+ausgeführt. Vor dem Start der Tests müssen sämtliche Abhängigkeiten installiert
+sein:
+
+```bash
+pip install -r requirements.txt
+pytest
+```
+
+Die Tests setzen unter anderem Flask und weitere Pakete aus der
+`requirements.txt` voraus.
+
 ## Disclaimer
 
 Alle Auskünfte erfolgen ohne Gewähr. Diese Anwendung ist ein Prototyp und dient nur zu Demonstrations- und Testzwecken. Für offizielle und verbindliche Informationen konsultieren Sie bitte das Portal  OAAT-OTMA AG: [https://tarifbrowser.oaat-otma.ch/startPortal](https://tarifbrowser.oaat-otma.ch/startPortal).
