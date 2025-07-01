@@ -123,14 +123,21 @@ Der Assistent ist in den drei Landessprachen DE, FR und IT verfügbar. Die Sprac
     ```
     Es entsteht eine `*.clean.json`-Datei, die zum Testen verwendet werden kann.
 
-7.  **API-Schlüssel konfigurieren:**
+7.  **(Optional) Pauschalen-Tabellen exportieren:**
+    Nutze `export_pauschalen_table.py`, um binäre Werte in den Feldern
+    `Ebene` und `Gruppe` zu bereinigen.
+    ```bash
+    python export_pauschalen_table.py data/PAUSCHALEN_Bedingungen.json \
+        data/PAUSCHALEN_Bedingungen.clean.json
+    ```
+8.  **API-Schlüssel konfigurieren:**
     *   Erstelle eine Datei namens `.env` im Hauptverzeichnis.
     *   Füge deinen Google Gemini API-Schlüssel hinzu:
         ```env
         GEMINI_API_KEY="DEIN_API_SCHLUESSEL_HIER"
         # Optional: GEMINI_MODEL="gemini-1.5-pro-latest"
         ```
-8.  **Anwendung starten:**
+9.  **Anwendung starten:**
     ```bash
     python server.py
     ```
