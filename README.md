@@ -181,6 +181,15 @@ Der Assistent ist in den drei Landessprachen DE, FR und IT verfügbar. Die Sprac
 └── favicon.ico / .svg     # Favicons
 ```
 
+## Qualitätstests
+
+Die Datei `data/beispiele.json` enthält fünfzehn Beispielabfragen in Deutsch,
+Französisch und Italienisch. Für jede Abfrage sind im
+`data/baseline_results.json` die erwarteten Tarife hinterlegt. Dort ist nun auch
+der Klartext der jeweiligen Frage gespeichert, sodass die passenden Baselines
+einfach gefunden werden können. Über `quality.html` lassen sich diese Beispiele
+gegen die Baselines testen.
+
 ## Disclaimer
 
 Alle Auskünfte erfolgen ohne Gewähr. Diese Anwendung ist ein Prototyp und dient nur zu Demonstrations- und Testzwecken. Für offizielle und verbindliche Informationen konsultieren Sie bitte das Portal  OAAT-OTMA AG: [https://tarifbrowser.oaat-otma.ch/startPortal](https://tarifbrowser.oaat-otma.ch/startPortal).
