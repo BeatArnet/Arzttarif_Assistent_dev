@@ -537,6 +537,27 @@ function showPauschaleComparison(idx) {
     if (back) back.addEventListener('click', (ev) => { ev.preventDefault(); container.innerHTML = ''; });
 }
 
+function buildPauschaleInfoHtml(idx) {
+    if (!evaluatedPauschalenList[idx]) return '';
+    const p = evaluatedPauschalenList[idx];
+    const parse = v => parseFloat(String(v).replace(',', '.')) || 0;
+    const selTp = parse(selectedPauschaleDetails?.Taxpunkte);
+    const otherTp = parse(p.details?.Taxpunkte);
+    const diff = otherTp - selTp;
+    const diffTxt = `${diff >= 0 ? '+' : ''}${diff.toFixed(2)}`;
+    let html = `<h4>${escapeHtml(p.details?.Pauschale || '')} <small>${tDyn('diffTaxpoints')}: ${diffTxt}</small></h4>`;
+    html += displayPauschale(p);
+    return html;
+}
+
+function showPauschaleInfoByCode(code) {
+    const norm = String(code || '').toUpperCase();
+    const idx = evaluatedPauschalenList.findIndex(p => String(p.details?.Pauschale || '').toUpperCase() === norm);
+    if (idx === -1) return;
+    const html = buildPauschaleInfoHtml(idx);
+    showInfoModal(html);
+}
+
 
 function displayOutput(html, type = "info") {
     const out = $("output");
@@ -727,6 +748,13 @@ document.addEventListener("DOMContentLoaded", () => {
             else if (type === 'chapter') html = buildChapterInfoHtml(code);
             else if (type === 'group') html = buildGroupInfoHtml(code);
             showInfoModal(html);
+        }
+
+        const pLink = e.target.closest('a.pauschale-exp-link');
+        if (pLink) {
+            e.preventDefault();
+            const code = (pLink.dataset.code || '').trim();
+            showPauschaleInfoByCode(code);
         }
     });
 });
