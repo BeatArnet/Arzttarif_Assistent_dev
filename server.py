@@ -1265,6 +1265,35 @@ def analyze_billing():
     logger.info(f"Final response payload for /api/analyze-billing: {json.dumps(final_response_payload, ensure_ascii=False, indent=2)}")
     return jsonify(final_response_payload)
 
+
+def perform_analysis(text: str,
+                     icd: list[str] | None = None,
+                     gtin: list[str] | None = None,
+                     use_icd: bool = True,
+                     age: int | None = None,
+                     gender: str | None = None,
+                     lang: str = 'de') -> dict:
+    """Hilfsfunktion für Tests: ruft die analyze-billing-Logik mit gegebenen Parametern auf."""
+    if icd is None:
+        icd = []
+    if gtin is None:
+        gtin = []
+
+    with app.test_client() as client:
+        payload = {
+            'inputText': text,
+            'icd': icd,
+            'gtin': gtin,
+            'useIcd': use_icd,
+            'age': age,
+            'gender': gender,
+            'lang': lang,
+        }
+        resp = client.post('/api/analyze-billing', json=payload)
+        if resp.status_code != 200:
+            raise RuntimeError(f"analyze-billing failed: {resp.status_code} {resp.get_data(as_text=True)}")
+        return resp.get_json()
+
 @app.route('/api/quality', methods=['POST'])
 def quality_endpoint():
     """Simple quality check endpoint returning baseline comparison."""
@@ -1289,18 +1318,59 @@ def test_example():
     baseline_entry = baseline_results.get(example_id)
     if not baseline_entry:
         return jsonify({'error': 'Baseline not found'}), 404
+
     baseline = baseline_entry.get('baseline', {}).get(lang)
     if baseline is None:
         return jsonify({'error': 'Baseline missing for language'}), 404
 
-    # TODO: Implement real analysis. For now use baseline as dummy result
-    result = baseline
+    query_text = baseline_entry.get('query', {}).get(lang)
+    if not query_text:
+        return jsonify({'error': 'Query text missing for baseline'}), 404
 
-    # Speichere aktuelles Ergebnis im Arbeitsspeicher
+    try:
+        analysis_full = perform_analysis(query_text, [], [], True, None, None, lang)
+    except Exception as e:
+        return jsonify({'error': f'Analysis failed: {e}'}), 500
+
+    def simplify(result_dict: dict) -> dict:
+        """Mappe die komplexe Analyseantwort auf das einfache Baseline-Schema."""
+        abrechnung = result_dict.get('abrechnung', {})
+        if abrechnung.get('type') == 'Pauschale':
+            pc = abrechnung.get('details', {}).get('Pauschale')
+            pauschale = {'code': pc, 'qty': 1} if pc else None
+            return {'pauschale': pauschale, 'einzelleistungen': []}
+        elif abrechnung.get('type') == 'TARDOC':
+            eins = [
+                {'code': l.get('lkn'), 'qty': l.get('menge', 1)}
+                for l in abrechnung.get('leistungen', [])
+                if l.get('lkn')
+            ]
+            return {'pauschale': None, 'einzelleistungen': eins}
+        return {'pauschale': None, 'einzelleistungen': []}
+
+    result = simplify(analysis_full)
+
     baseline_entry.setdefault('current', {})[lang] = result
 
-    passed = result == baseline
-    diff = ''
+    def diff_results(expected: dict, actual: dict) -> str:
+        parts = []
+        if expected.get('pauschale') != actual.get('pauschale'):
+            parts.append(f"pauschale {expected.get('pauschale')} != {actual.get('pauschale')}")
+        exp_map = {i['code']: i.get('qty', 1) for i in expected.get('einzelleistungen', [])}
+        act_map = {i['code']: i.get('qty', 1) for i in actual.get('einzelleistungen', [])}
+        for code, qty in exp_map.items():
+            if code not in act_map:
+                parts.append(f"missing {code}")
+            elif act_map[code] != qty:
+                parts.append(f"qty {code}: {qty} != {act_map[code]}")
+        for code, qty in act_map.items():
+            if code not in exp_map:
+                parts.append(f"unexpected {code}")
+        return '; '.join(parts)
+
+    diff = diff_results(baseline, result)
+    passed = diff == ''
+
     return jsonify({
         'id': example_id,
         'lang': lang,
