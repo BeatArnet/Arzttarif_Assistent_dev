@@ -2,50 +2,41 @@
   "1": {
     "baseline": {
       "de": {
-        "pauschale": {
-          "code": "P1",
-          "qty": 1
-        },
+        "pauschale": null,
         "einzelleistungen": [
           {
-            "code": "E1a",
+            "code": "CA.00.0010",
             "qty": 1
           },
           {
-            "code": "E1b",
-            "qty": 2
+            "code": "CA.00.0020",
+            "qty": 12
           }
         ]
       },
       "fr": {
-        "pauschale": {
-          "code": "P1",
-          "qty": 1
-        },
+        "pauschale": null,
         "einzelleistungen": [
           {
-            "code": "E1a",
+            "code": "CA.00.0010",
             "qty": 1
           },
           {
-            "code": "E1b",
-            "qty": 2
+            "code": "CA.00.0020",
+            "qty": 12
           }
         ]
       },
       "it": {
-        "pauschale": {
-          "code": "P1",
-          "qty": 1
-        },
+        "pauschale": null,
         "einzelleistungen": [
           {
-            "code": "E1a",
+            "code": "CA.00.0010",
             "qty": 1
           },
           {
-            "code": "E1b",
-            "qty": 2
+            "code": "CA.00.0020",
+            "qty": 12
           }
         ]
       }
@@ -55,50 +46,65 @@
   "2": {
     "baseline": {
       "de": {
-        "pauschale": {
-          "code": "P2",
-          "qty": 1
-        },
+        "pauschale": null,
         "einzelleistungen": [
           {
-            "code": "E2a",
+            "code": "AA.00.0010",
             "qty": 1
           },
           {
-            "code": "E2b",
-            "qty": 2
+            "code": "AA.00.0020",
+            "qty": 5
+          },
+          {
+            "code": "MK.05.0070",
+            "qty": 5
+          },
+          {
+            "code": "AR.00.0030",
+            "qty": 1
           }
         ]
       },
       "fr": {
-        "pauschale": {
-          "code": "P2",
-          "qty": 1
-        },
+        "pauschale": null,
         "einzelleistungen": [
           {
-            "code": "E2a",
+            "code": "AA.00.0010",
             "qty": 1
           },
           {
-            "code": "E2b",
-            "qty": 2
+            "code": "AA.00.0020",
+            "qty": 5
+          },
+          {
+            "code": "MK.05.0070",
+            "qty": 5
+          },
+          {
+            "code": "AR.00.0030",
+            "qty": 1
           }
         ]
       },
       "it": {
-        "pauschale": {
-          "code": "P2",
-          "qty": 1
-        },
+        "pauschale": null,
         "einzelleistungen": [
           {
-            "code": "E2a",
+            "code": "AA.00.0010",
             "qty": 1
           },
           {
-            "code": "E2b",
-            "qty": 2
+            "code": "AA.00.0020",
+            "qty": 5
+          },
+          {
+            "code": "MK.05.0070",
+            "qty": 5
+          },
+          {
+            "code": "AR.00.0030",
+            "qty": 1
           }
         ]
       }
@@ -108,50 +114,53 @@
   "3": {
     "baseline": {
       "de": {
-        "pauschale": {
-          "code": "P3",
-          "qty": 1
-        },
+        "pauschale": null,
         "einzelleistungen": [
           {
-            "code": "E3a",
+            "code": "AA.00.0010",
             "qty": 1
           },
           {
-            "code": "E3b",
-            "qty": 2
+            "code": "AA.00.0020",
+            "qty": 15
+          },
+          {
+            "code": "KF.05.0050",
+            "qty": 1
           }
         ]
       },
       "fr": {
-        "pauschale": {
-          "code": "P3",
-          "qty": 1
-        },
+        "pauschale": null,
         "einzelleistungen": [
           {
-            "code": "E3a",
+            "code": "AA.00.0010",
             "qty": 1
           },
           {
-            "code": "E3b",
-            "qty": 2
+            "code": "AA.00.0020",
+            "qty": 15
+          },
+          {
+            "code": "KF.05.0050",
+            "qty": 1
           }
         ]
       },
       "it": {
-        "pauschale": {
-          "code": "P3",
-          "qty": 1
-        },
+        "pauschale": null,
         "einzelleistungen": [
           {
-            "code": "E3a",
+            "code": "AA.00.0010",
             "qty": 1
           },
           {
-            "code": "E3b",
-            "qty": 2
+            "code": "AA.00.0020",
+            "qty": 15
+          },
+          {
+            "code": "KF.05.0050",
+            "qty": 1
           }
         ]
       }
@@ -161,50 +170,41 @@
   "4": {
     "baseline": {
       "de": {
-        "pauschale": {
-          "code": "P4",
-          "qty": 1
-        },
+        "pauschale": null,
         "einzelleistungen": [
           {
-            "code": "E4a",
+            "code": "AA.00.0010",
             "qty": 1
           },
           {
-            "code": "E4b",
-            "qty": 2
+            "code": "AA.00.0020",
+            "qty": 10
           }
         ]
       },
       "fr": {
-        "pauschale": {
-          "code": "P4",
-          "qty": 1
-        },
+        "pauschale": null,
         "einzelleistungen": [
           {
-            "code": "E4a",
+            "code": "AA.00.0010",
             "qty": 1
           },
           {
-            "code": "E4b",
-            "qty": 2
+            "code": "AA.00.0020",
+            "qty": 10
           }
         ]
       },
       "it": {
-        "pauschale": {
-          "code": "P4",
-          "qty": 1
-        },
+        "pauschale": null,
         "einzelleistungen": [
           {
-            "code": "E4a",
+            "code": "AA.00.0010",
             "qty": 1
           },
           {
-            "code": "E4b",
-            "qty": 2
+            "code": "AA.00.0020",
+            "qty": 10
           }
         ]
       }
@@ -214,50 +214,41 @@
   "5": {
     "baseline": {
       "de": {
-        "pauschale": {
-          "code": "P5",
-          "qty": 1
-        },
+        "pauschale": null,
         "einzelleistungen": [
           {
-            "code": "E5a",
+            "code": "CA.00.0010",
             "qty": 1
           },
           {
-            "code": "E5b",
-            "qty": 2
+            "code": "CA.00.0020",
+            "qty": 15
           }
         ]
       },
       "fr": {
-        "pauschale": {
-          "code": "P5",
-          "qty": 1
-        },
+        "pauschale": null,
         "einzelleistungen": [
           {
-            "code": "E5a",
+            "code": "CA.00.0010",
             "qty": 1
           },
           {
-            "code": "E5b",
-            "qty": 2
+            "code": "CA.00.0020",
+            "qty": 15
           }
         ]
       },
       "it": {
-        "pauschale": {
-          "code": "P5",
-          "qty": 1
-        },
+        "pauschale": null,
         "einzelleistungen": [
           {
-            "code": "E5a",
+            "code": "CA.00.0010",
             "qty": 1
           },
           {
-            "code": "E5b",
-            "qty": 2
+            "code": "CA.00.0020",
+            "qty": 15
           }
         ]
       }
@@ -267,50 +258,53 @@
   "6": {
     "baseline": {
       "de": {
-        "pauschale": {
-          "code": "P6",
-          "qty": 1
-        },
+        "pauschale": null,
         "einzelleistungen": [
           {
-            "code": "E6a",
+            "code": "CA.00.0010",
             "qty": 1
           },
           {
-            "code": "E6b",
-            "qty": 2
+            "code": "CA.00.0020",
+            "qty": 10
+          },
+          {
+            "code": "CA.00.0030",
+            "qty": 10
           }
         ]
       },
       "fr": {
-        "pauschale": {
-          "code": "P6",
-          "qty": 1
-        },
+        "pauschale": null,
         "einzelleistungen": [
           {
-            "code": "E6a",
+            "code": "CA.00.0010",
             "qty": 1
           },
           {
-            "code": "E6b",
-            "qty": 2
+            "code": "CA.00.0020",
+            "qty": 10
+          },
+          {
+            "code": "CA.00.0030",
+            "qty": 10
           }
         ]
       },
       "it": {
-        "pauschale": {
-          "code": "P6",
-          "qty": 1
-        },
+        "pauschale": null,
         "einzelleistungen": [
           {
-            "code": "E6a",
+            "code": "CA.00.0010",
             "qty": 1
           },
           {
-            "code": "E6b",
-            "qty": 2
+            "code": "CA.00.0020",
+            "qty": 10
+          },
+          {
+            "code": "CA.00.0030",
+            "qty": 10
           }
         ]
       }
@@ -321,51 +315,24 @@
     "baseline": {
       "de": {
         "pauschale": {
-          "code": "P7",
+          "code": "C08.50E",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E7a",
-            "qty": 1
-          },
-          {
-            "code": "E7b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       },
       "fr": {
         "pauschale": {
-          "code": "P7",
+          "code": "C08.50E",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E7a",
-            "qty": 1
-          },
-          {
-            "code": "E7b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       },
       "it": {
         "pauschale": {
-          "code": "P7",
+          "code": "C08.50E",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E7a",
-            "qty": 1
-          },
-          {
-            "code": "E7b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       }
     },
     "current": {}
@@ -374,51 +341,24 @@
     "baseline": {
       "de": {
         "pauschale": {
-          "code": "P8",
+          "code": "C08.50A",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E8a",
-            "qty": 1
-          },
-          {
-            "code": "E8b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       },
       "fr": {
         "pauschale": {
-          "code": "P8",
+          "code": "C08.50A",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E8a",
-            "qty": 1
-          },
-          {
-            "code": "E8b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       },
       "it": {
         "pauschale": {
-          "code": "P8",
+          "code": "C08.50A",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E8a",
-            "qty": 1
-          },
-          {
-            "code": "E8b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       }
     },
     "current": {}
@@ -427,51 +367,24 @@
     "baseline": {
       "de": {
         "pauschale": {
-          "code": "P9",
+          "code": "C07.50Z",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E9a",
-            "qty": 1
-          },
-          {
-            "code": "E9b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       },
       "fr": {
         "pauschale": {
-          "code": "P9",
+          "code": "C07.50Z",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E9a",
-            "qty": 1
-          },
-          {
-            "code": "E9b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       },
       "it": {
         "pauschale": {
-          "code": "P9",
+          "code": "C07.50Z",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E9a",
-            "qty": 1
-          },
-          {
-            "code": "E9b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       }
     },
     "current": {}
@@ -480,51 +393,24 @@
     "baseline": {
       "de": {
         "pauschale": {
-          "code": "P10",
+          "code": "C06.00A",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E10a",
-            "qty": 1
-          },
-          {
-            "code": "E10b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       },
       "fr": {
         "pauschale": {
-          "code": "P10",
+          "code": "C06.00A",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E10a",
-            "qty": 1
-          },
-          {
-            "code": "E10b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       },
       "it": {
         "pauschale": {
-          "code": "P10",
+          "code": "C06.00A",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E10a",
-            "qty": 1
-          },
-          {
-            "code": "E10b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       }
     },
     "current": {}
@@ -533,51 +419,24 @@
     "baseline": {
       "de": {
         "pauschale": {
-          "code": "P11",
+          "code": "C08.43A",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E11a",
-            "qty": 1
-          },
-          {
-            "code": "E11b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       },
       "fr": {
         "pauschale": {
-          "code": "P11",
+          "code": "C08.43A",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E11a",
-            "qty": 1
-          },
-          {
-            "code": "E11b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       },
       "it": {
         "pauschale": {
-          "code": "P11",
+          "code": "C08.43A",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E11a",
-            "qty": 1
-          },
-          {
-            "code": "E11b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       }
     },
     "current": {}
@@ -586,51 +445,24 @@
     "baseline": {
       "de": {
         "pauschale": {
-          "code": "P12",
+          "code": "C04.51B",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E12a",
-            "qty": 1
-          },
-          {
-            "code": "E12b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       },
       "fr": {
         "pauschale": {
-          "code": "P12",
+          "code": "C04.51B",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E12a",
-            "qty": 1
-          },
-          {
-            "code": "E12b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       },
       "it": {
         "pauschale": {
-          "code": "P12",
+          "code": "C04.51B",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E12a",
-            "qty": 1
-          },
-          {
-            "code": "E12b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       }
     },
     "current": {}
@@ -639,51 +471,24 @@
     "baseline": {
       "de": {
         "pauschale": {
-          "code": "P13",
+          "code": "C05.10B",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E13a",
-            "qty": 1
-          },
-          {
-            "code": "E13b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       },
       "fr": {
         "pauschale": {
-          "code": "P13",
+          "code": "C05.10B",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E13a",
-            "qty": 1
-          },
-          {
-            "code": "E13b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       },
       "it": {
         "pauschale": {
-          "code": "P13",
+          "code": "C05.10B",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E13a",
-            "qty": 1
-          },
-          {
-            "code": "E13b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       }
     },
     "current": {}
@@ -692,51 +497,24 @@
     "baseline": {
       "de": {
         "pauschale": {
-          "code": "P14",
+          "code": "C08.30F",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E14a",
-            "qty": 1
-          },
-          {
-            "code": "E14b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       },
       "fr": {
         "pauschale": {
-          "code": "P14",
+          "code": "C08.30F",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E14a",
-            "qty": 1
-          },
-          {
-            "code": "E14b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       },
       "it": {
         "pauschale": {
-          "code": "P14",
+          "code": "C08.30F",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E14a",
-            "qty": 1
-          },
-          {
-            "code": "E14b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       }
     },
     "current": {}
@@ -745,51 +523,24 @@
     "baseline": {
       "de": {
         "pauschale": {
-          "code": "P15",
+          "code": "C08.30E",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E15a",
-            "qty": 1
-          },
-          {
-            "code": "E15b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       },
       "fr": {
         "pauschale": {
-          "code": "P15",
+          "code": "C08.30E",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E15a",
-            "qty": 1
-          },
-          {
-            "code": "E15b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       },
       "it": {
         "pauschale": {
-          "code": "P15",
+          "code": "C08.30E",
           "qty": 1
         },
-        "einzelleistungen": [
-          {
-            "code": "E15a",
-            "qty": 1
-          },
-          {
-            "code": "E15b",
-            "qty": 2
-          }
-        ]
+        "einzelleistungen": []
       }
     },
     "current": {}
