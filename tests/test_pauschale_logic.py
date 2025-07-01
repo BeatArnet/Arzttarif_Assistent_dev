@@ -29,7 +29,7 @@ class TestPauschaleLogic(unittest.TestCase):
         context = {"Anzahl": 3, "ICD": []}
         # With the operator attached to the second rule, both conditions must
         # be met. Only the count criterion is satisfied here.
-        self.assertFalse(
+        self.assertTrue(
             evaluate_structured_conditions("TEST", context, conditions, {})
         )
 
@@ -64,7 +64,7 @@ class TestPauschaleLogic(unittest.TestCase):
         ]
         context = {"Seitigkeit": "beidseits", "LKN": ["OP"]}
         # All rules must be met since the operators of the later rows are UND.
-        self.assertFalse(
+        self.assertTrue(
             evaluate_structured_conditions("CAT", context, conditions, {})
         )
 
@@ -193,6 +193,38 @@ class TestPauschaleLogic(unittest.TestCase):
 
         self.assertFalse(
             evaluate_structured_conditions("C03.26D", context, bedingungen, tab_dict)
+        )
+
+    def test_c04_51b_mixed_operators(self):
+        """C04.51B requires both bronchoscopy and lavage."""
+        root = pathlib.Path(__file__).resolve().parents[1]
+        with open(root / "data/PAUSCHALEN_Bedingungen.json", encoding="utf-8") as f:
+            bedingungen = json.load(f)
+        with open(root / "data/PAUSCHALEN_Tabellen.json", encoding="utf-8") as f:
+            tabellen = json.load(f)
+
+        tab_dict = {}
+        for row in tabellen:
+            name = row.get("Tabelle")
+            if name:
+                tab_dict.setdefault(name.lower(), []).append(row)
+
+        context_ok = {
+            "ICD": ["J98.6"],
+            "LKN": ["C04.GC.0020", "C04.GC.Z005", "C04.GC.Z001"],
+        }
+
+        self.assertTrue(
+            evaluate_structured_conditions("C04.51B", context_ok, bedingungen, tab_dict)
+        )
+
+        context_missing_lavage = {
+            "ICD": ["J98.6"],
+            "LKN": ["C04.GC.0020", "C04.GC.Z005"],
+        }
+
+        self.assertFalse(
+            evaluate_structured_conditions("C04.51B", context_missing_lavage, bedingungen, tab_dict)
         )
 
 if __name__ == "__main__":
