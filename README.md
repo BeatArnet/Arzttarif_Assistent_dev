@@ -188,7 +188,14 @@ Französisch und Italienisch. Für jede Abfrage sind im
 `data/baseline_results.json` die erwarteten Tarife hinterlegt. Dort ist nun auch
 der Klartext der jeweiligen Frage gespeichert, sodass die passenden Baselines
 einfach gefunden werden können. Über `quality.html` lassen sich diese Beispiele
-gegen die Baselines testen.
+gegen die Baselines testen. Die gleichen Tests können alternativ auf der
+Kommandozeile gestartet werden:
+
+```bash
+python run_quality_tests.py
+```
+Das Skript ruft für jedes Beispiel das Backend-Endpunkt `/api/test-example` auf
+und zeigt an, ob das Ergebnis mit dem Baseline-Wert übereinstimmt.
 
 ## Disclaimer
 
