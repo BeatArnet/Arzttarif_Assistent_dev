@@ -2,7 +2,22 @@ import unittest
 import sys, pathlib
 sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))
 from unittest.mock import patch
-import server
+import sys
+import pathlib
+sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))
+
+try:
+    import flask  # noqa: F401
+    from flask import Flask
+    FLASK_AVAILABLE = True
+except Exception:  # pragma: no cover - if Flask missing
+    FLASK_AVAILABLE = False
+    server = None
+
+if FLASK_AVAILABLE:
+    import server
+
+@unittest.skipUnless(FLASK_AVAILABLE, "Flask not installed")
 
 class TestAnalyzeBillingEndpoint(unittest.TestCase):
     @patch('server.determine_applicable_pauschale_func')

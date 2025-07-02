@@ -423,9 +423,13 @@ def expand_compound_words(text: str) -> str:
         "aussen",
     ]
 
+    excluded_words = {"untersuchung", "unterwegs"}
+
     additions: List[str] = []
     for token in re.findall(r"\b\w+\b", text):
         lowered = token.lower()
+        if lowered in excluded_words:
+            continue
         for pref in prefixes:
             # Only split if the token begins with the prefix and the following
             # character is an uppercase letter (including German umlauts) or a
