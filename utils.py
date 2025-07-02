@@ -431,21 +431,15 @@ def expand_compound_words(text: str) -> str:
         if lowered in excluded_words:
             continue
         for pref in prefixes:
-            # Only split if the token begins with the prefix and the following
-            # character is an uppercase letter (including German umlauts) or a
-            # hyphen. This avoids false positives such as "Untersuchung" for the
-            # prefix "unter" while still expanding valid compounds like
-            # "LinksHerzkatheter" or "Links-Herzkatheter".
-            if (
-                lowered.startswith(pref)
-                and len(lowered) > len(pref) + 2
-            ):
-                next_char = token[len(pref)] if len(token) > len(pref) else ""
-                if next_char.isupper() or next_char == "-":
-                    base = token[len(pref):]
-                    additions.append(f"{pref} {base}")
-                    additions.append(base)
-                    break
+            # Split the token if it begins with one of the known prefixes and
+            # has enough characters left for a meaningful base word. The strict
+            # check for an uppercase letter after the prefix has been removed to
+            # also handle inputs like "Linksherzkatheter".
+            if lowered.startswith(pref) and len(lowered) > len(pref) + 2:
+                base = token[len(pref):]
+                additions.append(f"{pref} {base}")
+                additions.append(base)
+                break
 
     if additions:
         return text + " " + " ".join(additions)

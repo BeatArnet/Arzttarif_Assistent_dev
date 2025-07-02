@@ -70,13 +70,13 @@ except ModuleNotFoundError:  # Minimal stubs for test environment
         def run(self, *a, **k):
             pass
 
-    Flask: Any = _DummyFlask
+    Flask = _DummyFlask
 
     def jsonify(obj: Any = None) -> Any:
         return obj
 
-    def send_from_directory(directory: str, path: str, **kwargs: Any) -> str:
-        return path
+    def send_from_directory(directory: os.PathLike[str] | str, path: os.PathLike[str] | str, **kwargs: Any) -> Any:
+        return str(path)
 
     class Request:
         is_json = False
