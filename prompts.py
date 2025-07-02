@@ -162,6 +162,7 @@ Risposta JSON:"""
         (z.B. erkenne, dass "Kataraktoperation" = "Phakoemulsifikation"/"Linsenextraktion" = "Extractio lentis" 
         oder dass "Herzkatheter"/"Linksherzkather" = "Koronarographie") und berücksichtige auch Formulierungen aus dem Feld "MedizinischeInterpretation".
     *   Nutze dein stilistisches Wissen und erkenne, dass beispielsweise "gross" auch "umfassend" bedeuten kann, dass Wörter in anderer Reihenfolge stehen können und dass Substantiv- und Verbformen dieselbe Bedeutung haben können (z.B. "Entfernung" vs "entfernen").
+    *   Wenn es für eine bestimmte Leistung eine spezifische LKN gibt, dann nutze diese anstatt Alternativen zu wählen.
     *   ABSOLUT KRITISCH: Für JEDEN potenziellen LKN-Code prüfe BUCHSTABE FÜR BUCHSTABE und ZIFFER FÜR ZIFFER, dass dieser Code EXAKT als „LKN:“ im obigen Katalog existiert. Nur wenn der Code existiert, vergleichst du die Katalogbeschreibung mit der beschriebenen Leistung.
     *   Erstelle eine Liste (`identified_leistungen`) **AUSSCHLIESSLICH** mit den LKNs, die diese **exakte** Prüfung im Katalog bestanden haben UND deren Beschreibung zum Text passt.
     *   Erkenne, ob es sich um hausärztliche Leistungen im Kapitel CA handelt.
