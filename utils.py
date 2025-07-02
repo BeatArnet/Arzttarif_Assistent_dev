@@ -455,6 +455,9 @@ STOPWORDS: Set[str] = {
     "in",
     "für",
     "per",
+    # Zusätzliche Stopwords um Fehl-Tokens durch expand_compound_words zu vermeiden
+    "unter",
+    "suchung",
 }
 
 
