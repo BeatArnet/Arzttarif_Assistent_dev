@@ -873,27 +873,22 @@ def analyze_billing():
         preprocessed_input = expand_compound_words(user_input)
         tokens = extract_keywords(user_input)
         for lkn_code, details in leistungskatalog_dict.items():
-            desc_texts = []
-            for base in ["Beschreibung", "Beschreibung_f", "Beschreibung_i"]:
-                val = details.get(base)
-                if val:
-                    desc_texts.append(str(val))
-            mi_texts = []
-            for base in [
-                "MedizinischeInterpretation",
-                "MedizinischeInterpretation_f",
-                "MedizinischeInterpretation_i",
-            ]:
-                val = details.get(base)
-                if val:
-                    mi_texts.append(str(val))
-
-            combined_text = " ".join(desc_texts + mi_texts)
+            # Kombiniere Beschreibung und MedizinischeInterpretation in allen Sprachen
+            texts = [
+                details.get("Beschreibung"),
+                details.get("Beschreibung_f"),
+                details.get("Beschreibung_i"),
+                details.get("MedizinischeInterpretation"),
+                details.get("MedizinischeInterpretation_f"),
+                details.get("MedizinischeInterpretation_i"),
+            ]
+            combined_text = " ".join(str(t) for t in texts if t)
             expanded_combined = expand_compound_words(combined_text)
             if any(t in expanded_combined.lower() for t in tokens):
-                mi_joined = " ".join(mi_texts)
-                context_line = (
-                    f"LKN: {lkn_code}, Typ: {details.get('Typ', 'N/A')}, Beschreibung: {html.escape(desc_texts[0] if desc_texts else 'N/A')}"
+                desc_de = expand_compound_words(str(details.get("Beschreibung", "N/A")))
+                med_de = expand_compound_words(str(details.get("MedizinischeInterpretation", "")))
+                katalog_context_parts.append(
+                    f"LKN: {lkn_code}, Typ: {details.get('Typ', 'N/A')}, Beschreibung: {html.escape(desc_de)}, MedizinischeInterpretation: {html.escape(med_de)}"
                 )
                 if mi_joined:
                     context_line += f", MedizinischeInterpretation: {html.escape(mi_joined)}"
