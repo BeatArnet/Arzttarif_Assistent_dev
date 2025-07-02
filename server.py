@@ -873,11 +873,22 @@ def analyze_billing():
         preprocessed_input = expand_compound_words(user_input)
         tokens = extract_keywords(user_input)
         for lkn_code, details in leistungskatalog_dict.items():
-            raw_desc = str(details.get("Beschreibung", "N/A"))
-            expanded_desc = expand_compound_words(raw_desc)
-            if any(t in expanded_desc.lower() for t in tokens):
+            # Kombiniere Beschreibung und MedizinischeInterpretation in allen Sprachen
+            texts = [
+                details.get("Beschreibung"),
+                details.get("Beschreibung_f"),
+                details.get("Beschreibung_i"),
+                details.get("MedizinischeInterpretation"),
+                details.get("MedizinischeInterpretation_f"),
+                details.get("MedizinischeInterpretation_i"),
+            ]
+            combined_text = " ".join(str(t) for t in texts if t)
+            expanded_combined = expand_compound_words(combined_text)
+            if any(t in expanded_combined.lower() for t in tokens):
+                desc_de = expand_compound_words(str(details.get("Beschreibung", "N/A")))
+                med_de = expand_compound_words(str(details.get("MedizinischeInterpretation", "")))
                 katalog_context_parts.append(
-                    f"LKN: {lkn_code}, Typ: {details.get('Typ', 'N/A')}, Beschreibung: {html.escape(expanded_desc)}"
+                    f"LKN: {lkn_code}, Typ: {details.get('Typ', 'N/A')}, Beschreibung: {html.escape(desc_de)}, MedizinischeInterpretation: {html.escape(med_de)}"
                 )
             if len(katalog_context_parts) >= 200:
                 break
