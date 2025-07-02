@@ -458,6 +458,20 @@ STOPWORDS: Set[str] = {
 }
 
 
+# Laienbegriffe und deren häufig verwendete Fachtermini zur Keyword-Erweiterung
+SYNONYM_MAP: Dict[str, List[str]] = {
+    "blinddarmentfernung": ["appendektomie", "appendix"],
+    "blinddarm": ["appendix"],
+    "warze": ["hyperkeratose"],
+    "warzen": ["hyperkeratosen"],
+    "gross": ["umfassend"],
+    "grosser": ["umfassender"],
+    "entfernung": ["entfernen"],
+    "entfernen": ["entfernung"],
+    "rheuma": ["rheumatologisch"],
+}
+
+
 def extract_keywords(text: str) -> Set[str]:
     """Return significant keywords from ``text``.
 
@@ -468,5 +482,10 @@ def extract_keywords(text: str) -> Set[str]:
 
     expanded = expand_compound_words(text)
     tokens = re.findall(r"\b\w+\b", expanded.lower())
-    return {t for t in tokens if len(t) >= 4 and t not in STOPWORDS}
+    base_tokens = {t for t in tokens if len(t) >= 4 and t not in STOPWORDS}
+    expanded_tokens = set(base_tokens)
+    for t in list(base_tokens):
+        for syn in SYNONYM_MAP.get(t, []):
+            expanded_tokens.add(syn.lower())
+    return expanded_tokens
 

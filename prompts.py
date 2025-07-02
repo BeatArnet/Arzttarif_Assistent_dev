@@ -17,6 +17,7 @@ def get_stage1_prompt(user_input: str, katalog_context: str, lang: str) -> str:
     *   Note que plusieurs prestations peuvent être documentées dans le texte et que plusieurs LKN peuvent être valides (p. ex. intervention chirurgicale plus anesthésie).
     *   Si une anesthésie ou une narcose réalisée par un anesthésiste est mentionnée, sélectionne explicitement un code du chapitre WA.10 (table ANAST). S'il n'est pas fait mention de la durée, utilise par défaut `WA.10.0010`. Lorsque la durée précise en minutes est indiquée, emploie le code `WA.10.00x0` approprié.
     *   Mets à profit tes connaissances médicales sur les synonymes et termes techniques usuels (p. ex. reconnais que « opération de la cataracte » = « phacoémulsification » / « extraction du cristallin » = « Extractio lentis ») et tiens aussi compte des formulations qui peuvent apparaître dans le champ "MedizinischeInterpretation".
+    *   Utilise également ton sens stylistique : « grand » peut signifier « complet », l'ordre des mots peut varier et les formes nominales et verbales peuvent être équivalentes (p. ex. « retrait » vs « retirer »).
     *   **ABSOLUMENT CRITIQUE:** Pour CHAQUE code LKN potentiel, vérifie **LETTRE PAR LETTRE et CHIFFRE PAR CHIFFRE** que ce code existe **EXACTEMENT** comme 'LKN:' dans le catalogue ci-dessus. Ce n'est que si le code existe que tu compares la **description du catalogue** avec l'acte décrit.
     *   Crée une liste (`identified_leistungen`) **UNIQUEMENT** avec les LKN ayant passé cette vérification exacte et dont la description correspond au texte.
     *   Reconnais si les prestations relèvent du chapitre CA (médecine de famille).
@@ -87,6 +88,7 @@ Réponse JSON:"""
     *   Considera che nel testo possono essere documentate più prestazioni e quindi possono essere valide più LKN (ad es. intervento chirurgico più anestesia).
     *   Se viene menzionata un'anestesia o narcosi eseguita da un anestesista, seleziona esplicitamente un codice del capitolo WA.10 (tabella ANAST). Se non è indicata la durata, usa di default `WA.10.0010`. Quando viene fornita una durata precisa in minuti, impiega il corrispondente codice `WA.10.00x0`.
     *   Sfrutta le tue conoscenze mediche su sinonimi e termini tecnici tipici (ad es. riconosci che « intervento di cataratta » = « facoemulsificazione » / « estrazione del cristallino » = « Extractio lentis ») e considera anche i termini che possono comparire nel campo "MedizinischeInterpretation".
+    *   Usa anche il tuo senso stilistico: "grande" può significare "esteso", l'ordine delle parole può variare e forme sostantivali e verbali possono avere lo stesso significato (es. "rimozione" vs "rimuovere").
     *   **ASSOLUTAMENTE CRITICO:** Per OGNI codice LKN potenziale verifica **LETTERA PER LETTERA e CIFRA PER CIFRA** che esista **ESATTAMENTE** come 'LKN:' nel catalogo sopra. Solo se il codice esiste confronta la **descrizione del catalogo** con l'attività descritta.
     *   Crea un elenco (`identified_leistungen`) **SOLO** con le LKN che hanno superato questa verifica esatta e la cui descrizione corrisponde al testo.
     *   Riconosci se si tratta di prestazioni di medicina di base del capitolo CA.
@@ -159,7 +161,7 @@ Risposta JSON:"""
     *   Nutze dein ausgeprägtes medizinisches und terminologisches Wissen zu **Synonymen und typischen Fachbegriffen** 
         (z.B. erkenne, dass "Kataraktoperation" = "Phakoemulsifikation"/"Linsenextraktion" = "Extractio lentis" 
         oder dass "Herzkatheter"/"Linksherzkather" = "Koronarographie") und berücksichtige auch Formulierungen aus dem Feld "MedizinischeInterpretation".
-    *   Nutze dein stilistisches Wissen und erkenne, dass beispielsweise "gross" auch "umfassend" bedeuten könnte oder dass Wörter in anderer Reihenfolge auftreten können.
+    *   Nutze dein stilistisches Wissen und erkenne, dass beispielsweise "gross" auch "umfassend" bedeuten kann, dass Wörter in anderer Reihenfolge stehen können und dass Substantiv- und Verbformen dieselbe Bedeutung haben können (z.B. "Entfernung" vs "entfernen").
     *   ABSOLUT KRITISCH: Für JEDEN potenziellen LKN-Code prüfe BUCHSTABE FÜR BUCHSTABE und ZIFFER FÜR ZIFFER, dass dieser Code EXAKT als „LKN:“ im obigen Katalog existiert. Nur wenn der Code existiert, vergleichst du die Katalogbeschreibung mit der beschriebenen Leistung.
     *   Erstelle eine Liste (`identified_leistungen`) **AUSSCHLIESSLICH** mit den LKNs, die diese **exakte** Prüfung im Katalog bestanden haben UND deren Beschreibung zum Text passt.
     *   Erkenne, ob es sich um hausärztliche Leistungen im Kapitel CA handelt.
