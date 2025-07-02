@@ -158,8 +158,8 @@ Risposta JSON:"""
     *   Identifiziere **alle** potenziellen LKN-Codes (Format `XX.##.####`), die die beschriebenen Tätigkeiten repräsentieren könnten.
     *   Bedenke, dass im Text mehrere Leistungen dokumentiert  mehrere LKNs gültig sein können (z.B. chirurgischer Eingriff plus/und/mit/;/./,/: Anästhesie).
     *   Wird eine Anästhesie oder Narkose durch einen Anästhesisten erwähnt, wähle ausdrücklich einen Code aus Kapitel WA.10 (Tabelle ANAST). Wenn keine Dauer angegeben ist, verwende standardmäßig `WA.10.0010`. Bei einer konkreten Dauerangabe in Minuten nutze den entsprechenden `WA.10.00x0`-Code.
-    *   Nutze dein ausgeprägtes medizinisches und terminologisches Wissen zu **Synonymen und typischen Fachbegriffen** 
-        (z.B. erkenne, dass "Kataraktoperation" = "Phakoemulsifikation"/"Linsenextraktion" = "Extractio lentis" 
+    *   Nutze dein ausgeprägtes medizinisches und terminologisches Wissen zu **Synonymen und typischen Fachbegriffen**
+        (z.B. erkenne, dass "Kataraktoperation" = "Phakoemulsifikation"/"Linsenextraktion" = "Extractio lentis"
         oder dass "Herzkatheter"/"Linksherzkather" = "Koronarographie") und berücksichtige auch Formulierungen aus dem Feld "MedizinischeInterpretation".
     *   Nutze dein stilistisches Wissen und erkenne, dass beispielsweise "gross" auch "umfassend" bedeuten kann, dass Wörter in anderer Reihenfolge stehen können und dass Substantiv- und Verbformen dieselbe Bedeutung haben können (z.B. "Entfernung" vs "entfernen").
     *   Wenn es für eine bestimmte Leistung eine spezifische LKN gibt, dann nutze diese anstatt Alternativen zu wählen.

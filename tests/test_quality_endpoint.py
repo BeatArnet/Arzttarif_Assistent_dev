@@ -1,4 +1,6 @@
 import unittest
+import sys, pathlib
+sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))
 from unittest.mock import patch
 import sys
 import pathlib
