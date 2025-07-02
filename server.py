@@ -5,10 +5,11 @@ import json
 import time # für Zeitmessung
 import traceback # für detaillierte Fehlermeldungen
 from pathlib import Path
+from typing import Any
 try:
     from flask import Flask, jsonify, send_from_directory, request, abort
 except ModuleNotFoundError:  # Minimal stubs for test environment
-    class Flask:
+    class _DummyFlask:
         def __init__(self, *a, **kw):
             self.routes = {}
             self.config = {}
@@ -59,6 +60,9 @@ except ModuleNotFoundError:  # Minimal stubs for test environment
                         def get_json(self):
                             return self._d
 
+                        def get_data(self, as_text: bool = False):
+                            return self._d if not as_text else str(self._d)
+
                     return R(data, status)
 
             return Client()
@@ -66,32 +70,37 @@ except ModuleNotFoundError:  # Minimal stubs for test environment
         def run(self, *a, **k):
             pass
 
-    def jsonify(obj=None):
+    Flask: Any = _DummyFlask
+
+    def jsonify(obj: Any = None) -> Any:
         return obj
 
-    def send_from_directory(directory: str, path: str, **kwargs):
+    def send_from_directory(directory: str, path: str, **kwargs: Any) -> str:
         return path
 
     class Request:
         is_json = False
 
-        def get_json(self, silent: bool = False):
+        def get_json(self, silent: bool = False) -> Any:
             return {}
 
     request = Request()
 
-    def abort(code):
+    def abort(code: int) -> None:
         raise Exception(f"abort {code}")
 try:
     import requests
 except ModuleNotFoundError:
-    class requests:
+    class _DummyRequests:
         class exceptions:
-            RequestException = Exception
+            class RequestException(Exception):
+                pass
 
         @staticmethod
-        def post(*a, **k):
+        def post(*a: Any, **k: Any) -> None:
             raise RuntimeError("requests module not available")
+
+    requests: Any = _DummyRequests()
 try:
     from dotenv import load_dotenv
 except ModuleNotFoundError:
@@ -980,8 +989,9 @@ def analyze_billing():
             print("FEHLER: Kritische Server-Daten konnten nicht geladen werden.")
             return jsonify({"error": "Kritische Server-Daten nicht initialisiert. Administrator kontaktieren."}), 503
 
-    if not request.is_json: return jsonify({"error": "Request must be JSON"}), 400
-    data = request.get_json() # This is fine now, as we've logged the rawish data already
+    if not request.is_json:
+        return jsonify({"error": "Request must be JSON"}), 400
+    data = request.get_json() or {}  # ensure dict for optional access
     user_input = data.get('inputText', "") # Default zu leerem String
     lang = data.get('lang', 'de')
     if lang not in ['de', 'fr', 'it']:
