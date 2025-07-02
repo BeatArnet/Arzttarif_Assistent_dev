@@ -464,14 +464,21 @@ STOPWORDS: Set[str] = {
 # Laienbegriffe und deren häufig verwendete Fachtermini zur Keyword-Erweiterung
 SYNONYM_MAP: Dict[str, List[str]] = {
     "blinddarmentfernung": ["appendektomie", "appendix"],
+    "appendektomie": ["blinddarmentfernung"],
+    "appendix": ["blinddarmentfernung", "blinddarm"],
     "blinddarm": ["appendix"],
     "warze": ["hyperkeratose"],
+    "hyperkeratose": ["warze"],
     "warzen": ["hyperkeratosen"],
+    "hyperkeratosen": ["warzen"],
     "gross": ["umfassend"],
+    "umfassend": ["gross"],
     "grosser": ["umfassender"],
+    "umfassender": ["grosser"],
     "entfernung": ["entfernen"],
     "entfernen": ["entfernung"],
     "rheuma": ["rheumatologisch"],
+    "rheumatologisch": ["rheuma"],
 }
 
 
@@ -486,9 +493,23 @@ def extract_keywords(text: str) -> Set[str]:
     expanded = expand_compound_words(text)
     tokens = re.findall(r"\b\w+\b", expanded.lower())
     base_tokens = {t for t in tokens if len(t) >= 4 and t not in STOPWORDS}
-    expanded_tokens = set(base_tokens)
-    for t in list(base_tokens):
-        for syn in SYNONYM_MAP.get(t, []):
-            expanded_tokens.add(syn.lower())
+
+    def collect_synonyms(token: str) -> Set[str]:
+        """Return ``token`` and all synonyms recursively."""
+        collected = {token}
+        queue = [token]
+        while queue:
+            current = queue.pop()
+            for syn in SYNONYM_MAP.get(current, []):
+                syn = syn.lower()
+                if syn not in collected:
+                    collected.add(syn)
+                    queue.append(syn)
+        return collected
+
+    expanded_tokens: Set[str] = set()
+    for t in base_tokens:
+        expanded_tokens.update(collect_synonyms(t))
+
     return expanded_tokens
 
