@@ -890,9 +890,6 @@ def analyze_billing():
                 katalog_context_parts.append(
                     f"LKN: {lkn_code}, Typ: {details.get('Typ', 'N/A')}, Beschreibung: {html.escape(desc_de)}, MedizinischeInterpretation: {html.escape(med_de)}"
                 )
-                if mi_joined:
-                    context_line += f", MedizinischeInterpretation: {html.escape(mi_joined)}"
-                katalog_context_parts.append(context_line)
             if len(katalog_context_parts) >= 200:
                 break
         katalog_context_str = "\n".join(katalog_context_parts)
