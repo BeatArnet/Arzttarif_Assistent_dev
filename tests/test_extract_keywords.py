@@ -13,5 +13,10 @@ class TestExtractKeywords(unittest.TestCase):
         tokens = extract_keywords("Entfernung Warze mit dem scharfen L\xf6ffel")
         self.assertIn("hyperkeratose", tokens)
 
+    def test_synonym_bidirectional_rheuma(self):
+        tokens_word = extract_keywords("rheuma")
+        tokens_phrase = extract_keywords("rheumatologische Untersuchung")
+        self.assertEqual(tokens_word, tokens_phrase)
+
 if __name__ == '__main__':
     unittest.main()

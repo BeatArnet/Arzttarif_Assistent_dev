@@ -427,11 +427,21 @@ def expand_compound_words(text: str) -> str:
     for token in re.findall(r"\b\w+\b", text):
         lowered = token.lower()
         for pref in prefixes:
-            if lowered.startswith(pref) and len(lowered) > len(pref) + 2:
-                base = token[len(pref):]
-                additions.append(f"{pref} {base}")
-                additions.append(base)
-                break
+            # Only split if the token begins with the prefix and the following
+            # character is an uppercase letter (including German umlauts) or a
+            # hyphen. This avoids false positives such as "Untersuchung" for the
+            # prefix "unter" while still expanding valid compounds like
+            # "LinksHerzkatheter" or "Links-Herzkatheter".
+            if (
+                lowered.startswith(pref)
+                and len(lowered) > len(pref) + 2
+            ):
+                next_char = token[len(pref)] if len(token) > len(pref) else ""
+                if next_char.isupper() or next_char == "-":
+                    base = token[len(pref):]
+                    additions.append(f"{pref} {base}")
+                    additions.append(base)
+                    break
 
     if additions:
         return text + " " + " ".join(additions)
@@ -455,20 +465,30 @@ STOPWORDS: Set[str] = {
     "in",
     "für",
     "per",
+    # Zusätzliche Stopwords um Fehl-Tokens durch expand_compound_words zu vermeiden
+    "unter",
+    "suchung",
 }
 
 
 # Laienbegriffe und deren häufig verwendete Fachtermini zur Keyword-Erweiterung
 SYNONYM_MAP: Dict[str, List[str]] = {
     "blinddarmentfernung": ["appendektomie", "appendix"],
+    "appendektomie": ["blinddarmentfernung"],
+    "appendix": ["blinddarmentfernung", "blinddarm"],
     "blinddarm": ["appendix"],
     "warze": ["hyperkeratose"],
+    "hyperkeratose": ["warze"],
     "warzen": ["hyperkeratosen"],
+    "hyperkeratosen": ["warzen"],
     "gross": ["umfassend"],
+    "umfassend": ["gross"],
     "grosser": ["umfassender"],
+    "umfassender": ["grosser"],
     "entfernung": ["entfernen"],
     "entfernen": ["entfernung"],
     "rheuma": ["rheumatologisch"],
+    "rheumatologisch": ["rheuma"],
 }
 
 
@@ -483,9 +503,23 @@ def extract_keywords(text: str) -> Set[str]:
     expanded = expand_compound_words(text)
     tokens = re.findall(r"\b\w+\b", expanded.lower())
     base_tokens = {t for t in tokens if len(t) >= 4 and t not in STOPWORDS}
-    expanded_tokens = set(base_tokens)
-    for t in list(base_tokens):
-        for syn in SYNONYM_MAP.get(t, []):
-            expanded_tokens.add(syn.lower())
+
+    def collect_synonyms(token: str) -> Set[str]:
+        """Return ``token`` and all synonyms recursively."""
+        collected = {token}
+        queue = [token]
+        while queue:
+            current = queue.pop()
+            for syn in SYNONYM_MAP.get(current, []):
+                syn = syn.lower()
+                if syn not in collected:
+                    collected.add(syn)
+                    queue.append(syn)
+        return collected
+
+    expanded_tokens: Set[str] = set()
+    for t in base_tokens:
+        expanded_tokens.update(collect_synonyms(t))
+
     return expanded_tokens
 
