@@ -468,6 +468,7 @@ STOPWORDS: Set[str] = {
     # Zusätzliche Stopwords um Fehl-Tokens durch expand_compound_words zu vermeiden
     "unter",
     "suchung",
+    "untersuchung",
 }
 
 
@@ -487,8 +488,9 @@ SYNONYM_MAP: Dict[str, List[str]] = {
     "umfassender": ["grosser"],
     "entfernung": ["entfernen"],
     "entfernen": ["entfernung"],
-    "rheuma": ["rheumatologisch"],
-    "rheumatologisch": ["rheuma"],
+    "rheuma": ["rheumatologisch", "rheumatologische"],
+    "rheumatologisch": ["rheuma", "rheumatologische"],
+    "rheumatologische": ["rheuma", "rheumatologisch"],
 }
 
 
