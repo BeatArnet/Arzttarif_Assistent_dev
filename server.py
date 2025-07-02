@@ -872,6 +872,8 @@ def analyze_billing():
         katalog_context_parts = []
         preprocessed_input = expand_compound_words(user_input)
         tokens = extract_keywords(user_input)
+
+        candidate_entries: List[Tuple[int, str]] = []
         for lkn_code, details in leistungskatalog_dict.items():
             desc_texts = []
             for base in ["Beschreibung", "Beschreibung_f", "Beschreibung_i"]:
@@ -889,17 +891,20 @@ def analyze_billing():
                     mi_texts.append(str(val))
 
             combined_text = " ".join(desc_texts + mi_texts)
-            expanded_combined = expand_compound_words(combined_text)
-            if any(t in expanded_combined.lower() for t in tokens):
+            expanded_combined = expand_compound_words(combined_text).lower()
+            match_count = sum(1 for t in tokens if t in expanded_combined)
+            if match_count > 0:
                 mi_joined = " ".join(mi_texts)
                 context_line = (
                     f"LKN: {lkn_code}, Typ: {details.get('Typ', 'N/A')}, Beschreibung: {html.escape(desc_texts[0] if desc_texts else 'N/A')}"
                 )
                 if mi_joined:
                     context_line += f", MedizinischeInterpretation: {html.escape(mi_joined)}"
-                katalog_context_parts.append(context_line)
-            if len(katalog_context_parts) >= 200:
-                break
+                candidate_entries.append((match_count, context_line))
+
+        candidate_entries.sort(key=lambda x: x[0], reverse=True)
+        katalog_context_parts = [line for _, line in candidate_entries[:200]]
+
         katalog_context_str = "\n".join(katalog_context_parts)
         if not katalog_context_str:
             raise ValueError("Leistungskatalog für LLM-Kontext (Stufe 1) ist leer.")
