@@ -12,64 +12,91 @@ except ModuleNotFoundError:  # Minimal stubs for test environment
         def __init__(self, *a, **kw):
             self.routes = {}
             self.config = {}
+
         def route(self, path, methods=None):
-            methods = tuple((methods or ['GET']))
+            methods = tuple((methods or ["GET"]))
+
             def decorator(func):
                 self.routes[(path, methods)] = func
                 return func
+
             return decorator
+
         def test_client(self):
             app = self
+
             class Client:
                 def __enter__(self):
                     return self
+
                 def __exit__(self, exc_type, exc, tb):
                     return False
+
                 def post(self, path, json=None):
-                    func = app.routes.get((path, ('POST',)))
+                    func = app.routes.get((path, ("POST",)))
                     if not func:
-                        raise AssertionError('Route not found')
+                        raise AssertionError("Route not found")
                     global request
+
                     class Req:
                         is_json = True
-                        def get_json(self, silent=False):
+
+                        def get_json(self, silent: bool = False):
                             return json
+
                     request = Req()
                     resp = func()
                     status = 200
                     data = resp
                     if isinstance(resp, tuple):
                         data, status = resp
+
                     class R:
                         def __init__(self, d, s):
                             self.status_code = s
                             self._d = d
+
                         def get_json(self):
                             return self._d
+
                     return R(data, status)
+
             return Client()
+
+        def run(self, *a, **k):
+            pass
+
     def jsonify(obj=None):
         return obj
-    def send_from_directory(directory, filename):
-        return filename
-    class request:
+
+    def send_from_directory(directory: str, path: str, **kwargs):
+        return path
+
+    class Request:
         is_json = False
-        def get_json(self, silent=False):
+
+        def get_json(self, silent: bool = False):
             return {}
+
+    request = Request()
+
     def abort(code):
         raise Exception(f"abort {code}")
 try:
     import requests
 except ModuleNotFoundError:
     class requests:
+        class exceptions:
+            RequestException = Exception
+
         @staticmethod
         def post(*a, **k):
             raise RuntimeError("requests module not available")
 try:
     from dotenv import load_dotenv
 except ModuleNotFoundError:
-    def load_dotenv(*a, **k):
-        return None
+    def load_dotenv(*a, **k) -> bool:
+        return False
 import regelpruefer # Dein Modul
 from typing import Dict, List, Any, Set, Tuple, Callable # Tuple und Callable hinzugefügt
 from utils import (
