@@ -873,12 +873,31 @@ def analyze_billing():
         preprocessed_input = expand_compound_words(user_input)
         tokens = extract_keywords(user_input)
         for lkn_code, details in leistungskatalog_dict.items():
-            raw_desc = str(details.get("Beschreibung", "N/A"))
-            expanded_desc = expand_compound_words(raw_desc)
-            if any(t in expanded_desc.lower() for t in tokens):
-                katalog_context_parts.append(
-                    f"LKN: {lkn_code}, Typ: {details.get('Typ', 'N/A')}, Beschreibung: {html.escape(expanded_desc)}"
+            desc_texts = []
+            for base in ["Beschreibung", "Beschreibung_f", "Beschreibung_i"]:
+                val = details.get(base)
+                if val:
+                    desc_texts.append(str(val))
+            mi_texts = []
+            for base in [
+                "MedizinischeInterpretation",
+                "MedizinischeInterpretation_f",
+                "MedizinischeInterpretation_i",
+            ]:
+                val = details.get(base)
+                if val:
+                    mi_texts.append(str(val))
+
+            combined_text = " ".join(desc_texts + mi_texts)
+            expanded_combined = expand_compound_words(combined_text)
+            if any(t in expanded_combined.lower() for t in tokens):
+                mi_joined = " ".join(mi_texts)
+                context_line = (
+                    f"LKN: {lkn_code}, Typ: {details.get('Typ', 'N/A')}, Beschreibung: {html.escape(desc_texts[0] if desc_texts else 'N/A')}"
                 )
+                if mi_joined:
+                    context_line += f", MedizinischeInterpretation: {html.escape(mi_joined)}"
+                katalog_context_parts.append(context_line)
             if len(katalog_context_parts) >= 200:
                 break
         katalog_context_str = "\n".join(katalog_context_parts)
