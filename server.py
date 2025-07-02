@@ -5,89 +5,93 @@ import json
 import time # für Zeitmessung
 import traceback # für detaillierte Fehlermeldungen
 from pathlib import Path
-from typing import Any
-try:
-    from flask import Flask, jsonify, send_from_directory, request, abort
-except ModuleNotFoundError:  # Minimal stubs for test environment
-    class _DummyFlask:
-        def __init__(self, *a, **kw):
-            self.routes = {}
-            self.config = {}
+from typing import Any, TYPE_CHECKING
 
-        def route(self, path, methods=None):
-            methods = tuple((methods or ["GET"]))
+if TYPE_CHECKING:
+    from flask import Flask as FlaskType, jsonify, send_from_directory, request, abort
+else:
+    try:
+        from flask import Flask as FlaskType, jsonify, send_from_directory, request, abort
+    except ModuleNotFoundError:  # Minimal stubs for test environment
+        class FlaskType:
+            def __init__(self, *a, **kw):
+                self.routes = {}
+                self.config = {}
 
-            def decorator(func):
-                self.routes[(path, methods)] = func
-                return func
+            def route(self, path, methods=None):
+                methods = tuple((methods or ["GET"]))
 
-            return decorator
+                def decorator(func):
+                    self.routes[(path, methods)] = func
+                    return func
 
-        def test_client(self):
-            app = self
+                return decorator
 
-            class Client:
-                def __enter__(self):
-                    return self
+            def test_client(self):
+                app = self
 
-                def __exit__(self, exc_type, exc, tb):
-                    return False
+                class Client:
+                    def __enter__(self):
+                        return self
 
-                def post(self, path, json=None):
-                    func = app.routes.get((path, ("POST",)))
-                    if not func:
-                        raise AssertionError("Route not found")
-                    global request
+                    def __exit__(self, exc_type, exc, tb):
+                        return False
 
-                    class Req:
-                        is_json = True
+                    def post(self, path, json=None):
+                        func = app.routes.get((path, ("POST",)))
+                        if not func:
+                            raise AssertionError("Route not found")
+                        global request
 
-                        def get_json(self, silent: bool = False):
-                            return json
+                        class Req:
+                            is_json = True
 
-                    request = Req()
-                    resp = func()
-                    status = 200
-                    data = resp
-                    if isinstance(resp, tuple):
-                        data, status = resp
+                            def get_json(self, silent: bool = False):
+                                return json
 
-                    class R:
-                        def __init__(self, d, s):
-                            self.status_code = s
-                            self._d = d
+                        request = Req()
+                        resp = func()
+                        status = 200
+                        data = resp
+                        if isinstance(resp, tuple):
+                            data, status = resp
 
-                        def get_json(self):
-                            return self._d
+                        class R:
+                            def __init__(self, d, s):
+                                self.status_code = s
+                                self._d = d
 
-                        def get_data(self, as_text: bool = False):
-                            return self._d if not as_text else str(self._d)
+                            def get_json(self):
+                                return self._d
 
-                    return R(data, status)
+                            def get_data(self, as_text: bool = False):
+                                return self._d if not as_text else str(self._d)
 
-            return Client()
+                        return R(data, status)
 
-        def run(self, *a, **k):
-            pass
+                return Client()
 
-    Flask = _DummyFlask
+            def run(self, *a, **k):
+                pass
 
-    def jsonify(obj: Any = None) -> Any:
-        return obj
+        Flask = FlaskType
 
-    def send_from_directory(directory: os.PathLike[str] | str, path: os.PathLike[str] | str, **kwargs: Any) -> Any:
-        return str(path)
+        def jsonify(obj: Any = None) -> Any:
+            return obj
 
-    class Request:
-        is_json = False
+        def send_from_directory(directory: os.PathLike[str] | str, path: os.PathLike[str] | str, **kwargs: Any) -> Any:
+            return str(path)
 
-        def get_json(self, silent: bool = False) -> Any:
-            return {}
+        class Request:
+            is_json = False
 
-    request = Request()
+            def get_json(self, silent: bool = False) -> Any:
+                return {}
 
-    def abort(code: int) -> None:
-        raise Exception(f"abort {code}")
+        request = Request()
+
+        def abort(code: int) -> None:
+            raise Exception(f"abort {code}")
 try:
     import requests
 except ModuleNotFoundError:
@@ -315,13 +319,13 @@ def compute_token_doc_freq() -> None:
         for t in tokens:
             token_doc_freq[t] = token_doc_freq.get(t, 0) + 1
 
-def create_app() -> Flask:
+def create_app() -> FlaskType:
     """
     Erstellt die Flask-Instanz.  
     Render (bzw. Gunicorn) ruft diese Factory einmal pro Worker auf
     und bekommt das WSGI-Objekt zurück.
     """
-    app = Flask(__name__, static_folder='.', static_url_path='')
+    app = FlaskType(__name__, static_folder='.', static_url_path='')
 
     # Daten nur einmal laden – egal ob lokal oder Render-Worker
     global daten_geladen
@@ -457,7 +461,7 @@ def load_data() -> bool:
 
 # Einsatz von Flask
 # Die App-Instanz, auf die Gunicorn zugreift
-app: Flask = create_app()
+app: FlaskType = create_app()
 
 
 
