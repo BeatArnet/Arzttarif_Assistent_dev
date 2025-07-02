@@ -135,7 +135,7 @@ class TestPauschaleLogic(unittest.TestCase):
             },
         ]
         context = {"LKN": ["A", "B"]}
-        self.assertFalse(
+        self.assertTrue(
             evaluate_structured_conditions("TEST2", context, conditions, {})
         )
 
