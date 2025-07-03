@@ -41,9 +41,12 @@ def get_stage1_prompt(user_input: str, katalog_context: str, lang: str) -> str:
     *   **Général:** si `menge_allgemein` (Z) est extrait ET que la LKN n'est pas basée sur le temps ET `anzahl_prozeduren` est `null`, mets `menge` = Z.
     *   **Nombre spécifique de procédures:** si `anzahl_prozeduren` est extrait et se rapporte clairement à la LKN (p. ex. "deux injections"), mets `menge` = `anzahl_prozeduren`. Cela prime sur `menge_allgemein`.
     *   Assure-toi que `menge` >= 1.
+    *   Si une procédure requiert une « latéralité », alors pour « beidseits » (des deux côtés), saisis quantité = 2 ET « latéralité » = « beidseits ».
 
 5.  **Justification:**
     *   `begruendung_llm` courte indiquant pourquoi les LKN **validées** ont été choisies. Réfère-toi au texte et aux **descriptions du catalogue**.
+
+**Instruction spécifique pour les consultations :** Si le texte de traitement décrit une « consultation » générale ou un « entretien » avec une durée (p. ex. « consultation 15 minutes ») et qu'AUCUNE spécialité spécifique (comme « médecine de famille ») n'est mentionnée, alors priorise les codes de consultation généraux du chapitre AA (p. ex. `AA.00.0010` pour les 5 premières minutes et `AA.00.0020` pour chaque minute supplémentaire). Assure-toi que les quantités sont correctement calculées en fonction de la durée (p. ex. 15 minutes = 1x `AA.00.0010` + 10x `AA.00.0020`).
 
 **Format de sortie:** **UNIQUEMENT** du JSON valide, **AUCUN** autre texte.
 ```json
@@ -112,9 +115,12 @@ Réponse JSON:"""
     *   **Generale:** se `menge_allgemein` (Z) è stato estratto E la LKN non è basata sul tempo E `anzahl_prozeduren` è `null`, imposta `menge` = Z.
     *   **Numero specifico di procedure:** se `anzahl_prozeduren` è stato estratto e si riferisce chiaramente alla LKN (ad es. "due iniezioni"), imposta `menge` = `anzahl_prozeduren`. Questo prevale su `menge_allgemein`.
     *   Assicurati che `menge` >= 1.
+    *   Se una procedura richiede una "lateralità", allora per "beidseits" (entrambi i lati), imposta quantità = 2 E "lateralità" = "beidseits".
 
 5.  **Motivazione:**
     *   `begruendung_llm` breve sul perché le LKN **convalidate** sono state scelte. Fai riferimento al testo e alle **descrizioni del catalogo**.
+
+**Istruzione specifica per le consultazioni:** Se il testo del trattamento descrive una "consultazione" generale o un "colloquio" con una durata (ad es. "consultazione 15 minuti") e NON viene menzionata NESSUNA specializzazione specifica (come "medicina di famiglia"), allora dai priorità ai codici di consultazione generali del capitolo AA (ad es. `AA.00.0010` per i primi 5 minuti e `AA.00.0020` per ogni minuto successivo). Assicurati che le quantità siano calcolate correttamente in base alla durata (ad es. 15 minuti = 1x `AA.00.0010` + 10x `AA.00.0020`).
 
 **Formato di output:** **SOLO** JSON valido, **NESSUN** altro testo.
 ```json
