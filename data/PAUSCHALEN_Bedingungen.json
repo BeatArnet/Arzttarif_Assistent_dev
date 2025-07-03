@@ -1,347 +1,5 @@
 [
     {
-        "BedingungsID": 3,
-        "Pauschale": "C00.10D",
-        "Gruppe": 2,
-        "Operator": "ODER",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C01.21_8,C01.21_9",
-        "Ebene": 3
-    },
-    {
-        "BedingungsID": 4,
-        "Pauschale": "C00.10D",
-        "Gruppe": 2,
-        "Operator": "ODER",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "C03.GD.0270,C03.GD.0280,C03.GD.0300",
-        "Ebene": 3
-    },
-    {
-        "BedingungsID": 5,
-        "Pauschale": "C00.10D",
-        "Gruppe": 2,
-        "Operator": "ODER",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "C05.RE.Z004,C05.KC.Z007",
-        "Ebene": 3
-    },
-    {
-        "BedingungsID": 6,
-        "Pauschale": "C00.10D",
-        "Gruppe": 2,
-        "Operator": "ODER",
-        "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
-        "Werte": "CAP00",
-        "Ebene": 2
-    },
-    {
-        "BedingungsID": 9,
-        "Pauschale": "C00.10D",
-        "Gruppe": 2,
-        "Operator": "ODER",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C00.STRAHLENTHERAPIE",
-        "Ebene": 3
-    },
-    {
-        "BedingungsID": 10,
-        "Pauschale": "C00.10D",
-        "Gruppe": 2,
-        "Operator": "ODER",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "NUKLEARMEDIZIN",
-        "Ebene": 2
-    },
-    {
-        "BedingungsID": 1,
-        "Pauschale": "C00.10D",
-        "Gruppe": 3,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "M09AX07",
-        "Ebene": 4
-    },
-    {
-        "BedingungsID": 2,
-        "Pauschale": "C00.10D",
-        "Gruppe": 3,
-        "Operator": "ODER",
-        "Bedingungstyp": "MEDIKAMENTE IN LISTE",
-        "Werte": "M09AX07",
-        "Ebene": 2
-    },
-    {
-        "BedingungsID": 7,
-        "Pauschale": "C00.10D",
-        "Gruppe": 4,
-        "Operator": "ODER",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "RG.10.0130,VA.00.0010",
-        "Ebene": 3
-    },
-    {
-        "BedingungsID": 8,
-        "Pauschale": "C00.10D",
-        "Gruppe": 4,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "C03.GC.0200,C04.GC.0020",
-        "Ebene": 3
-    },
-    {
-        "BedingungsID": 13,
-        "Pauschale": "C00.10D",
-        "Gruppe": 6,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "ANAST",
-        "Ebene": 3
-    },
-    {
-        "BedingungsID": 12,
-        "Pauschale": "C00.10D",
-        "Gruppe": 6,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C00.70_10",
-        "Ebene": 3
-    },
-    {
-        "BedingungsID": 14,
-        "Pauschale": "C00.10D",
-        "Gruppe": 7,
-        "Operator": "ODER",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C00.70_10",
-        "Ebene": 3
-    },
-    {
-        "BedingungsID": 15,
-        "Pauschale": "C00.10D",
-        "Gruppe": 7,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C00.70_0",
-        "Ebene": 3
-    },
-    {
-        "BedingungsID": 16,
-        "Pauschale": "C00.10D",
-        "Gruppe": 7,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C00.70_2",
-        "Ebene": 3
-    },
-    {
-        "BedingungsID": 13,
-        "Pauschale": "C00.10E",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C00.70_0",
-        "Ebene": 1
-    },
-    {
-        "BedingungsID": 12,
-        "Pauschale": "C00.10E",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C00.70_10",
-        "Ebene": 1
-    },
-    {
-        "BedingungsID": 9,
-        "Pauschale": "C00.10E",
-        "Gruppe": 2,
-        "Operator": "ODER",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C00.STRAHLENTHERAPIE",
-        "Ebene": 3
-    },
-    {
-        "BedingungsID": 6,
-        "Pauschale": "C00.10E",
-        "Gruppe": 2,
-        "Operator": "ODER",
-        "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
-        "Werte": "CAP00",
-        "Ebene": 2
-    },
-    {
-        "BedingungsID": 5,
-        "Pauschale": "C00.10E",
-        "Gruppe": 2,
-        "Operator": "ODER",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "C05.RE.Z004,C05.KC.Z007",
-        "Ebene": 3
-    },
-    {
-        "BedingungsID": 10,
-        "Pauschale": "C00.10E",
-        "Gruppe": 2,
-        "Operator": "ODER",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "NUKLEARMEDIZIN",
-        "Ebene": 2
-    },
-    {
-        "BedingungsID": 4,
-        "Pauschale": "C00.10E",
-        "Gruppe": 2,
-        "Operator": "ODER",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "C03.GD.0270,C03.GD.0280,C03.GD.0300",
-        "Ebene": 3
-    },
-    {
-        "BedingungsID": 3,
-        "Pauschale": "C00.10E",
-        "Gruppe": 2,
-        "Operator": "ODER",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C01.21_8,C01.21_9",
-        "Ebene": 3
-    },
-    {
-        "BedingungsID": 1,
-        "Pauschale": "C00.10E",
-        "Gruppe": 3,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "M09AX07",
-        "Ebene": 4
-    },
-    {
-        "BedingungsID": 2,
-        "Pauschale": "C00.10E",
-        "Gruppe": 3,
-        "Operator": "ODER",
-        "Bedingungstyp": "MEDIKAMENTE IN LISTE",
-        "Werte": "M09AX07",
-        "Ebene": 2
-    },
-    {
-        "BedingungsID": 8,
-        "Pauschale": "C00.10E",
-        "Gruppe": 4,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "C03.GC.0200,C04.GC.0020",
-        "Ebene": 3
-    },
-    {
-        "BedingungsID": 7,
-        "Pauschale": "C00.10E",
-        "Gruppe": 4,
-        "Operator": "ODER",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "RG.10.0130,VA.00.0010",
-        "Ebene": 3
-    },
-    {
-        "BedingungsID": 13,
-        "Pauschale": "C00.10F",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C00.70_2",
-        "Ebene": 1
-    },
-    {
-        "BedingungsID": 12,
-        "Pauschale": "C00.10F",
-        "Gruppe": 1,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C00.70_10",
-        "Ebene": 1
-    },
-    {
-        "BedingungsID": 3,
-        "Pauschale": "C00.10F",
-        "Gruppe": 2,
-        "Operator": "ODER",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C01.21_8,C01.21_9",
-        "Ebene": 3
-    },
-    {
-        "BedingungsID": 9,
-        "Pauschale": "C00.10F",
-        "Gruppe": 2,
-        "Operator": "ODER",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "C00.STRAHLENTHERAPIE",
-        "Ebene": 3
-    },
-    {
-        "BedingungsID": 4,
-        "Pauschale": "C00.10F",
-        "Gruppe": 2,
-        "Operator": "ODER",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "C03.GD.0270,C03.GD.0280,C03.GD.0300",
-        "Ebene": 3
-    },
-    {
-        "BedingungsID": 5,
-        "Pauschale": "C00.10F",
-        "Gruppe": 2,
-        "Operator": "ODER",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "C05.RE.Z004,C05.KC.Z007",
-        "Ebene": 3
-    },
-    {
-        "BedingungsID": 6,
-        "Pauschale": "C00.10F",
-        "Gruppe": 2,
-        "Operator": "ODER",
-        "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
-        "Werte": "CAP00",
-        "Ebene": 2
-    },
-    {
-        "BedingungsID": 10,
-        "Pauschale": "C00.10F",
-        "Gruppe": 2,
-        "Operator": "ODER",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "NUKLEARMEDIZIN",
-        "Ebene": 2
-    },
-    {
-        "BedingungsID": 1,
-        "Pauschale": "C00.10F",
-        "Gruppe": 3,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
-        "Werte": "M09AX07",
-        "Ebene": 4
-    },
-    {
-        "BedingungsID": 2,
-        "Pauschale": "C00.10F",
-        "Gruppe": 3,
-        "Operator": "ODER",
-        "Bedingungstyp": "MEDIKAMENTE IN LISTE",
-        "Werte": "M09AX07",
-        "Ebene": 2
-    },
-    {
-        "BedingungsID": 8,
-        "Pauschale": "C00.10F",
-        "Gruppe": 4,
-        "Operator": "UND",
-        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
-        "Werte": "C03.GC.0200,C04.GC.0020",
-        "Ebene": 3
-    },
-    {
         "BedingungsID": 11,
         "Pauschale": "C00.10A",
         "Gruppe": 1,
@@ -682,6 +340,348 @@
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "C00.STRAHLENTHERAPIE",
         "Ebene": 1
+    },
+    {
+        "BedingungsID": 3,
+        "Pauschale": "C00.10D",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C01.21_8,C01.21_9",
+        "Ebene": 3
+    },
+    {
+        "BedingungsID": 4,
+        "Pauschale": "C00.10D",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C03.GD.0270,C03.GD.0280,C03.GD.0300",
+        "Ebene": 3
+    },
+    {
+        "BedingungsID": 5,
+        "Pauschale": "C00.10D",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C05.RE.Z004,C05.KC.Z007",
+        "Ebene": 3
+    },
+    {
+        "BedingungsID": 6,
+        "Pauschale": "C00.10D",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
+        "Werte": "CAP00",
+        "Ebene": 2
+    },
+    {
+        "BedingungsID": 9,
+        "Pauschale": "C00.10D",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C00.STRAHLENTHERAPIE",
+        "Ebene": 3
+    },
+    {
+        "BedingungsID": 10,
+        "Pauschale": "C00.10D",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "NUKLEARMEDIZIN",
+        "Ebene": 2
+    },
+    {
+        "BedingungsID": 1,
+        "Pauschale": "C00.10D",
+        "Gruppe": 3,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "M09AX07",
+        "Ebene": 4
+    },
+    {
+        "BedingungsID": 2,
+        "Pauschale": "C00.10D",
+        "Gruppe": 3,
+        "Operator": "ODER",
+        "Bedingungstyp": "MEDIKAMENTE IN LISTE",
+        "Werte": "M09AX07",
+        "Ebene": 2
+    },
+    {
+        "BedingungsID": 7,
+        "Pauschale": "C00.10D",
+        "Gruppe": 4,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "RG.10.0130,VA.00.0010",
+        "Ebene": 3
+    },
+    {
+        "BedingungsID": 8,
+        "Pauschale": "C00.10D",
+        "Gruppe": 4,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C03.GC.0200,C04.GC.0020",
+        "Ebene": 3
+    },
+    {
+        "BedingungsID": 13,
+        "Pauschale": "C00.10D",
+        "Gruppe": 6,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "ANAST",
+        "Ebene": 3
+    },
+    {
+        "BedingungsID": 12,
+        "Pauschale": "C00.10D",
+        "Gruppe": 6,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C00.70_10",
+        "Ebene": 3
+    },
+    {
+        "BedingungsID": 14,
+        "Pauschale": "C00.10D",
+        "Gruppe": 7,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C00.70_10",
+        "Ebene": 3
+    },
+    {
+        "BedingungsID": 15,
+        "Pauschale": "C00.10D",
+        "Gruppe": 7,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C00.70_0",
+        "Ebene": 3
+    },
+    {
+        "BedingungsID": 16,
+        "Pauschale": "C00.10D",
+        "Gruppe": 7,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C00.70_2",
+        "Ebene": 3
+    },
+    {
+        "BedingungsID": 13,
+        "Pauschale": "C00.10E",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C00.70_0",
+        "Ebene": 1
+    },
+    {
+        "BedingungsID": 12,
+        "Pauschale": "C00.10E",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C00.70_10",
+        "Ebene": 1
+    },
+    {
+        "BedingungsID": 9,
+        "Pauschale": "C00.10E",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C00.STRAHLENTHERAPIE",
+        "Ebene": 3
+    },
+    {
+        "BedingungsID": 6,
+        "Pauschale": "C00.10E",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
+        "Werte": "CAP00",
+        "Ebene": 2
+    },
+    {
+        "BedingungsID": 5,
+        "Pauschale": "C00.10E",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C05.RE.Z004,C05.KC.Z007",
+        "Ebene": 3
+    },
+    {
+        "BedingungsID": 10,
+        "Pauschale": "C00.10E",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "NUKLEARMEDIZIN",
+        "Ebene": 2
+    },
+    {
+        "BedingungsID": 4,
+        "Pauschale": "C00.10E",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C03.GD.0270,C03.GD.0280,C03.GD.0300",
+        "Ebene": 3
+    },
+    {
+        "BedingungsID": 3,
+        "Pauschale": "C00.10E",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C01.21_8,C01.21_9",
+        "Ebene": 3
+    },
+    {
+        "BedingungsID": 1,
+        "Pauschale": "C00.10E",
+        "Gruppe": 3,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "M09AX07",
+        "Ebene": 4
+    },
+    {
+        "BedingungsID": 2,
+        "Pauschale": "C00.10E",
+        "Gruppe": 3,
+        "Operator": "ODER",
+        "Bedingungstyp": "MEDIKAMENTE IN LISTE",
+        "Werte": "M09AX07",
+        "Ebene": 2
+    },
+    {
+        "BedingungsID": 8,
+        "Pauschale": "C00.10E",
+        "Gruppe": 4,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C03.GC.0200,C04.GC.0020",
+        "Ebene": 3
+    },
+    {
+        "BedingungsID": 7,
+        "Pauschale": "C00.10E",
+        "Gruppe": 4,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "RG.10.0130,VA.00.0010",
+        "Ebene": 3
+    },
+    {
+        "BedingungsID": 13,
+        "Pauschale": "C00.10F",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C00.70_2",
+        "Ebene": 1
+    },
+    {
+        "BedingungsID": 12,
+        "Pauschale": "C00.10F",
+        "Gruppe": 1,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C00.70_10",
+        "Ebene": 1
+    },
+    {
+        "BedingungsID": 3,
+        "Pauschale": "C00.10F",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C01.21_8,C01.21_9",
+        "Ebene": 3
+    },
+    {
+        "BedingungsID": 9,
+        "Pauschale": "C00.10F",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "C00.STRAHLENTHERAPIE",
+        "Ebene": 3
+    },
+    {
+        "BedingungsID": 4,
+        "Pauschale": "C00.10F",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C03.GD.0270,C03.GD.0280,C03.GD.0300",
+        "Ebene": 3
+    },
+    {
+        "BedingungsID": 5,
+        "Pauschale": "C00.10F",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C05.RE.Z004,C05.KC.Z007",
+        "Ebene": 3
+    },
+    {
+        "BedingungsID": 6,
+        "Pauschale": "C00.10F",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
+        "Werte": "CAP00",
+        "Ebene": 2
+    },
+    {
+        "BedingungsID": 10,
+        "Pauschale": "C00.10F",
+        "Gruppe": 2,
+        "Operator": "ODER",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "NUKLEARMEDIZIN",
+        "Ebene": 2
+    },
+    {
+        "BedingungsID": 1,
+        "Pauschale": "C00.10F",
+        "Gruppe": 3,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
+        "Werte": "M09AX07",
+        "Ebene": 4
+    },
+    {
+        "BedingungsID": 2,
+        "Pauschale": "C00.10F",
+        "Gruppe": 3,
+        "Operator": "ODER",
+        "Bedingungstyp": "MEDIKAMENTE IN LISTE",
+        "Werte": "M09AX07",
+        "Ebene": 2
+    },
+    {
+        "BedingungsID": 8,
+        "Pauschale": "C00.10F",
+        "Gruppe": 4,
+        "Operator": "UND",
+        "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE",
+        "Werte": "C03.GC.0200,C04.GC.0020",
+        "Ebene": 3
     },
     {
         "BedingungsID": 7,
