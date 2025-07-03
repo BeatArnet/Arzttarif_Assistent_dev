@@ -201,67 +201,131 @@ def evaluate_structured_conditions(
     context: Dict,
     pauschale_bedingungen_data: List[Dict],
     tabellen_dict_by_table: Dict[str, List[Dict]],
-    group_operator: str = "UND",
-    ) -> bool:
-    """Bewertet die Bedingungen einer Pauschale anhand der Ebenenstruktur.
-
-    Die Zeilen aus ``PAUSCHALEN_Bedingungen.json`` werden zunächst nach
-    ``Ebene`` und ``BedingungsID`` sortiert. Beim Durchlaufen wird anhand
-    der Ebene die Klammerung aufgebaut und jede Bedingung mit dem Operator
-    der vorherigen Zeile verknüpft. Dadurch entsteht die ursprüngliche
-    UND/ODER-Logik aus der Excel-Quelle.
+    group_operator: str = "UND",  # Dieser Operator gilt ZWISCHEN den Gruppen
+) -> bool:
+    """
+    Bewertet die Bedingungen einer Pauschale.
+    Bedingungen werden zuerst nach 'Gruppe' gruppiert.
+    Innerhalb jeder Gruppe wird die Logik basierend auf 'Ebene' und 'Operator' ausgewertet.
+    Die Ergebnisse der Gruppen werden dann mit dem globalen 'group_operator' verknüpft.
     """
     PAUSCHALE_KEY = 'Pauschale'
+    GRUPPE_KEY = 'Gruppe'
     OPERATOR_KEY = 'Operator'
+    EBENE_KEY = 'Ebene'
+    BED_ID_KEY = 'BedingungsID'
 
     conditions_for_this_pauschale = [
         cond for cond in pauschale_bedingungen_data if cond.get(PAUSCHALE_KEY) == pauschale_code
     ]
+
     if not conditions_for_this_pauschale:
-        # Keine Bedingungen = immer erfüllt
+        return True  # Keine Bedingungen = immer erfüllt
+
+    # Bedingungen nach 'Gruppe' gruppieren
+    grouped_conditions: Dict[Any, List[Dict]] = {}
+    # Sortierung nach Gruppe, dann Ebene, dann ID ist wichtig für die korrekte Verarbeitung
+    # innerhalb von `evaluate_single_group_logic`
+    sorted_conditions_overall = sorted(
+        conditions_for_this_pauschale,
+        key=lambda c: (c.get(GRUPPE_KEY, 1), c.get(EBENE_KEY, 1), c.get(BED_ID_KEY, 0))
+    )
+
+    for cond in sorted_conditions_overall:
+        group_val = cond.get(GRUPPE_KEY, 1) # Default-Gruppe 1, falls nicht spezifiziert
+        if group_val not in grouped_conditions:
+            grouped_conditions[group_val] = []
+        grouped_conditions[group_val].append(cond)
+
+    if not grouped_conditions: # Sollte nicht passieren, wenn conditions_for_this_pauschale nicht leer ist
         return True
 
-    # Sort by Ebene first, then BedingungsID
-    conditions_sorted = sorted(
-        conditions_for_this_pauschale,
-        key=lambda c: (c.get("Ebene", 1), c.get("BedingungsID", 0)),
-    )
+    group_results_bool: List[bool] = []
 
-    baseline_level = 1
-    first_level = conditions_sorted[0].get("Ebene") or baseline_level
+    # Jede Gruppe separat auswerten
+    # Die Gruppen-IDs werden sortiert, um eine konsistente Auswertungsreihenfolge sicherzustellen.
+    for group_id in sorted(grouped_conditions.keys()):
+        conditions_in_group = grouped_conditions[group_id]
 
-    # evaluate first condition
-    first_res = check_single_condition(
-        conditions_sorted[0], context, tabellen_dict_by_table
-    )
+        # Logik zur Auswertung einer einzelnen Gruppe (basierend auf Ebene und Operator)
+        # Diese Logik ist im Wesentlichen die vorherige Implementierung von evaluate_structured_conditions,
+        # aber jetzt auf eine einzelne Gruppe angewendet.
+        if not conditions_in_group: # Leere Gruppe
+            # Je nach Definition: Leere Gruppe kann als True oder False gewertet werden.
+            # Wenn Gruppen mit ODER verknüpft sind, ist eine leere (wahre) Gruppe problematisch.
+            # Wenn mit UND, ist eine leere (wahre) Gruppe ok.
+            # Wir nehmen an, eine explizit definierte, aber leere Gruppe ist nicht erfüllt,
+            # es sei denn, der group_operator ist ODER und eine andere Gruppe ist erfüllt.
+            # Sicherer ist, eine leere Gruppe als nicht erfüllt zu werten, wenn sie Teil einer Logik ist.
+            # Für den Moment: Wenn eine Gruppe keine Bedingungen hat, ist sie "erfüllt",
+            # was für UND-Logik zwischen Gruppen unproblematisch ist. Für ODER-Logik
+            # würde eine leere, "erfüllte" Gruppe die Pauschale gültig machen.
+            # Das Standardverhalten "Keine Bedingungen = immer erfüllt" sollte hier gelten.
+            group_results_bool.append(True) # Eine Gruppe ohne Bedingungen ist per se erfüllt
+            continue
 
-    expr_parts: List[str] = ["(" * (first_level - baseline_level), str(bool(first_res))]
-    prev_level = first_level
-    prev_op = conditions_sorted[0].get(OPERATOR_KEY, "UND").upper()
+        # Sortierung innerhalb der Gruppe nach Ebene, dann BedingungsID ist bereits durch
+        # `sorted_conditions_overall` und die anschließende Gruppierung erfolgt.
+        # conditions_in_group = sorted(conditions_in_group, key=lambda c: (c.get(EBENE_KEY, 1), c.get(BED_ID_KEY, 0)))
 
-    for cond in conditions_sorted[1:]:
-        cur_level = cond.get("Ebene") or baseline_level
+        baseline_level_group = 1 # Basislevel für die Ebenenberechnung
+        # Das erste Level ist das Level der ersten Bedingung in der sortierten Gruppe
+        first_level_group = conditions_in_group[0].get(EBENE_KEY, 1)
 
-        if cur_level < prev_level:
-            expr_parts.append(")" * (prev_level - cur_level))
+        first_res_group = check_single_condition(
+            conditions_in_group[0], context, tabellen_dict_by_table
+        )
 
-        expr_parts.append(" and " if prev_op == "UND" else " or ")
+        # Aufbau des Ausdrucks für die aktuelle Gruppe
+        # Klammern für die erste Bedingung relativ zum Basislevel
+        expr_parts_group: List[str] = ["(" * (first_level_group - baseline_level_group), str(bool(first_res_group))]
 
-        if cur_level > prev_level:
-            expr_parts.append("(" * (cur_level - prev_level))
+        prev_level_group = first_level_group
+        # Der Operator der ersten Bedingung wird als prev_op für die zweite Bedingung verwendet.
+        prev_op_group = conditions_in_group[0].get(OPERATOR_KEY, "UND").upper()
 
-        cur_res = check_single_condition(cond, context, tabellen_dict_by_table)
-        expr_parts.append(str(bool(cur_res)))
-        prev_level = cur_level
-        prev_op = cond.get(OPERATOR_KEY, "UND").upper()
+        for i_cond_grp in range(1, len(conditions_in_group)):
+            cond_grp = conditions_in_group[i_cond_grp]
+            cur_level_group = cond_grp.get(EBENE_KEY, baseline_level_group) # Default zum Basislevel
 
-    expr_parts.append(")" * (prev_level - baseline_level))
-    expr_str = "".join(expr_parts)
-    try:
-        return bool(eval(expr_str))
-    except Exception as e_eval:
-        print(f"FEHLER bei Gruppenlogik-Ausdruck '{expr_str}': {e_eval}")
+            if cur_level_group < prev_level_group:
+                expr_parts_group.append(")" * (prev_level_group - cur_level_group))
+
+            # Der Operator `prev_op_group` stammt von der *vorherigen* Bedingung und verknüpft sie mit der aktuellen.
+            expr_parts_group.append(" and " if prev_op_group == "UND" else " or ")
+
+            if cur_level_group > prev_level_group:
+                expr_parts_group.append("(" * (cur_level_group - prev_level_group))
+
+            cur_res_group = check_single_condition(cond_grp, context, tabellen_dict_by_table)
+            expr_parts_group.append(str(bool(cur_res_group)))
+
+            prev_level_group = cur_level_group
+            prev_op_group = cond_grp.get(OPERATOR_KEY, "UND").upper() # Operator für die *nächste* Verknüpfung
+
+        # Schließende Klammern für die Ebenen der Gruppe
+        expr_parts_group.append(")" * (prev_level_group - baseline_level_group))
+        expr_str_group = "".join(expr_parts_group)
+
+        try:
+            group_result_this_group = bool(eval(expr_str_group))
+            group_results_bool.append(group_result_this_group)
+        except Exception as e_eval_group:
+            print(f"FEHLER bei Gruppenlogik-Ausdruck (Pauschale: {pauschale_code}, Gruppe: {group_id}) '{expr_str_group}': {e_eval_group}")
+            traceback.print_exc()
+            group_results_bool.append(False) # Bei Fehler gilt die Gruppe als nicht erfüllt
+
+    if not group_results_bool:
+        # Dies sollte nur passieren, wenn grouped_conditions leer war, was oben abgefangen wird.
+        # Wenn es hier auftritt, bedeutet es, dass es Gruppen gab, aber keine Ergebnisse (Fehler).
+        # Im Zweifel als nicht erfüllt werten.
         return False
+
+    # Verknüpfe die Ergebnisse der einzelnen Gruppen mit dem globalen group_operator
+    if group_operator.upper() == "ODER":
+        return any(group_results_bool)
+    else: # Default ist UND
+        return all(group_results_bool)
 
 # === FUNKTION ZUR HTML-GENERIERUNG DER BEDINGUNGSPRÜFUNG ===
 def check_pauschale_conditions(
