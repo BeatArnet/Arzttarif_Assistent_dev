@@ -330,6 +330,10 @@
           {
             "code": "CA.00.0030",
             "qty": 10
+          },
+          {
+            "code": "CG.15.0010",
+            "qty": 10
           }
         ]
       }
@@ -492,7 +496,7 @@
     "current": {},
     "query": {
       "de": "Korrektur eines Hallux valgus rechts",
-      "fr": "Correction d’un hallux valgus droit",
+      "fr": "Correction d'un hallux valgus droit",
       "it": "Correzione di alluce valgo destro"
     }
   },
