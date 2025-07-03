@@ -467,8 +467,10 @@ app: FlaskType = create_app()
 
 # --- LLM Stufe 1: LKN Identifikation ---
 def call_gemini_stage1(user_input: str, katalog_context: str, lang: str = "de") -> dict:
+    logger.info(f"LLM_S1_INIT: Aufruf von call_gemini_stage1. GEMINI_API_KEY vorhanden: {bool(GEMINI_API_KEY)}")
     if not GEMINI_API_KEY:
-        return {"identified_leistungen": [], "extracted_info": {}}
+        logger.error("LLM_S1_ERROR: GEMINI_API_KEY fehlt oder ist leer. Funktion wird vorzeitig beendet.")
+        return {"identified_leistungen": [], "extracted_info": {}, "begruendung_llm": "Fehler: API Key nicht konfiguriert."}
     prompt = get_stage1_prompt(user_input, katalog_context, lang)
 
 
@@ -487,11 +489,13 @@ def call_gemini_stage1(user_input: str, katalog_context: str, lang: str = "de") 
         print(f"Gemini Stufe 1 Antwort Status Code: {response.status_code}")
         response.raise_for_status()
         gemini_data = response.json()
+        logger.info(f"LLM_S1_RAW_GEMINI_DATA: {json.dumps(gemini_data, ensure_ascii=False)}")
 
-        candidate: Dict[str, Any] | None = None # KORREKTUR: Initialisierung mit Typ
-        raw_text_response: str = "" # KORREKTUR: Initialisierung mit Typ
 
-        if gemini_data is None: # NEUE PRÜFUNG HIER
+        candidate: Dict[str, Any] | None = None
+        raw_text_response: str = ""
+
+        if gemini_data is None:
             error_details = "Fehler: Keine Daten von Gemini erhalten (gemini_data is None)."
             print(f"FEHLER: {error_details}")
             raise ValueError(error_details) # Oder eine andere Fehlerbehandlung
@@ -520,14 +524,33 @@ def call_gemini_stage1(user_input: str, katalog_context: str, lang: str = "de") 
                             first_part = parts[0]
                             if isinstance(first_part, dict):
                                 raw_text_response = first_part.get('text', '')
-                            # else: raw_text_response bleibt '', da first_part kein dict
-                        # else: raw_text_response bleibt '', da parts leer
-                    # else: raw_text_response bleibt '', da content kein dict
-                # else: raw_text_response bleibt '', da candidate kein dict
-            # else: raw_text_response bleibt '', da candidate_list leer oder kein list oder None
+                        elif parts and isinstance(parts, list) and len(parts) > 0 and parts[0] is None : # Explizit None prüfen, falls Gemini das macht
+                            logger.warning("LLM_S1_WARN: Erster Teil der Antwort ist None.")
+                            raw_text_response = "" # Sicherstellen, dass es ein String ist
+                        elif not parts:
+                             logger.warning("LLM_S1_WARN: 'parts' Array ist leer in der Gemini Antwort.")
+                             raw_text_response = ""
+                    elif content is None:
+                        logger.warning("LLM_S1_WARN: 'content' ist None in der Gemini Antwort.")
+                        raw_text_response = ""
+                    else: # content ist kein dict
+                         logger.warning(f"LLM_S1_WARN: 'content' ist kein dict, sondern {type(content)}.")
+                         raw_text_response = ""
+                elif candidate is None:
+                     logger.warning("LLM_S1_WARN: 'candidate' ist None in der Gemini Antwort (innerhalb candidate_list).")
+                     raw_text_response = ""
+                else: # candidate ist kein dict
+                    logger.warning(f"LLM_S1_WARN: 'candidate' ist kein dict, sondern {type(candidate)} (innerhalb candidate_list).")
+                    raw_text_response = ""
+            elif not candidate_list: # candidate_list ist leer
+                 logger.warning("LLM_S1_WARN: 'candidates' Array ist leer in der Gemini Antwort.")
+                 raw_text_response = ""
+            # else: candidate_list ist nicht None, aber auch keine Liste (sollte nicht passieren bei Gemini)
+
+        logger.info(f"LLM_S1_RAW_TEXT_RESPONSE: '{raw_text_response}'")
 
         if not raw_text_response:
-            if candidate and isinstance(candidate, dict): # Modified condition
+            if candidate and isinstance(candidate, dict):
                 finish_reason_candidate = candidate.get('finishReason', 'UNKNOWN')
                 safety_ratings_candidate = candidate.get('safetyRatings')
                 if finish_reason_candidate != 'STOP':
@@ -544,10 +567,10 @@ def call_gemini_stage1(user_input: str, katalog_context: str, lang: str = "de") 
 
         try:
             llm_response_json = json.loads(raw_text_response)
+            logger.info(f"LLM_S1_PARSED_JSON_INITIAL: {json.dumps(llm_response_json, ensure_ascii=False)}")
         except json.JSONDecodeError as json_err:
-            if not raw_text_response.strip(): # Wenn der String komplett leer oder nur Whitespace ist
-                print("WARNUNG: LLM Stufe 1 lieferte leeren String, der nicht als JSON geparst werden kann. Erstelle leeres Ergebnis.")
-                # Erstelle ein leeres, aber valides Grundgerüst, um Folgefehler zu vermeiden
+            if not raw_text_response.strip():
+                logger.warning("LLM_S1_WARN: LLM Stufe 1 lieferte leeren String, der nicht als JSON geparst werden kann. Erstelle leeres Ergebnis.")
                 llm_response_json = {
                     "identified_leistungen": [],
                     "extracted_info": {
@@ -563,25 +586,33 @@ def call_gemini_stage1(user_input: str, katalog_context: str, lang: str = "de") 
                     except json.JSONDecodeError: raise ValueError(f"JSONDecodeError auch nach Markdown-Extraktion: {json_err}. Rohtext: {raw_text_response[:500]}...")
                 else: raise ValueError(f"JSONDecodeError: {json_err}. Rohtext: {raw_text_response[:500]}...")
 
-        print(f"DEBUG: Geparstes LLM JSON Stufe 1 VOR Validierung: {json.dumps(llm_response_json, indent=2, ensure_ascii=False)}")
+        # print(f"DEBUG: Geparstes LLM JSON Stufe 1 VOR Validierung: {json.dumps(llm_response_json, indent=2, ensure_ascii=False)}")
+        logger.info(f"LLM_S1_PARSED_JSON_BEFORE_VALIDATION: {json.dumps(llm_response_json, indent=2, ensure_ascii=False)}")
 
         # Strikte Validierung der Hauptstruktur
         if not isinstance(llm_response_json, dict):
+            logger.error(f"LLM_S1_ERROR: Antwort ist kein JSON-Objekt, sondern {type(llm_response_json)}")
             raise ValueError("Antwort ist kein JSON-Objekt.")
-        # Stelle sicher, dass die Schlüssel existieren, auch wenn sie leer sein könnten (nach dem leeren Fall oben)
+
         llm_response_json.setdefault("identified_leistungen", [])
         llm_response_json.setdefault("extracted_info", {})
         llm_response_json.setdefault("begruendung_llm", "N/A")
+        logger.info(f"LLM_S1_JSON_AFTER_SETRDEFAULTS: {json.dumps(llm_response_json, indent=2, ensure_ascii=False)}")
 
 
         if not isinstance(llm_response_json["identified_leistungen"], list):
+            logger.error(f"LLM_S1_ERROR: 'identified_leistungen' ist keine Liste, sondern {type(llm_response_json['identified_leistungen'])}")
             raise ValueError("'identified_leistungen' ist keine Liste.")
         if not isinstance(llm_response_json["extracted_info"], dict):
+            logger.error(f"LLM_S1_ERROR: 'extracted_info' ist kein Dictionary, sondern {type(llm_response_json['extracted_info'])}")
             raise ValueError("'extracted_info' ist kein Dictionary.")
         if not isinstance(llm_response_json["begruendung_llm"], str):
-            llm_response_json["begruendung_llm"] = "N/A" # Default, wenn nicht String
+            logger.warning(f"LLM_S1_WARN: 'begruendung_llm' ist kein String, sondern {type(llm_response_json['begruendung_llm'])}. Wird auf N/A gesetzt.")
+            llm_response_json["begruendung_llm"] = "N/A"
 
         # Validierung und Default-Setzung für extracted_info
+        # Logge den Zustand von identified_leistungen vor der detaillierten Validierung
+        logger.info(f"LLM_S1_IDENTIFIED_LEISTUNGEN_BEFORE_ITEM_VALIDATION: {json.dumps(llm_response_json.get('identified_leistungen'), indent=2, ensure_ascii=False)}")
         extracted_info_defaults = {
             "dauer_minuten": None, "menge_allgemein": None, "alter": None,
             "geschlecht": None, "seitigkeit": "unbekannt", "anzahl_prozeduren": None
@@ -647,8 +678,10 @@ def call_gemini_stage1(user_input: str, katalog_context: str, lang: str = "de") 
             item.setdefault("beschreibung", "N/A")
             validated_identified_leistungen.append(item)
         llm_response_json["identified_leistungen"] = validated_identified_leistungen
-        print("INFO: LLM Stufe 1 Antwortstruktur und Basistypen validiert/normalisiert.")
-        logger.info(f"LLM Stage 1 response: {json.dumps(llm_response_json, ensure_ascii=False)}")
+        # print("INFO: LLM Stufe 1 Antwortstruktur und Basistypen validiert/normalisiert.")
+        logger.info(f"LLM_S1_INFO: LLM Stufe 1 Antwortstruktur und Basistypen validiert/normalisiert.")
+        logger.info(f"LLM_S1_FINAL_VALIDATED_LEISTUNGEN: {json.dumps(validated_identified_leistungen, indent=2, ensure_ascii=False)}")
+        logger.info(f"LLM Stage 1 response: {json.dumps(llm_response_json, ensure_ascii=False)}") # Beibehalten für Kompatibilität mit bestehenden Logs
         return llm_response_json
 
     except requests.exceptions.RequestException as req_err:
@@ -988,10 +1021,8 @@ def analyze_billing():
     start_time = time.time()
 
     if not daten_geladen:
-        print("WARNUNG: Server-Daten nicht initialisiert. Versuche erneutes Laden...")
-        if not load_data():
-            print("FEHLER: Kritische Server-Daten konnten nicht geladen werden.")
-            return jsonify({"error": "Kritische Server-Daten nicht initialisiert. Administrator kontaktieren."}), 503
+        logger.error("Daten nicht geladen im /api/analyze-billing Endpunkt. Dies sollte nicht passieren, da create_app() die Daten laden sollte.")
+        return jsonify({"error": "Server data not loaded. Please try again later or contact an administrator."}), 503
 
     if not request.is_json:
         return jsonify({"error": "Request must be JSON"}), 400
@@ -1032,7 +1063,22 @@ def analyze_billing():
         katalog_context_parts = []
         preprocessed_input = expand_compound_words(user_input)
         tokens = extract_keywords(user_input)
+
+        # --- DEBUGGING START ---
+        logger.info(f"DEBUG: Zustand vor rank_leistungskatalog_entries:")
+        logger.info(f"DEBUG: len(leistungskatalog_dict): {len(leistungskatalog_dict)}")
+        if leistungskatalog_dict:
+            logger.info(f"DEBUG: Beispiel Leistungskatalog Key: {next(iter(leistungskatalog_dict.keys()))}")
+        logger.info(f"DEBUG: len(token_doc_freq): {len(token_doc_freq)}")
+        if token_doc_freq:
+            logger.info(f"DEBUG: Beispiel token_doc_freq Key: {next(iter(token_doc_freq.keys()))}")
+        # --- DEBUGGING END ---
+
         ranked_codes = rank_leistungskatalog_entries(tokens, 200)
+        # --- DEBUGGING START ---
+        logger.info(f"DEBUG: ranked_codes: {ranked_codes[:10]}") # Logge die ersten 10 gerankten Codes
+        # --- DEBUGGING END ---
+
         for lkn_code in ranked_codes:
             details = leistungskatalog_dict.get(lkn_code, {})
             desc_texts = []
@@ -1058,12 +1104,22 @@ def analyze_billing():
                 context_line += f", MedizinischeInterpretation: {html.escape(mi_joined)}"
             katalog_context_parts.append(context_line)
         katalog_context_str = "\n".join(katalog_context_parts)
+        # --- DEBUGGING START ---
+        logger.info(f"DEBUG: len(katalog_context_str): {len(katalog_context_str)}")
+        if not katalog_context_str:
+            logger.error("DEBUG: katalog_context_str ist leer. Abbruch vor LLM-Aufruf.")
+        # --- DEBUGGING END ---
         if not katalog_context_str:
             raise ValueError("Leistungskatalog für LLM-Kontext (Stufe 1) ist leer.")
 
+        # --- DEBUGGING START ---
+        logger.info(f"DEBUG: Zustand vor call_gemini_stage1:")
+        logger.info(f"DEBUG: len(leistungskatalog_dict): {len(leistungskatalog_dict)}")
+        logger.info(f"DEBUG: llm_stage1_result (vor Aufruf): {llm_stage1_result}")
+        # --- DEBUGGING END ---
         llm_stage1_result = call_gemini_stage1(preprocessed_input, katalog_context_str, lang)
     except ConnectionError as e: print(f"FEHLER: Verbindung zu LLM1 fehlgeschlagen: {e}"); return jsonify({"error": f"Verbindungsfehler zum Analyse-Service (Stufe 1): {e}"}), 504
-    except ValueError as e: print(f"FEHLER: Verarbeitung LLM1 fehlgeschlagen: {e}"); return jsonify({"error": f"Fehler bei der Leistungsanalyse (Stufe 1): {e}"}), 400
+    except ValueError as e: print(f"FEHLER: Verarbeitung LLM1 fehlgeschlagen: {e}"); logger.error(f"ValueError in analyze_billing vor LLM Stufe 1: {e}", exc_info=True); return jsonify({"error": f"Fehler bei der Leistungsanalyse (Stufe 1): {e}"}), 400
     except Exception as e: print(f"FEHLER: Unerwarteter Fehler bei LLM1: {e}"); traceback.print_exc(); return jsonify({"error": f"Unerwarteter interner Fehler (Stufe 1): {e}"}), 500
     llm1_time = time.time(); print(f"Zeit nach LLM Stufe 1: {llm1_time - start_time:.2f}s")
 
@@ -1489,8 +1545,8 @@ def test_example():
     example_id = str(data.get('id'))
     lang = data.get('lang', 'de')
     if not daten_geladen:
-        if not load_data():
-            return jsonify({'error': 'Data not available'}), 500
+        logger.error("Daten nicht geladen im /api/test-example Endpunkt. Dies sollte nicht passieren, da create_app() die Daten laden sollte.")
+        return jsonify({'error': 'Server data not loaded. Please try again later or contact an administrator.'}), 503
     baseline_entry = baseline_results.get(example_id)
     if not baseline_entry:
         return jsonify({'error': 'Baseline not found'}), 404

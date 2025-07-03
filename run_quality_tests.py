@@ -1,8 +1,12 @@
 import json
 from pathlib import Path
 from typing import List
+from dotenv import load_dotenv
 
-from server import app, load_data
+# Load environment variables from .env file at the very beginning
+load_dotenv()
+
+from server import app
 
 BASELINE_PATH = Path(__file__).resolve().parent / "data" / "baseline_results.json"
 
@@ -13,8 +17,11 @@ def run_tests() -> None:
     with BASELINE_PATH.open("r", encoding="utf-8") as f:
         baseline_data = json.load(f)
 
-    if not load_data():
-        print("Fehler: Daten konnten nicht geladen werden.")
+    # Daten sollten durch den Import von server (und damit create_app) bereits geladen sein.
+    # Überprüfe hier den Status von daten_geladen aus dem server Modul.
+    from server import daten_geladen as server_daten_geladen
+    if not server_daten_geladen:
+        print("Fehler: Server-Daten wurden nicht korrekt initialisiert. Tests können nicht ausgeführt werden.")
         return
 
     results: List[bool] = []
