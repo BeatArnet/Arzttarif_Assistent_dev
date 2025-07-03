@@ -155,16 +155,12 @@ Risposta JSON:"""
 
 1.  **LKN Identifikation & STRIKTE Validierung:**
     *   Lies den "Behandlungstext" sorgfältig.
-    *   Identifiziere **alle** potenziellen LKN-Codes (Format `XX.##.####`), die die beschriebenen Tätigkeiten repräsentieren könnten.
+    *   Identifiziere **alle** potenziellen LKN-Codes (Format `XX.##.####`), die die beschriebenen Tätigkeiten repräsentieren könnten. **Beginne damit, den Behandlungstext sorgfältig zu interpretieren. Nutze dabei dein ausgeprägtes medizinisches und terminologisches Wissen zu Synonymen, Umschreibungen und typischen Fachbegriffen** (z.B. erkenne, dass "Kataraktoperation" = "Phakoemulsifikation"/"Linsenextraktion" = "Extractio lentis" oder dass "Herzkatheter"/"Linksherzkather" = "Koronarographie"). **Berücksichtige auch stilistische Variationen und den Kontext** (z.B. kann "grosser rheumatischer Untersuch" als "umfassende rheumatische Untersuchung" interpretiert werden; Wortreihenfolge kann variieren; Substantiv- und Verbformen können äquivalent sein wie "Entfernung" vs. "entfernen"). Beziehe auch Formulierungen aus dem Feld "MedizinischeInterpretation" des Katalogs mit ein, falls diese Hinweise auf alternative Bezeichnungen geben.
     *   Bedenke, dass im Text mehrere Leistungen dokumentiert  mehrere LKNs gültig sein können (z.B. chirurgischer Eingriff plus/und/mit/;/./,/: Anästhesie).
     *   Wird eine Anästhesie oder Narkose durch einen Anästhesisten erwähnt, wähle ausdrücklich einen Code aus Kapitel WA.10 (Tabelle ANAST). Wenn keine Dauer angegeben ist, verwende standardmäßig `WA.10.0010`. Bei einer konkreten Dauerangabe in Minuten nutze den entsprechenden `WA.10.00x0`-Code.
-    *   Nutze dein ausgeprägtes medizinisches und terminologisches Wissen zu **Synonymen und typischen Fachbegriffen**
-        (z.B. erkenne, dass "Kataraktoperation" = "Phakoemulsifikation"/"Linsenextraktion" = "Extractio lentis"
-        oder dass "Herzkatheter"/"Linksherzkather" = "Koronarographie") und berücksichtige auch Formulierungen aus dem Feld "MedizinischeInterpretation".
-    *   Nutze dein stilistisches Wissen und erkenne, dass beispielsweise "gross" auch "umfassend" bedeuten kann, dass Wörter in anderer Reihenfolge stehen können und dass Substantiv- und Verbformen dieselbe Bedeutung haben können (z.B. "Entfernung" vs "entfernen").
     *   Wenn es für eine bestimmte Leistung eine spezifische LKN gibt, dann nutze diese anstatt Alternativen zu wählen.
-    *   ABSOLUT KRITISCH: Für JEDEN potenziellen LKN-Code prüfe BUCHSTABE FÜR BUCHSTABE und ZIFFER FÜR ZIFFER, dass dieser Code EXAKT als „LKN:“ im obigen Katalog existiert. Nur wenn der Code existiert, vergleichst du die Katalogbeschreibung mit der beschriebenen Leistung.
-    *   Erstelle eine Liste (`identified_leistungen`) **AUSSCHLIESSLICH** mit den LKNs, die diese **exakte** Prüfung im Katalog bestanden haben UND deren Beschreibung zum Text passt.
+    *   Nachdem du basierend auf dieser Interpretation eine Liste möglicher LKN-Kandidaten erstellt hast, gilt: **ABSOLUT KRITISCH:** Für JEDEN dieser Kandidaten-LKN-Codes prüfe **BUCHSTABE FÜR BUCHSTABE und ZIFFER FÜR ZIFFER**, dass dieser Code **EXAKT** als „LKN:“ im obigen Katalog existiert. **Nur wenn ein LKN-Code exakt im Katalog gefunden wurde, vergleiche dessen offizielle Katalogbeschreibung sorgfältig mit der ursprünglich im Behandlungstext beschriebenen Leistung.**
+    *   Erstelle eine Liste (`identified_leistungen`) **AUSSCHLIESSLICH** mit den LKNs, die a) exakt im Katalog als LKN existieren UND b) deren Katalogbeschreibung die im Behandlungstext beschriebene und interpretierte medizinische Leistung zutreffend widerspiegelt.
     *   Erkenne, ob es sich um hausärztliche Leistungen im Kapitel CA handelt.
 
 2.  **Typ & Beschreibung hinzufügen:**
