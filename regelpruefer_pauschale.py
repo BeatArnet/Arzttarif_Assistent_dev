@@ -187,51 +187,12 @@ def get_beschreibung_fuer_icd_im_backend(
 def get_group_operator_for_pauschale(
     pauschale_code: str, bedingungen_data: List[Dict], default: str = "UND"
 ) -> str:
-    """
-    Liefert den Gruppenoperator (UND/ODER) fuer eine Pauschale.
-    Sucht zuerst nach einem expliziten 'GruppenOperator'.
-    Wenn nicht gefunden und mehrere Gruppen-IDs existieren, wird 'ODER' angenommen.
-    Sonst wird der 'default'-Wert verwendet.
-    """
-    PAUSCHALE_KEY = 'Pauschale'
-    GRUPPEN_OPERATOR_KEY = 'GruppenOperator'
-    GRUPPE_KEY = 'Gruppe'
-
-    # Zuerst nach einem expliziten GruppenOperator suchen
+    """Liefert den Gruppenoperator (UND/ODER) fuer eine Pauschale."""
     for cond in bedingungen_data:
-        if cond.get(PAUSCHALE_KEY) == pauschale_code and GRUPPEN_OPERATOR_KEY in cond:
-            op = str(cond.get(GRUPPEN_OPERATOR_KEY, "")).strip().upper()
+        if cond.get("Pauschale") == pauschale_code and "GruppenOperator" in cond:
+            op = str(cond.get("GruppenOperator", "")).strip().upper()
             if op in ("UND", "ODER"):
                 return op
-
-    # Wenn kein expliziter Operator gefunden wurde, die Anzahl der Gruppen prüfen
-    conditions_for_this_pauschale = [
-        cond for cond in bedingungen_data if cond.get(PAUSCHALE_KEY) == pauschale_code
-    ]
-
-    if not conditions_for_this_pauschale:
-        return default # Keine Bedingungen, Default-Operator
-
-    group_ids = set()
-    for cond in conditions_for_this_pauschale:
-        group_val = cond.get(GRUPPE_KEY)
-        if group_val is not None: # Nur explizit gesetzte Gruppen-IDs berücksichtigen
-            try:
-                # Stelle sicher, dass group_val hashable ist und nicht None
-                # (obwohl die obige Prüfung das abdecken sollte)
-                group_ids.add(group_val)
-            except TypeError:
-                # Falls group_val ein nicht-hashbarer Typ ist (z.B. eine Liste),
-                # was in der typischen JSON-Struktur nicht vorkommen sollte.
-                # In diesem Fall können wir die Anzahl der Gruppen nicht sicher bestimmen.
-                print(f"WARNUNG: Nichthashbarer Gruppentyp {type(group_val)} für Pauschale {pauschale_code} gefunden.")
-                pass # Fahre fort und verwende den Default-Operator
-
-    # Wenn es mehr als eine eindeutige, explizite Gruppe gibt, ODER annehmen
-    if len(group_ids) > 1:
-        return "ODER"
-
-    # Sonst den Default-Wert verwenden
     return default
 
 # === FUNKTION ZUR AUSWERTUNG DER STRUKTURIERTEN LOGIK (UND/ODER) ===
