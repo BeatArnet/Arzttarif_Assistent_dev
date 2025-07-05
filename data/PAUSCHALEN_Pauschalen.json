@@ -2668,6 +2668,66 @@
         "Implantate_inbegriffen": true
     },
     {
+        "Pauschale": "C12.03A",
+        "Pauschale_Text": "Zirkumzision, offene Biopsie am Penis, Eingriffe bei Paraphimose u. sonstige Eingriffe am männl. Genital mit Anästhesie d. Anästhesist/in",
+        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap12)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Tabelle (C12.03_1)) und (Leistungspositionen in Tabelle (ANAST))",
+        "Taxpunkte": "2498.43",
+        "Dignitaeten": "0100|0200|1200|1800|1900|9991",
+        "Pauschale_Text_f": "Circoncision, biopsie ouverte du pénis, interventions pour paraphimosis et autres interventions sur l'appareil génital masculin",
+        "Pauschale_Text_i": "Circoncisione, biopsia al pene a cielo aperto, interventi per parafimosi e altri interventi al genitale maschile con anestesia effettuata da anestesista",
+        "Implantate_inbegriffen": true
+    },
+    {
+        "Pauschale": "C12.03B",
+        "Pauschale_Text": "Zirkumzision",
+        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap12)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Tabelle (C12.03_1))",
+        "Taxpunkte": "2095.16",
+        "Dignitaeten": "0200|0300|1200|1800|1900",
+        "Pauschale_Text_f": "Circoncision",
+        "Pauschale_Text_i": "Circoncisione",
+        "Implantate_inbegriffen": true
+    },
+    {
+        "Pauschale": "C12.03C",
+        "Pauschale_Text": "Eingriffe bei Paraphimose",
+        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap12)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Liste (C12.EA.0070))",
+        "Taxpunkte": "367.38",
+        "Dignitaeten": "0200|1200|1800|1900|9991",
+        "Pauschale_Text_f": "Interventions pour paraphimosis",
+        "Pauschale_Text_i": "Interventi per parafimosi",
+        "Implantate_inbegriffen": true
+    },
+    {
+        "Pauschale": "C12.09Z",
+        "Pauschale_Text": "Offene Biopsie am Penis/Nebenhoden od. Injektion/Punktion an Corpora cavernosa u. sonstige Eingriffe am männl. Genital",
+        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap12)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Tabelle (C12.09))",
+        "Taxpunkte": "611.29",
+        "Dignitaeten": "0200|1200|1800|1900|9991",
+        "Pauschale_Text_f": "Biopsie ouverte du pénis, des testicules ou de l'épididyme, ou injection/ponction des corps caverneux et autres interventions sur l'appareil génital masculin",
+        "Pauschale_Text_i": "Biopsia al pene/epididimo a cielo aperto o iniezione/punzione dei corpi cavernosi e altri interventi al genitale maschile",
+        "Implantate_inbegriffen": true
+    },
+    {
+        "Pauschale": "C12.10A",
+        "Pauschale_Text": "Eingriffe bei Kryptorchismus od. Eingriffe bei Varikozele (offen, bds.)",
+        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap12)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Tabelle (C12.10)) und (Leistungspositionen in Tabelle (C12.10A) where (Seitigkeit = 'B'))",
+        "Taxpunkte": "4337.50",
+        "Dignitaeten": "0100|0200|1200|1800|1900",
+        "Pauschale_Text_f": "Traitement chirurgical de cryptorchidie ou de varicocèle (ouvert, bil.)",
+        "Pauschale_Text_i": "Interventi in caso di criptorchidismo o interventi in caso di varicocele (a cielo aperto, bilat.)",
+        "Implantate_inbegriffen": true
+    },
+    {
+        "Pauschale": "C12.10B",
+        "Pauschale_Text": "Eingriffe bei Kryptorchismus, Eingriffe bei Varikozele (offen) od. Orchiektomie/Epididymektomie",
+        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap12)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Tabelle (C12.10))",
+        "Taxpunkte": "3837.29",
+        "Dignitaeten": "0100|0200|1200|1800|1900",
+        "Pauschale_Text_f": "Traitement chirurgical de cryptorchidie ou de varicocèle (ouvert) ou orchidectomie, épididymectomie",
+        "Pauschale_Text_i": "Interventi in caso di criptorchidismo, interventi in caso di varicocele (a cielo aperto) o orchiectomia/epididimectomia",
+        "Implantate_inbegriffen": true
+    },
+    {
         "Pauschale": "C12.10C",
         "Pauschale_Text": "Orchidopexie, Eingriffe bei Hodenverletzung, bei Hydrozele testis, bei Spermatozele od. bei Hodentorsion",
         "Prüflogik": "(Hauptdiagnose in Tabelle (Cap12)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Tabelle (C12.10C_1, C12.10C_2))",
@@ -2745,6 +2805,76 @@
         "Dignitaeten": "0100|1200|1800",
         "Pauschale_Text_f": "Ponction à l'aiguille fine, biopsie et autres interventions sur la prostate",
         "Pauschale_Text_i": "Punzione all’ago fine, biopsia o altri interventi alla prostata",
+        "Implantate_inbegriffen": true
+    },
+    {
+        "Pauschale": "C13.10A",
+        "Pauschale_Text": "Laparoskopische Eingriffe an weiblichen Geschlechtsorganen: Massn. an Adnexen, Hysterektomie od. Myomektomie",
+        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap13)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Tabelle (C13.Laparoskopie)) und (Leistungspositionen in Tabelle (C13.Lapskop_ther)) und (Leistungspositionen in Tabelle (C13.10A))",
+        "Taxpunkte": "5236.66",
+        "Dignitaeten": "0100|0200|0400|1200|1800|1900",
+        "Pauschale_Text_f": "Interventions laparoscopiques sur les organes sexuels féminins: Traitement chirurgical des annexes, hystérectomie ou myomectomie",
+        "Pauschale_Text_i": "Interventi laparoscopici agli organi sessuali femminili: Misure ad annessi, isterectomia o miomectomia",
+        "Implantate_inbegriffen": true
+    },
+    {
+        "Pauschale": "C13.10B",
+        "Pauschale_Text": "Laparoskopische Eingriffe an weiblichen Geschlechtsorganen: Biopsie, Chromopertubation, Drainage, Tumorentf. od. Beh. v. Endometriose, Zysten",
+        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap13)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Tabelle (C13.Laparoskopie)) und (Leistungspositionen in Tabelle (C13.Lapskop_ther)) und (Leistungspositionen in Tabelle (C13.10B))",
+        "Taxpunkte": "4736.58",
+        "Dignitaeten": "0100|0200|0400|1200|1900",
+        "Pauschale_Text_f": "Interventions laparoscopiques sur les organes sexuels féminins: Biopsie, chromopertubation, drainage, tumorectomie ou traitement de l'endométriose, de kystes",
+        "Pauschale_Text_i": "Interventi laparoscopici agli organi sessuali femminili: Biopsia, cromopertubazione, drenaggio, asportazione di un tumore o trattamento di endometriosi, cisti",
+        "Implantate_inbegriffen": true
+    },
+    {
+        "Pauschale": "C13.10C",
+        "Pauschale_Text": "Sonstige laparoskopische u. weitere Eingriffe an weiblichen Geschlechtsorganen",
+        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap13)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Tabelle (C13.10_1, C13.10_2))",
+        "Taxpunkte": "3910.97",
+        "Dignitaeten": "0100|0200|0400|1200|1900",
+        "Pauschale_Text_f": "Autres interventions laparoscopiques sur les organes sexuels féminins",
+        "Pauschale_Text_i": "Altri interventi laparoscopici e ulteriori interventi agli organi sessuali femminili",
+        "Implantate_inbegriffen": true
+    },
+    {
+        "Pauschale": "C13.20A",
+        "Pauschale_Text": "Hysteroskopie mit Endometriumdestruktion, Tumorabtragung od. Konisation",
+        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap13)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Tabelle (C13.Hysteroskopie)) und (Leistungspositionen in Tabelle (C13.20A))",
+        "Taxpunkte": "4044.87",
+        "Dignitaeten": "0100|0400|1200",
+        "Pauschale_Text_f": "Hystéroscopie avec destruction de l'endomètre, résection de tumeurs ou conisation",
+        "Pauschale_Text_i": "Isteroscopia con endometrectomia, ablazione di tumori o conizzazione",
+        "Implantate_inbegriffen": true
+    },
+    {
+        "Pauschale": "C13.20B",
+        "Pauschale_Text": "Hysteroskopie mit Polypektomie",
+        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap13)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Tabelle (C13.Hysteroskopie)) und (Leistungspositionen in Liste (C13.GE.Z001))",
+        "Taxpunkte": "3276.24",
+        "Dignitaeten": "0100|0400|1200",
+        "Pauschale_Text_f": "Hystéroscopie avec polypectomie",
+        "Pauschale_Text_i": "Isteroscopia con polipectomia",
+        "Implantate_inbegriffen": true
+    },
+    {
+        "Pauschale": "C13.20C",
+        "Pauschale_Text": "Hysteroskopie mit Curettage od. Biopsie",
+        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap13)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Tabelle (C13.20)) und (Leistungspositionen in Liste (C13.GE.0010))",
+        "Taxpunkte": "2856.25",
+        "Dignitaeten": "0100|0400|1200",
+        "Pauschale_Text_f": "Hystéroscopie avec curettage ou biopsie",
+        "Pauschale_Text_i": "Isteroscopia con raschiamento o biopsia",
+        "Implantate_inbegriffen": true
+    },
+    {
+        "Pauschale": "C13.20D",
+        "Pauschale_Text": "Hysteroskopie mit Anästhesie d. Anästhesist/in od. mit sonstigen Massnahmen",
+        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap13)) und (Leistungspositionen in Liste (C13.GE.0010)) und (Leistungspositionen in Tabelle (ANAST, C13.20_1))",
+        "Taxpunkte": "2177.81",
+        "Dignitaeten": "0100|0400|1200",
+        "Pauschale_Text_f": "Hystéroscopie avec anesthésie par l'anesthésiste ou avec d'autres interventions",
+        "Pauschale_Text_i": "Isteroscopia con anestesia effettuata da anestesista o con altre misure",
         "Implantate_inbegriffen": true
     },
     {
@@ -2845,136 +2975,6 @@
         "Dignitaeten": "0100|0400|1200",
         "Pauschale_Text_f": "Accouchement spontané avec suture d'une déchirure du col / du vagin / de la vulve",
         "Pauschale_Text_i": "Parto spontaneo con sutura di una lacerazione a cervice/vagina/vulva",
-        "Implantate_inbegriffen": true
-    },
-    {
-        "Pauschale": "C12.03A",
-        "Pauschale_Text": "Zirkumzision, offene Biopsie am Penis, Eingriffe bei Paraphimose u. sonstige Eingriffe am männl. Genital mit Anästhesie d. Anästhesist/in",
-        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap12)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Tabelle (C12.03_1)) und (Leistungspositionen in Tabelle (ANAST))",
-        "Taxpunkte": "2498.43",
-        "Dignitaeten": "0100|0200|1200|1800|1900|9991",
-        "Pauschale_Text_f": "Circoncision, biopsie ouverte du pénis, interventions pour paraphimosis et autres interventions sur l'appareil génital masculin",
-        "Pauschale_Text_i": "Circoncisione, biopsia al pene a cielo aperto, interventi per parafimosi e altri interventi al genitale maschile con anestesia effettuata da anestesista",
-        "Implantate_inbegriffen": true
-    },
-    {
-        "Pauschale": "C12.03B",
-        "Pauschale_Text": "Zirkumzision",
-        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap12)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Tabelle (C12.03_1))",
-        "Taxpunkte": "2095.16",
-        "Dignitaeten": "0200|0300|1200|1800|1900",
-        "Pauschale_Text_f": "Circoncision",
-        "Pauschale_Text_i": "Circoncisione",
-        "Implantate_inbegriffen": true
-    },
-    {
-        "Pauschale": "C12.03C",
-        "Pauschale_Text": "Eingriffe bei Paraphimose",
-        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap12)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Liste (C12.EA.0070))",
-        "Taxpunkte": "367.38",
-        "Dignitaeten": "0200|1200|1800|1900|9991",
-        "Pauschale_Text_f": "Interventions pour paraphimosis",
-        "Pauschale_Text_i": "Interventi per parafimosi",
-        "Implantate_inbegriffen": true
-    },
-    {
-        "Pauschale": "C12.09Z",
-        "Pauschale_Text": "Offene Biopsie am Penis/Nebenhoden od. Injektion/Punktion an Corpora cavernosa u. sonstige Eingriffe am männl. Genital",
-        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap12)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Tabelle (C12.09))",
-        "Taxpunkte": "611.29",
-        "Dignitaeten": "0200|1200|1800|1900|9991",
-        "Pauschale_Text_f": "Biopsie ouverte du pénis, des testicules ou de l'épididyme, ou injection/ponction des corps caverneux et autres interventions sur l'appareil génital masculin",
-        "Pauschale_Text_i": "Biopsia al pene/epididimo a cielo aperto o iniezione/punzione dei corpi cavernosi e altri interventi al genitale maschile",
-        "Implantate_inbegriffen": true
-    },
-    {
-        "Pauschale": "C12.10A",
-        "Pauschale_Text": "Eingriffe bei Kryptorchismus od. Eingriffe bei Varikozele (offen, bds.)",
-        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap12)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Tabelle (C12.10)) und (Leistungspositionen in Tabelle (C12.10A) where (Seitigkeit = 'B'))",
-        "Taxpunkte": "4337.50",
-        "Dignitaeten": "0100|0200|1200|1800|1900",
-        "Pauschale_Text_f": "Traitement chirurgical de cryptorchidie ou de varicocèle (ouvert, bil.)",
-        "Pauschale_Text_i": "Interventi in caso di criptorchidismo o interventi in caso di varicocele (a cielo aperto, bilat.)",
-        "Implantate_inbegriffen": true
-    },
-    {
-        "Pauschale": "C12.10B",
-        "Pauschale_Text": "Eingriffe bei Kryptorchismus, Eingriffe bei Varikozele (offen) od. Orchiektomie/Epididymektomie",
-        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap12)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Tabelle (C12.10))",
-        "Taxpunkte": "3837.29",
-        "Dignitaeten": "0100|0200|1200|1800|1900",
-        "Pauschale_Text_f": "Traitement chirurgical de cryptorchidie ou de varicocèle (ouvert) ou orchidectomie, épididymectomie",
-        "Pauschale_Text_i": "Interventi in caso di criptorchidismo, interventi in caso di varicocele (a cielo aperto) o orchiectomia/epididimectomia",
-        "Implantate_inbegriffen": true
-    },
-    {
-        "Pauschale": "C13.10A",
-        "Pauschale_Text": "Laparoskopische Eingriffe an weiblichen Geschlechtsorganen: Massn. an Adnexen, Hysterektomie od. Myomektomie",
-        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap13)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Tabelle (C13.Laparoskopie)) und (Leistungspositionen in Tabelle (C13.Lapskop_ther)) und (Leistungspositionen in Tabelle (C13.10A))",
-        "Taxpunkte": "5236.66",
-        "Dignitaeten": "0100|0200|0400|1200|1800|1900",
-        "Pauschale_Text_f": "Interventions laparoscopiques sur les organes sexuels féminins: Traitement chirurgical des annexes, hystérectomie ou myomectomie",
-        "Pauschale_Text_i": "Interventi laparoscopici agli organi sessuali femminili: Misure ad annessi, isterectomia o miomectomia",
-        "Implantate_inbegriffen": true
-    },
-    {
-        "Pauschale": "C13.10B",
-        "Pauschale_Text": "Laparoskopische Eingriffe an weiblichen Geschlechtsorganen: Biopsie, Chromopertubation, Drainage, Tumorentf. od. Beh. v. Endometriose, Zysten",
-        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap13)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Tabelle (C13.Laparoskopie)) und (Leistungspositionen in Tabelle (C13.Lapskop_ther)) und (Leistungspositionen in Tabelle (C13.10B))",
-        "Taxpunkte": "4736.58",
-        "Dignitaeten": "0100|0200|0400|1200|1900",
-        "Pauschale_Text_f": "Interventions laparoscopiques sur les organes sexuels féminins: Biopsie, chromopertubation, drainage, tumorectomie ou traitement de l'endométriose, de kystes",
-        "Pauschale_Text_i": "Interventi laparoscopici agli organi sessuali femminili: Biopsia, cromopertubazione, drenaggio, asportazione di un tumore o trattamento di endometriosi, cisti",
-        "Implantate_inbegriffen": true
-    },
-    {
-        "Pauschale": "C13.10C",
-        "Pauschale_Text": "Sonstige laparoskopische u. weitere Eingriffe an weiblichen Geschlechtsorganen",
-        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap13)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Tabelle (C13.10_1, C13.10_2))",
-        "Taxpunkte": "3910.97",
-        "Dignitaeten": "0100|0200|0400|1200|1900",
-        "Pauschale_Text_f": "Autres interventions laparoscopiques sur les organes sexuels féminins",
-        "Pauschale_Text_i": "Altri interventi laparoscopici e ulteriori interventi agli organi sessuali femminili",
-        "Implantate_inbegriffen": true
-    },
-    {
-        "Pauschale": "C13.20A",
-        "Pauschale_Text": "Hysteroskopie mit Endometriumdestruktion, Tumorabtragung od. Konisation",
-        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap13)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Tabelle (C13.Hysteroskopie)) und (Leistungspositionen in Tabelle (C13.20A))",
-        "Taxpunkte": "4044.87",
-        "Dignitaeten": "0100|0400|1200",
-        "Pauschale_Text_f": "Hystéroscopie avec destruction de l'endomètre, résection de tumeurs ou conisation",
-        "Pauschale_Text_i": "Isteroscopia con endometrectomia, ablazione di tumori o conizzazione",
-        "Implantate_inbegriffen": true
-    },
-    {
-        "Pauschale": "C13.20B",
-        "Pauschale_Text": "Hysteroskopie mit Polypektomie",
-        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap13)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Tabelle (C13.Hysteroskopie)) und (Leistungspositionen in Liste (C13.GE.Z001))",
-        "Taxpunkte": "3276.24",
-        "Dignitaeten": "0100|0400|1200",
-        "Pauschale_Text_f": "Hystéroscopie avec polypectomie",
-        "Pauschale_Text_i": "Isteroscopia con polipectomia",
-        "Implantate_inbegriffen": true
-    },
-    {
-        "Pauschale": "C13.20C",
-        "Pauschale_Text": "Hysteroskopie mit Curettage od. Biopsie",
-        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap13)) und (Leistungspositionen in Tabelle (OR)) und (Leistungspositionen in Tabelle (C13.20)) und (Leistungspositionen in Liste (C13.GE.0010))",
-        "Taxpunkte": "2856.25",
-        "Dignitaeten": "0100|0400|1200",
-        "Pauschale_Text_f": "Hystéroscopie avec curettage ou biopsie",
-        "Pauschale_Text_i": "Isteroscopia con raschiamento o biopsia",
-        "Implantate_inbegriffen": true
-    },
-    {
-        "Pauschale": "C13.20D",
-        "Pauschale_Text": "Hysteroskopie mit Anästhesie d. Anästhesist/in od. mit sonstigen Massnahmen",
-        "Prüflogik": "(Hauptdiagnose in Tabelle (Cap13)) und (Leistungspositionen in Liste (C13.GE.0010)) und (Leistungspositionen in Tabelle (ANAST, C13.20_1))",
-        "Taxpunkte": "2177.81",
-        "Dignitaeten": "0100|0400|1200",
-        "Pauschale_Text_f": "Hystéroscopie avec anesthésie par l'anesthésiste ou avec d'autres interventions",
-        "Pauschale_Text_i": "Isteroscopia con anestesia effettuata da anestesista o con altre misure",
         "Implantate_inbegriffen": true
     },
     {
