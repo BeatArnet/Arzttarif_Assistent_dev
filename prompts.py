@@ -222,12 +222,27 @@ Risposta JSON:"""
 **Anweisungen:** Führe die folgenden Schritte exakt aus:
 
 1.  **LKN Identifikation & STRIKTE Validierung:**
-    *   Lies den "Behandlungstext" sorgfältig.
-    *   Analysiere den gesamten Behandlungstext. Wenn mehrere unterschiedliche Leistungen beschrieben sind (z.B. eine Konsultation gefolgt von einem Eingriff), identifiziere LKNs für jeden Teil.
-    *   Identifiziere **alle** potenziellen LKN-Codes (Format `XX.##.####`), die die beschriebenen Tätigkeiten repräsentieren könnten. **Beginne damit, den Behandlungstext sorgfältig zu interpretieren. Die medizinische Bedeutung der beschriebenen Tätigkeit ist entscheidend, nicht nur die exakte Wortwahl. Nutze dabei dein ausgeprägtes medizinisches und terminologisches Wissen zu Synonymen, Umschreibungen und typischen Fachbegriffen.** Beispiele für Synonymie sind "Kataraktoperation" = "Phakoemulsifikation" oder "Linsenextraktion" = "Extractio lentis", "Herzkatheter"/"Linksherzkather" = "Koronarographie". **Achte besonders darauf, dass verschiedene Wörter die gleiche medizinische Handlung beschreiben können (z.B. "Abtragen", "Entfernen", "Entfernung" einer Hautläsion oder Warze können je nach Kontext auf dieselbe Prozedur hinweisen, wie z.B. die Exzision oder Kürettage einer Warze).**
-    *   **Berücksichtige stilistische Variationen und den Kontext:** Die Wortreihenfolge kann variieren. Substantiv- und Verbformen sind oft äquivalent (z.B. "die Entfernung" vs. "etwas entfernen", "das Abtragen" vs. "etwas abtragen"). Eine Formulierung wie "grosser rheumatischer Untersuch" kann als "umfassende rheumatische Untersuchung" interpretiert werden.
-    *   Beziehe auch Formulierungen aus dem Feld "MedizinischeInterpretation" des Katalogs aktiv mit ein, da diese oft wichtige Hinweise auf alternative Bezeichnungen oder gängige Synonyme für eine Leistung enthalten.
-    *   **Spezifische Anweisung für "Beratung":** Wenn im Text "Beratung" (insbesondere mit einer Zeitangabe wie "10 Minuten Beratung" oder "10 Minuten Beratung Kind") vorkommt, suche aktiv nach LKNs, die Beratungsleistungen abbilden und nach Zeit abgerechnet werden (z.B. "pro 5 Min." wie `CG.15.0010` oder "pro Minute" wie potenziell `CA.00.0030`). Stelle sicher, dass die Menge gemäß der Regel Y/X korrekt berechnet wird (z.B. "10 Minuten Beratung Kind" mit einer LKN "pro Minute" ergibt Menge 10; mit einer LKN "pro 5 Min." ergibt Menge 2). Die genaue LKN hängt vom Kontext (z.B. Hausarzt CA vs. Allgemein CG) und dem Katalog ab.
+    *   Lies den "Behandlungstext" sorgfältig und denke immer daran, dass es sich um einen Arzttarif handelt.
+    *   Analysiere den gesamten Behandlungstext. Wenn mehrere unterschiedliche Leistungen beschrieben sind (z.B. eine (ärztliche) Konsultation gefolgt von einem Eingriff), 
+        *   identifiziere LKNs für jeden Teil.
+    *   Identifiziere **alle** potenziellen LKN-Codes (Format `XX.##.####`), die die beschriebenen Tätigkeiten repräsentieren könnten. 
+        *   **Beginne damit, den Behandlungstext sorgfältig zu interpretieren. 
+            *   Die medizinische Bedeutung der beschriebenen Tätigkeit ist entscheidend, nicht nur die exakte Wortwahl. 
+            *   Nutze dabei dein ausgeprägtes medizinisches und terminologisches Wissen zu Synonymen, Umschreibungen und typischen Fachbegriffen.
+        *   ** Beispiele für Synonyme sind "Kataraktoperation" = "Phakoemulsifikation" oder "Linsenextraktion" = "Extractio lentis", 
+            *   "Herzkatheter"/"Linksherzkather" = "Koronarographie", "Warze" = "benigne Hautläsion" etc. 
+        *   **Achte besonders darauf, dass verschiedene Wörter die gleiche medizinische Handlung beschreiben können 
+            *   (z.B. "Abtragen" = "Entfernen" = "Entfernung" einer Hautläsion oder Warze können je nach Kontext auf 
+            *   dieselbe Prozedur hinweisen, wie z.B. die Exzision oder Kürettage einer Warze).**
+    *   **Berücksichtige stilistische Variationen und den Kontext:** Die Wortreihenfolge kann variieren. Substantiv- und Verbformen sind oft 
+        *   äquivalent (z.B. "die Entfernung" vs. "etwas entfernen", "das Abtragen" vs. "etwas abtragen"). 
+        *   Eine Formulierung wie "grosser rheumatischer Untersuch" kann als "umfassende rheumatische Untersuchung" interpretiert werden.
+    *   Beziehe auch Formulierungen aus dem Feld "MedizinischeInterpretation" des Katalogs aktiv mit ein, 
+        *   da diese oft wichtige Hinweise auf alternative Bezeichnungen oder gängige Synonyme für eine Leistung enthalten.
+    *   **Spezifische Anweisung für "Beratung":** Wenn im Text "Beratung" (insbesondere mit einer Zeitangabe wie "10 Minuten Beratung" oder "10 Minuten Beratung Kind") vorkommt, 
+        *   suche aktiv nach LKNs, die Beratungsleistungen abbilden und nach Zeit abgerechnet werden (z.B. "pro 5 Min." wie `CG.15.0010` oder "pro Minute" wie potenziell `CA.00.0030`). Stelle sicher, dass die Menge gemäß der Regel Y/X korrekt berechnet wird 
+        *   (z.B. "10 Minuten Beratung Kind" mit einer LKN "pro Minute" ergibt Menge 10; mit einer LKN "pro 5 Min." ergibt Menge 2). 
+        *   Die genaue LKN hängt vom Kontext (z.B. Hausarzt CA vs. Allgemein CG) und dem Katalog ab.
     *   **Administrative Vermerke:** Ignoriere rein administrative oder logistische Vermerke (z.B. "Wechselzeit zur Dermatologie", "Patient wartete"), wenn du klinisch abrechenbare LKNs identifizierst, es sei denn, sie informieren direkt einen abrechenbaren Parameter (z.B. Dauer einer direkt überwachten Leistung).
     *   Bedenke, dass im Text mehrere Leistungen dokumentiert sein können und daher mehrere LKNs gültig sein können (z.B. chirurgischer Eingriff plus/und/mit/;/./,/: Anästhesie).
     *   Wird eine Anästhesie oder Narkose durch einen Anästhesisten erwähnt, wähle ausdrücklich einen Code aus Kapitel WA.10 (Tabelle ANAST). Wenn keine Dauer angegeben ist, verwende standardmäßig `WA.10.0010`. Bei einer konkreten Dauerangabe in Minuten nutze den entsprechenden `WA.10.00x0`-Code.
@@ -246,8 +261,10 @@ Risposta JSON:"""
             *   `AA.00.0020` ("Konsultation, allgemein; jede weitere Minute"): Menge ist (`dauer_minuten` der Konsultation - 5) / 1.
             *   Beispiel: Eine allgemeine Konsultation von 25 Minuten Dauer führt zu:
                 *   `AA.00.0010`, `menge`: 1
-                *   `AA.00.0020`, `menge`: (25 - 5) / 1 = 20
+                *   `AA.00.0020`, `menge`: (25 - 5) / 1 = 20)
         *   Stelle sicher, dass `dauer_minuten` korrekt für die gesamte Konsultation extrahiert wird, bevor diese Aufteilung erfolgt.
+    *   **Spezifische Anweisung für "Warzenentfernung mit Kürette":** Wenn im Behandlungstext explizit "Warzenentfernung" (oder direkte Synonyme) UND die Verwendung einer "Kürette" oder "Schneidekürette" (oder direkte Übersetzungen) erwähnt wird:
+    *   Gib alle LKN zurück, die Du finden konntest, auch wenn Du einzelne Leistungen nicht identifizieren konntest.
 
 2.  **Typ & Beschreibung hinzufügen:**
     *   Füge für jede **validierte** LKN in der `identified_leistungen`-Liste den korrekten `typ` und die `beschreibung` **direkt und unverändert aus dem bereitgestellten Katalogkontext für DIESE LKN** hinzu.
