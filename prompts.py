@@ -17,23 +17,34 @@ def get_stage1_prompt(user_input: str, katalog_context: str, lang: str) -> str:
     *   Identifie **tous** les codes LKN potentiels (format `XX.##.####`) pouvant représenter les actes décrits.
     *   Note que plusieurs prestations peuvent être documentées dans le texte et que plusieurs LKN peuvent être valides (p. ex. intervention chirurgicale plus anesthésie).
     *   Si une anesthésie ou une narcose réalisée par un anesthésiste est mentionnée, sélectionne explicitement un code du chapitre WA.10 (table ANAST). S'il n'est pas fait mention de la durée, utilise par défaut `WA.10.0010`. Lorsque la durée precise en minutes est indiquée, emploie le code `WA.10.00x0` approprié.
-    *   Mets à profit tes connaissances médicales sur les synonymes et termes techniques usuels (p. ex. reconnais que « opération de la cataracte » = « phacoémulsification » / « extraction du cristallin » = « Extractio lentis »). Pour les termes complexes comme "cathétérisme cardiaque gauche", décompose-le en ses composants ("gauche", "cœur", "cathéter") et recherche des LKN correspondantes telles que celles pour la "coronarographie" ou "cathétérisme cardiaque". De même, « enlèvement verrue au moyen d'une curette » ou « avec une cuillère tranchante » devrait correspondre aux LKN pour le curetage de verrues. Tiens aussi compte des formulations qui peuvent apparaître dans le champ "MedizinischeInterpretation".
-    *   Si le texte mentionne « conseil », « entretien » ou « consultation » (au sens de donner des conseils) avec une durée, recherche activement les LKN correspondantes à cette activité, en particulier celles tarifées à la durée (p. ex. "par 5 min").
+    *   Mets à profit tes connaissances médicales sur les synonymes et termes techniques usuels (p. ex. reconnais que « opération de la cataracte » = « phacoémulsification » / « extraction du cristallin » = « Extractio lentis »). Pour les termes complexes comme "cathétérisme cardiaque gauche", décompose-le en ses composants ("gauche", "cœur", "cathéter") et recherche des LKN correspondantes telles que celles pour la "coronarographie" ou "cathétérisme cardiaque". **Note pour Linksherzkatheter/cathétérisme cardiaque gauche :** Sois particulièrement attentif à ce que les LKN choisies correspondent très précisément à la description textuelle. Si plusieurs LKN semblent possibles, et si une LKN est un déclencheur connu de la Pauschale C05.10B, assure-toi que le texte justifie pleinement cette LKN spécifique et les conditions de cette Pauschale avant de la sélectionner.
+    *   Consulte activement le champ "MedizinischeInterpretation" du catalogue, car il contient souvent des indications importantes sur des désignations alternatives ou des synonymes courants pour une prestation.
+    *   **Instruction Critique pour Enlèvement de Verrue à la Curette/Cuillère Tranchante :** Si le texte de traitement décrit explicitement l'"enlèvement d'une verrue" (ou synonymes directs) ET mentionne l'utilisation d'une "curette" ou "cuillère tranchante" (ou traductions directes) :
+        *   Tu **DOIS IMPÉRATIVEMENT** donner la priorité aux LKN qui décrivent spécifiquement le "curetage de verrue" ou "l'enlèvement de verrue par curetage".
+        *   Recherche activement des codes comme `MK.05.0070` (si celui-ci correspond au "curetage de verrues" ou similaire et est présent dans le catalogue fourni).
+        *   Cette instruction spécifique pour le curetage de verrues **PRIME** sur les codes plus généraux d'exérèse de lésions cutanées.
+        *   Évite les codes pour des procédures non liées (p.ex. biopsies, sutures simples, acupuncture) dans ce contexte spécifique de curetage de verrue.
+    *   **Instruction spécifique pour "Conseil/Entretien":** Si le texte mentionne « conseil », « entretien » ou « consultation » (au sens de donner des conseils) avec une durée, recherche activement les LKN correspondantes à cette activité, en particulier celles tarifées à la durée (p. ex. "par 5 min" comme `CG.15.0010`). Assure-toi que la quantité est correctement calculée selon la règle Y/X. Le choix exact de la LKN (p.ex. Chapitre CA pour médecin de famille vs. Chapitre CG pour conseil général) dépend du contexte global du traitement et des LKN disponibles dans le catalogue.
+    *   **Remarques administratives:** Ignore les remarques purement administratives ou logistiques (p.ex., "temps de transfert vers la dermatologie", "le patient a attendu") lors de l'identification des LKN cliniques facturables, à moins qu'elles n'informent directement un paramètre facturable (p.ex., durée d'une prestation surveillée).
     *   Utilise également ton sens stylistique : « grand » peut signifier « complet » ou « majeur » ; une formulation comme « grand examen rhumatologique » peut être interprétée comme « examen rhumatologique complet » ou « bilan rhumatologique majeur », l'ordre des mots peut varier et les formes nominales et verbales peuvent être équivalentes (p. ex. « retrait » vs « retirer »).
     *   **ABSOLUMENT CRITIQUE:** Pour CHAQUE code LKN potentiel, vérifie **LETTRE PAR LETTRE et CHIFFRE PAR CHIFFRE** que ce code existe **EXACTEMENT** comme 'LKN:' dans le catalogue ci-dessus. Ce n'est que si le code existe que tu compares la **description du catalogue** avec l'acte décrit.
     *   Crée une liste (`identified_leistungen`) **UNIQUEMENT** avec les LKN ayant passé cette vérification exacte et dont la description correspond au texte.
-    *   Reconnais si les prestations relèvent du chapitre CA (médecine de famille).
+    *   Reconnais si les prestations relèvent du chapitre CA (médecine de famille). **Ceci est une étape importante pour la sélection correcte des LKN.**
 
-**Instruction spécifique pour les consultations (par ex. chapitre AA) :**
-*   Si le texte de traitement décrit une « consultation » générale ou un « entretien » avec une durée (p. ex. « consultation 25 minutes ») et qu'AUCUNE spécialité spécifique (comme « médecine de famille ») n'est mentionnée, alors priorise les codes de consultation généraux du chapitre AA.
-*   `AA.00.0010` ("Consultation, générale ; 5 premières minutes") : la quantité est toujours 1 si une consultation a lieu.
-*   `AA.00.0020` ("Consultation, générale ; chaque minute supplémentaire") : la quantité est (`dauer_minuten` de la consultation - 5) / 1.
-*   Exemple : Une consultation générale de 25 minutes donne :
-    *   `AA.00.0010`, `menge`: 1
-    *   `AA.00.0020`, `menge`: (25 - 5) / 1 = 20
-*   Exemple : Une consultation générale de 15 minutes donne :
-    *   `AA.00.0010`, `menge`: 1
-    *   `AA.00.0020`, `menge`: (15 - 5) / 1 = 10
+**Instructions spécifiques pour les prestations de consultation:**
+*   **Consultations spécifiques à un domaine (p.ex. Médecine de famille/Chapitre CA):** Si le texte de traitement mentionne explicitement un domaine spécifique (p.ex. "consultation de médecine de famille", "chez le médecin de famille", "hausärztliche Konsultation") :
+    *   **DONNE LA PRIORITÉ ABSOLUE** aux codes LKN de consultation du chapitre correspondant (p.ex. CA pour la médecine de famille).
+    *   **ÉVITE** d'utiliser les codes AA pour la durée de cette consultation spécifique.
+    *   Si le chapitre spécifique (p.ex. CA) possède ses propres codes LKN basés sur le temps pour les consultations (p.ex. un code pour les "5 premières minutes" et un autre pour "chaque minute supplémentaire"), applique un calcul de temps analogue à celui des codes AA.
+        *   Exemple (hypothétique pour CA, basé sur la structure AA) : Pour une "consultation de médecine de famille de 17 minutes", si `CA.00.0010` = "Consultation méd. fam., 5 prem. min." et `CA.00.0020` = "Consultation méd. fam., chaque min. suppl.", alors facturer :
+            *   `CA.00.0010`, `menge`: 1
+            *   `CA.00.0020`, `menge`: (17 - 5) / 1 = 12
+    *   Recherche attentivement dans le catalogue les codes LKN corrects pour le domaine mentionné et leurs modalités spécifiques de facturation.
+*   **Consultations Générales (Chapitre AA) :** Utilise les codes de consultation généraux du chapitre AA **UNIQUEMENT SI** le texte de traitement décrit une "consultation", "entretien" etc. avec une durée, ET **AUCUN domaine médical spécifique** (comme "médecine de famille") n'est explicitement mentionné ou clairement impliqué par le contexte.
+    *   Dans ce cas (et seulement dans ce cas) :
+        *   `AA.00.0010` ("Consultation, générale ; 5 premières minutes") : la quantité est toujours 1.
+        *   `AA.00.0020` ("Consultation, générale ; chaque minute supplémentaire") : la quantité est (`dauer_minuten` de la consultation - 5) / 1.
+        *   Exemple : Une "consultation de 25 minutes" (sans autre spécification) donne : 1x `AA.00.0010` + 20x `AA.00.0020`.
 *   Assure-toi que `dauer_minuten` est correctement extrait pour toute la consultation avant d'effectuer cette répartition.
 
 2.  **Type et description:**
@@ -109,23 +120,38 @@ Réponse JSON:"""
     *   Identifica **tutti** i possibili codici LKN (formato `XX.##.####`) che potrebbero rappresentare le attività descritte.
     *   Considera che nel testo possono essere documentate più prestazioni e quindi possono essere valide più LKN (ad es. intervento chirurgico più anestesia).
     *   Se viene menzionata un'anestesia o narcosi eseguita da un anestesista, seleziona esplicitamente un codice del capitolo WA.10 (tabella ANAST). Se non è indicata la durata, usa di default `WA.10.0010`. Quando viene fornita una durata precisa in minuti, impiega il corrispondente codice `WA.10.00x0`.
-    *   Sfrutta le tue conoscenze mediche su sinonimi e termini tecnici tipici (ad es. riconosci che « intervento di cataratta » = « facoemulsificazione » / « estrazione del cristallino » = « Extractio lentis »). Per termini complessi come "cateterismo cardiaco sinistro", scomponilo nei suoi componenti ("sinistro", "cuore", "catetere") e cerca LKN corrispondenti come quelle per la "coronarografia" o "cateterismo cardiaco". Analogamente, « rimozione verruca con cucchiaio tagliente » o « tramite curettage » dovrebbe corrispondere alle LKN per il curettage di verruche. Considera anche i termini che possono comparire nel campo "MedizinischeInterpretation".
-    *   Se il testo menziona « consulenza », « consulto », o « colloquio informativo » con una durata, cerca attivamente le LKN corrispondenti a questa attività, specialmente quelle tariffate a tempo (ad es. "per 5 min").
+    *   Sfrutta le tue conoscenze mediche su sinonimi e termini tecnici tipici (ad es. riconosci che « intervento di cataratta » = « facoemulsificazione » / « estrazione del cristallino » = « Extractio lentis »). Per termini complessi come "cateterismo cardiaco sinistro", scomponilo nei suoi componenti ("sinistro", "cuore", "catetere") e cerca LKN corrispondenti come quelle per la "coronarografia" o "cateterismo cardiaco". **Nota per cateterismo cardiaco sinistro (Pauschale C05.10B):** Presta particolare attenzione che le LKN scelte corrispondano molto precisamente alla descrizione testuale. Se diverse LKN sembrano possibili, e se una LKN è un noto attivatore della Pauschale C05.10B, assicurati che il testo giustifichi pienamente questa LKN specifica e le condizioni di tale Pauschale prima di selezionarla.
+    *   Consulta attivamente il campo "MedizinischeInterpretation" del catalogo, poiché spesso contiene indicazioni importanti su designazioni alternative o sinonimi comuni per una prestazione.
+    *   **Istruzione Critica per Rimozione Verruca con Curette/Cucchiaio Tagliente:** Se il testo del trattamento descrive esplicitamente la "rimozione di una verruca" (o sinonimi diretti) E menziona l'uso di una "curette" o "cucchiaio tagliente" (o traduzioni dirette):
+        *   **DEVI IMPERATIVAMENTE** dare priorità alle LKN che descrivono specificamente il "curettage di verruca" o la "rimozione di verruca mediante curettage".
+        *   Ricerca attivamente codici come `MK.05.0070` (se questo corrisponde a "curettage di verruche" o simile ed è presente nel catalogo fornito).
+        *   Questa istruzione specifica per il curettage di verruche **PREVALE** sui codici più generici di rimozione di lesioni cutanee.
+        *   Evita codici per procedure non correlate (ad es. biopsie, suture semplici, agopuntura come `AK.00.0090`) in questo contesto specifico di curettage di verruca.
+    *   **Istruzione specifica per "Consulenza/Beratung":** Se il testo menziona « consulenza », « consulto », « colloquio informativo », o « Beratung » (specialmente con una durata e contesto specifico, es. "10 minuti consulenza bambino" **DOVREBBE fortemente puntare a CG.15.0010** se si tratta di una consulenza generale per bambini e CG.15.0010 è "Consulenza... per bambino... pro 5 min." nel catalogo), **DEVI** cercare attivamente e dare priorità a LKN specifiche per queste attività di consulenza tariffate a tempo. Calcola la quantità rigorosamente come Y/X (es. per "10 minuti consulenza bambino" e LKN `CG.15.0010` "pro 5 min", la quantità è 10/5 = 2). Se il contesto è "Medico di Base" e esiste una LKN CA specifica per "Consulenza bambino pro minuto", quella LKN e la quantità Y/1 sarebbero prioritarie.
+    *   **Istruzione specifica per "Frattura dito, Inchiodamento" (Pauschale C08.30F):** Se il testo descrive una frattura di un dito trattata con inchiodamento o osteosintesi con chiodo (o termini molto simili come "Nagelung einer Fingerfraktur"):
+        *   Sii particolarmente attento nella selezione delle LKN relative sia alla frattura del dito sia alla procedura di inchiodamento/osteosintesi.
+        *   Se una LKN identificata è un noto attivatore della Pauschale C08.30F e il testo giustifica pienamente tale LKN e le condizioni della Pauschale, considerala attentamente.
+        *   Verifica le descrizioni e le "MedizinischeInterpretation" nel catalogo per trovare le corrispondenze più accurate per queste procedure combinate.
+    *   **Note amministrative:** Ignora le osservazioni puramente amministrative o logistiche (ad es. "tempo di trasferimento alla dermatologia", "il paziente ha aspettato") durante l'identificazione delle LKN cliniche fatturabili, a meno che non informino direttamente un parametro fatturabile (ad es. durata di una prestazione supervisionata).
     *   Usa anche il tuo senso stilistico: "grande" può significare "esteso" o "completo"; una dicitura come "grande esame reumatologico" può essere interpretata come "esame reumatologico completo" o "status reumatologico maggiore", l'ordine delle parole può variare e forme sostantivali e verbali possono avere lo stesso significato (es. "rimozione" vs "rimuovere").
     *   **ASSOLUTAMENTE CRITICO:** Per OGNI codice LKN potenziale verifica **LETTERA PER LETTERA e CIFRA PER CIFRA** che esista **ESATTAMENTE** come 'LKN:' nel catalogo sopra. Solo se il codice esiste confronta la **descrizione del catalogo** con l'attività descritta.
     *   Crea un elenco (`identified_leistungen`) **SOLO** con le LKN che hanno superato questa verifica esatta e la cui descrizione corrisponde al testo.
-    *   Riconosci se si tratta di prestazioni di medicina di base del capitolo CA.
+    *   Riconosci se si tratta di prestazioni di medicina di base del capitolo CA. **Questo è un passaggio importante per la corretta selezione delle LKN.**
 
-**Istruzione specifica per le consultazioni (ad es. capitolo AA):**
-*   Se il testo del trattamento descrive una "consultazione" generale o un "colloquio" con una durata (ad es. "consultazione 25 minuti") e NON viene menzionata NESSUNA specializzazione specifica (come "medicina di famiglia"), allora dai priorità ai codici di consultazione generali del capitolo AA.
-*   `AA.00.0010` ("Consultazione, generale; primi 5 minuti"): la quantità è sempre 1 se si svolge una consultazione.
-*   `AA.00.0020` ("Consultazione, generale; ogni minuto successivo"): la quantità è (`dauer_minuten` della consultazione - 5) / 1.
-*   Esempio: Una consultazione generale di 25 minuti comporta:
-    *   `AA.00.0010`, `menge`: 1
-    *   `AA.00.0020`, `menge`: (25 - 5) / 1 = 20
-*   Esempio: Una consultazione generale di 15 minuti comporta:
-    *   `AA.00.0010`, `menge`: 1
-    *   `AA.00.0020`, `menge`: (15 - 5) / 1 = 10
+**Istruzioni specifiche per le prestazioni di consultazione:**
+*   **Consultazioni specifiche per area specialistica (es. Medico di Base/Capitolo CA):** Se il testo del trattamento menziona esplicitamente un'area specifica (es. "consultazione dal medico di base", "presso il medico di famiglia", "hausärztliche Konsultation"):
+    *   **DAI PRIORITÀ ASSOLUTA** ai codici LKN di consultazione del capitolo corrispondente (es. CA per il medico di base).
+    *   **EVITA** di utilizzare i codici AA per la durata di questa consultazione specifica.
+    *   Se il capitolo specifico (es. CA) possiede propri codici LKN basati sul tempo per le consultazioni (es. un codice per i "primi 5 minuti" e un altro per "ogni minuto successivo"), applica un calcolo del tempo analogo a quello dei codici AA.
+        *   Esempio (ipotetico per CA, basato sulla struttura AA): Per una "consultazione dal medico di base di 17 minuti", se `CA.00.0010` = "Consultazione med. base, primi 5 min." e `CA.00.0020` = "Consultazione med. base, ogni min. succ.", allora fatturare:
+            *   `CA.00.0010`, `menge`: 1
+            *   `CA.00.0020`, `menge`: (17 - 5) / 1 = 12
+    *   Cerca attentamente nel catalogo i codici LKN corretti per l'area menzionata e le loro specifiche modalità di fatturazione.
+*   **Consultazioni Generali (Capitolo AA):** Utilizza i codici di consultazione generali del capitolo AA **SOLO SE** il testo del trattamento descrive una "consultazione", "colloquio" ecc. con una durata, E **NESSUNA area medica specifica** (come "medico di base") è esplicitamente menzionata o chiaramente implicata dal contesto.
+    *   In questo caso (e solo in questo caso):
+        *   `AA.00.0010` ("Consultazione, generale; primi 5 minuti"): la quantità è sempre 1.
+        *   `AA.00.0020` ("Consultazione, generale; ogni minuto successivo"): la quantità è (`dauer_minuten` della consultazione - 5) / 1.
+        *   Esempio: Una "consultazione di 25 minuti" (senza altra specificazione) comporta: 1x `AA.00.0010` + 20x `AA.00.0020`.
 *   Assicurati che `dauer_minuten` sia estratto correttamente per l'intera consultazione prima di effettuare questa suddivisione.
 
 2.  **Tipo e descrizione:**
@@ -201,22 +227,26 @@ Risposta JSON:"""
     *   Identifiziere **alle** potenziellen LKN-Codes (Format `XX.##.####`), die die beschriebenen Tätigkeiten repräsentieren könnten. **Beginne damit, den Behandlungstext sorgfältig zu interpretieren. Die medizinische Bedeutung der beschriebenen Tätigkeit ist entscheidend, nicht nur die exakte Wortwahl. Nutze dabei dein ausgeprägtes medizinisches und terminologisches Wissen zu Synonymen, Umschreibungen und typischen Fachbegriffen.** Beispiele für Synonymie sind "Kataraktoperation" = "Phakoemulsifikation" oder "Linsenextraktion" = "Extractio lentis", "Herzkatheter"/"Linksherzkather" = "Koronarographie". **Achte besonders darauf, dass verschiedene Wörter die gleiche medizinische Handlung beschreiben können (z.B. "Abtragen", "Entfernen", "Entfernung" einer Hautläsion oder Warze können je nach Kontext auf dieselbe Prozedur hinweisen, wie z.B. die Exzision oder Kürettage einer Warze).**
     *   **Berücksichtige stilistische Variationen und den Kontext:** Die Wortreihenfolge kann variieren. Substantiv- und Verbformen sind oft äquivalent (z.B. "die Entfernung" vs. "etwas entfernen", "das Abtragen" vs. "etwas abtragen"). Eine Formulierung wie "grosser rheumatischer Untersuch" kann als "umfassende rheumatische Untersuchung" interpretiert werden.
     *   Beziehe auch Formulierungen aus dem Feld "MedizinischeInterpretation" des Katalogs aktiv mit ein, da diese oft wichtige Hinweise auf alternative Bezeichnungen oder gängige Synonyme für eine Leistung enthalten.
+    *   **Spezifische Anweisung für "Beratung":** Wenn im Text "Beratung" (insbesondere mit einer Zeitangabe wie "10 Minuten Beratung" oder "10 Minuten Beratung Kind") vorkommt, suche aktiv nach LKNs, die Beratungsleistungen abbilden und nach Zeit abgerechnet werden (z.B. "pro 5 Min." wie `CG.15.0010` oder "pro Minute" wie potenziell `CA.00.0030`). Stelle sicher, dass die Menge gemäß der Regel Y/X korrekt berechnet wird (z.B. "10 Minuten Beratung Kind" mit einer LKN "pro Minute" ergibt Menge 10; mit einer LKN "pro 5 Min." ergibt Menge 2). Die genaue LKN hängt vom Kontext (z.B. Hausarzt CA vs. Allgemein CG) und dem Katalog ab.
+    *   **Administrative Vermerke:** Ignoriere rein administrative oder logistische Vermerke (z.B. "Wechselzeit zur Dermatologie", "Patient wartete"), wenn du klinisch abrechenbare LKNs identifizierst, es sei denn, sie informieren direkt einen abrechenbaren Parameter (z.B. Dauer einer direkt überwachten Leistung).
     *   Bedenke, dass im Text mehrere Leistungen dokumentiert sein können und daher mehrere LKNs gültig sein können (z.B. chirurgischer Eingriff plus/und/mit/;/./,/: Anästhesie).
     *   Wird eine Anästhesie oder Narkose durch einen Anästhesisten erwähnt, wähle ausdrücklich einen Code aus Kapitel WA.10 (Tabelle ANAST). Wenn keine Dauer angegeben ist, verwende standardmäßig `WA.10.0010`. Bei einer konkreten Dauerangabe in Minuten nutze den entsprechenden `WA.10.00x0`-Code.
     *   Wenn es für eine bestimmte Leistung eine spezifische LKN gibt, dann nutze diese anstatt Alternativen zu wählen, sofern die medizinische Bedeutung klar übereinstimmt.
     *   Nachdem du basierend auf dieser sorgfältigen Interpretation eine Liste möglicher LKN-Kandidaten erstellt hast, gilt: **ABSOLUT KRITISCH:** Für JEDEN dieser Kandidaten-LKN-Codes prüfe **BUCHSTABE FÜR BUCHSTABE und ZIFFER FÜR ZIFFER**, dass dieser Code **EXAKT** als „LKN:“ im obigen Katalog existiert. **Nur wenn ein LKN-Code exakt im Katalog gefunden wurde, vergleiche dessen offizielle Katalogbeschreibung sorgfältig mit der ursprünglich im Behandlungstext beschriebenen und interpretierten medizinischen Leistung.** Die Übereinstimmung der *Bedeutung* ist hierbei wichtiger als die exakte Wortwahl im Behandlungstext verglichen mit der Katalogbeschreibung, solange die Katalogbeschreibung die interpretierte Leistung abdeckt.
     *   Erstelle eine Liste (`identified_leistungen`) **AUSSCHLIESSLICH** mit den LKNs, die a) exakt im Katalog als LKN existieren UND b) deren Katalogbeschreibung die im Behandlungstext beschriebene und medizinisch interpretierte Leistung zutreffend widerspiegelt.
-    *   Erkenne, ob es sich um hausärztliche Leistungen im Kapitel CA handelt.
-    *   **Spezifische Anweisung für Konsultationen (z.B. Kapitel AA):**
-        *   Wenn der Behandlungstext eine allgemeine "Konsultation" oder "Sprechstunde" mit einer Dauer beschreibt (z.B. "Konsultation 25 Minuten") und KEIN spezifischer Fachbereich (wie "Hausärztliche") genannt wird, dann priorisiere die allgemeinen Konsultationsziffern aus dem Kapitel AA.
-        *   `AA.00.0010` ("Konsultation, allgemein; erste 5 Min."): Menge ist immer 1, wenn eine Konsultation stattfindet.
-        *   `AA.00.0020` ("Konsultation, allgemein; jede weitere Minute"): Menge ist (`dauer_minuten` der Konsultation - 5) / 1.
-        *   Beispiel: Eine allgemeine Konsultation von 25 Minuten Dauer führt zu:
-            *   `AA.00.0010`, `menge`: 1
-            *   `AA.00.0020`, `menge`: (25 - 5) / 1 = 20
-        *   Beispiel: Eine allgemeine Konsultation von 15 Minuten Dauer führt zu:
-            *   `AA.00.0010`, `menge`: 1
-            *   `AA.00.0020`, `menge`: (15 - 5) / 1 = 10
+    *   Erkenne, ob es sich um hausärztliche Leistungen im Kapitel CA handelt. **Dies ist ein wichtiger Schritt zur korrekten LKN-Auswahl.**
+    *   **Spezifische Anweisung für Konsultationen:**
+        *   **Priorisierung Hausarzt (Kapitel CA):** Wenn der Behandlungstext Begriffe wie "Hausarzt", "hausärztlich", "Allgemeinmedizin", "Konsultation beim Hausarzt" o.ä. enthält, **MÜSSEN** Konsultationsleistungen aus Kapitel CA priorisiert werden, falls vorhanden und passend (z.B. `CA.00.0010` für erste 5 Min., `CA.00.0020` für jede weitere Minute).
+            *   Beispiel Hausarzt-Konsultation 17 Minuten:
+                *   `CA.00.0010` (Hausärztliche Kons., erste 5 Min.), `menge`: 1
+                *   `CA.00.0020` (Hausärztliche Kons., jede weitere Min.), `menge`: (17 - 5) / 1 = 12
+            *   In diesem Fall dürfen KEINE AA-Konsultationsziffern für dieselbe Konsultation verrechnet werden.
+        *   **Allgemeine Konsultationen (Kapitel AA):** Nur wenn KEINE Hinweise auf eine spezifische Fachrichtung wie Hausarzt vorliegen UND eine allgemeine "Konsultation" oder "Sprechstunde" mit Dauer beschrieben wird (z.B. "Konsultation 25 Minuten"), dann verwende die allgemeinen Konsultationsziffern aus Kapitel AA.
+            *   `AA.00.0010` ("Konsultation, allgemein; erste 5 Min."): Menge ist immer 1.
+            *   `AA.00.0020` ("Konsultation, allgemein; jede weitere Minute"): Menge ist (`dauer_minuten` der Konsultation - 5) / 1.
+            *   Beispiel: Eine allgemeine Konsultation von 25 Minuten Dauer führt zu:
+                *   `AA.00.0010`, `menge`: 1
+                *   `AA.00.0020`, `menge`: (25 - 5) / 1 = 20
         *   Stelle sicher, dass `dauer_minuten` korrekt für die gesamte Konsultation extrahiert wird, bevor diese Aufteilung erfolgt.
 
 2.  **Typ & Beschreibung hinzufügen:**
