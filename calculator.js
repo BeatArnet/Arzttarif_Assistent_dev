@@ -1008,7 +1008,9 @@ function generateRuleCheckDetails(regelErgebnisse, isErrorCase = false) {
             } else if (regelpruefung.fehler && regelpruefung.fehler.length > 0) {
                  detailsHtml += `<p><b>${tDyn('ruleHints')}</b></p><ul>`;
                  regelpruefung.fehler.forEach(hinweis => {
-                      const style = hinweis.includes("Menge auf") ? "color: var(--danger); font-weight: bold;" : "";
+                      const lcHint = hinweis.toLowerCase();
+                      const isReduction = lcHint.includes("menge auf") || lcHint.includes("quantité réduite") || lcHint.includes("quantità ridotta");
+                      const style = isReduction ? "color: var(--danger); font-weight: bold;" : "";
                       detailsHtml += `<li style="${style}">${escapeHtml(hinweis)}</li>`;
                  });
                  detailsHtml += `</ul>`;
@@ -1098,7 +1100,9 @@ function displayTardocTable(tardocLeistungen, ruleResultsDetailsList = []) {
     let gesamtTP = 0;
     let hasHintsOverall = false;
 
-    for (const leistung of tardocLeistungen) {
+    const sortedLeistungen = [...tardocLeistungen].sort((a, b) => String(a.lkn).localeCompare(String(b.lkn)));
+
+    for (const leistung of sortedLeistungen) {
         const lkn = leistung.lkn;
         const anzahl = leistung.menge;
         const tardocDetails = processTardocLookup(lkn); // Lokale Suche
@@ -1124,7 +1128,8 @@ function displayTardocTable(tardocLeistungen, ruleResultsDetailsList = []) {
              if (regelnHtml) regelnHtml += "<hr style='margin: 5px 0; border-color: #eee;'>";
              regelnHtml += `<p><b>${tDyn('ruleHints')}</b></p><ul>`;
              ruleResult.regelpruefung.fehler.forEach(hinweis => {
-                  const isReduction = hinweis.includes("Menge auf");
+                  const lcHint = hinweis.toLowerCase();
+                  const isReduction = lcHint.includes("menge auf") || lcHint.includes("quantité réduite") || lcHint.includes("quantità ridotta");
                   const style = isReduction ? "color: var(--danger); font-weight: bold;" : "";
                   if (isReduction) {
                       hasHintForThisLKN = true;
