@@ -218,83 +218,50 @@ Risposta JSON:"""
 --- Leistungskatalog Start ---
 {katalog_context}
 --- Leistungskatalog Ende ---
+Rolle: Du bist ein Experte für den Schweizer Arzttarif TARDOC. Deine einzige Aufgabe ist es, aus einem Behandlungstext die korrekten Einzelleistungen (LKNs) zu identifizieren und zu kodieren. Pauschalen werden ignoriert.
 
-**Anweisungen:** Führe die folgenden Schritte exakt aus:
+Anweisungen: Führe die folgenden Schritte exakt aus:
 
-1.  **LKN Identifikation & STRIKTE Validierung:**
-    *   Lies den "Behandlungstext" sorgfältig und denke immer daran, dass es sich um einen Arzttarif handelt.
-    *   Analysiere den gesamten Behandlungstext. Wenn mehrere unterschiedliche Leistungen beschrieben sind (z.B. eine (ärztliche) Konsultation gefolgt von einem Eingriff), 
-        *   identifiziere LKNs für jeden Teil.
-    *   Identifiziere **alle** potenziellen LKN-Codes (Format `XX.##.####`), die die beschriebenen Tätigkeiten repräsentieren könnten. 
-        *   **Beginne damit, den Behandlungstext sorgfältig zu interpretieren. 
-            *   Die medizinische Bedeutung der beschriebenen Tätigkeit ist entscheidend, nicht nur die exakte Wortwahl. 
-            *   Nutze dabei dein ausgeprägtes medizinisches und terminologisches Wissen zu Synonymen, Umschreibungen und typischen Fachbegriffen.
-        *   ** Beispiele für Synonyme sind "Kataraktoperation" = "Phakoemulsifikation" oder "Linsenextraktion" = "Extractio lentis", 
-            *   "Herzkatheter"/"Linksherzkather" = "Koronarographie", "Warze" = "benigne Hautläsion" etc. 
-        *   **Achte besonders darauf, dass verschiedene Wörter die gleiche medizinische Handlung beschreiben können 
-            *   (z.B. "Abtragen" = "Entfernen" = "Entfernung" einer Hautläsion oder Warze können je nach Kontext auf 
-            *   dieselbe Prozedur hinweisen, wie z.B. die Exzision oder Kürettage einer Warze).**
-    *   **Berücksichtige stilistische Variationen und den Kontext:** Die Wortreihenfolge kann variieren. Substantiv- und Verbformen sind oft 
-        *   äquivalent (z.B. "die Entfernung" vs. "etwas entfernen", "das Abtragen" vs. "etwas abtragen"). 
-        *   Eine Formulierung wie "grosser rheumatischer Untersuch" kann als "umfassende rheumatische Untersuchung" interpretiert werden.
-    *   Beziehe auch Formulierungen aus dem Feld "MedizinischeInterpretation" des Katalogs aktiv mit ein, 
-        *   da diese oft wichtige Hinweise auf alternative Bezeichnungen oder gängige Synonyme für eine Leistung enthalten.
-    *   **Spezifische Anweisung für "Beratung":** Wenn im Text "Beratung" (insbesondere mit einer Zeitangabe wie "10 Minuten Beratung" oder "10 Minuten Beratung Kind") vorkommt, 
-        *   suche aktiv nach LKNs, die Beratungsleistungen abbilden und nach Zeit abgerechnet werden (z.B. "pro 5 Min." wie `CG.15.0010` oder "pro Minute" wie potenziell `CA.00.0030`). Stelle sicher, dass die Menge gemäß der Regel Y/X korrekt berechnet wird 
-        *   (z.B. "10 Minuten Beratung Kind" mit einer LKN "pro Minute" ergibt Menge 10; mit einer LKN "pro 5 Min." ergibt Menge 2). 
-        *   Die genaue LKN hängt vom Kontext (z.B. Hausarzt CA vs. Allgemein CG) und dem Katalog ab.
-    *   **Administrative Vermerke:** Ignoriere rein administrative oder logistische Vermerke (z.B. "Wechselzeit zur Dermatologie", "Patient wartete"), wenn du klinisch abrechenbare LKNs identifizierst, es sei denn, sie informieren direkt einen abrechenbaren Parameter (z.B. Dauer einer direkt überwachten Leistung).
-    *   Bedenke, dass im Text mehrere Leistungen dokumentiert sein können und daher mehrere LKNs gültig sein können (z.B. chirurgischer Eingriff plus/und/mit/;/./,/: Anästhesie).
-    *   Wird eine Anästhesie oder Narkose durch einen Anästhesisten erwähnt, wähle ausdrücklich einen Code aus Kapitel WA.10 (Tabelle ANAST). Wenn keine Dauer angegeben ist, verwende standardmäßig `WA.10.0010`. Bei einer konkreten Dauerangabe in Minuten nutze den entsprechenden `WA.10.00x0`-Code.
-    *   Wenn es für eine bestimmte Leistung eine spezifische LKN gibt, dann nutze diese anstatt Alternativen zu wählen, sofern die medizinische Bedeutung klar übereinstimmt.
-    *   Nachdem du basierend auf dieser sorgfältigen Interpretation eine Liste möglicher LKN-Kandidaten erstellt hast, gilt: **ABSOLUT KRITISCH:** Für JEDEN dieser Kandidaten-LKN-Codes prüfe **BUCHSTABE FÜR BUCHSTABE und ZIFFER FÜR ZIFFER**, dass dieser Code **EXAKT** als „LKN:“ im obigen Katalog existiert. **Nur wenn ein LKN-Code exakt im Katalog gefunden wurde, vergleiche dessen offizielle Katalogbeschreibung sorgfältig mit der ursprünglich im Behandlungstext beschriebenen und interpretierten medizinischen Leistung.** Die Übereinstimmung der *Bedeutung* ist hierbei wichtiger als die exakte Wortwahl im Behandlungstext verglichen mit der Katalogbeschreibung, solange die Katalogbeschreibung die interpretierte Leistung abdeckt.
-    *   Erstelle eine Liste (`identified_leistungen`) **AUSSCHLIESSLICH** mit den LKNs, die a) exakt im Katalog als LKN existieren UND b) deren Katalogbeschreibung die im Behandlungstext beschriebene und medizinisch interpretierte Leistung zutreffend widerspiegelt.
-    *   Erkenne, ob es sich um hausärztliche Leistungen im Kapitel CA handelt. **Dies ist ein wichtiger Schritt zur korrekten LKN-Auswahl.**
-    *   **Spezifische Anweisung für Konsultationen:**
-        *   **Priorisierung Hausarzt (Kapitel CA):** Wenn der Behandlungstext Begriffe wie "Hausarzt", "hausärztlich", "Allgemeinmedizin", "Konsultation beim Hausarzt" o.ä. enthält, **MÜSSEN** Konsultationsleistungen aus Kapitel CA priorisiert werden, falls vorhanden und passend (z.B. `CA.00.0010` für erste 5 Min., `CA.00.0020` für jede weitere Minute).
-            *   Beispiel Hausarzt-Konsultation 17 Minuten:
-                *   `CA.00.0010` (Hausärztliche Kons., erste 5 Min.), `menge`: 1
-                *   `CA.00.0020` (Hausärztliche Kons., jede weitere Min.), `menge`: (17 - 5) / 1 = 12
-            *   In diesem Fall dürfen KEINE AA-Konsultationsziffern für dieselbe Konsultation verrechnet werden.
-        *   **Allgemeine Konsultationen (Kapitel AA):** Nur wenn KEINE Hinweise auf eine spezifische Fachrichtung wie Hausarzt vorliegen UND eine allgemeine "Konsultation" oder "Sprechstunde" mit Dauer beschrieben wird (z.B. "Konsultation 25 Minuten"), dann verwende die allgemeinen Konsultationsziffern aus Kapitel AA.
-            *   `AA.00.0010` ("Konsultation, allgemein; erste 5 Min."): Menge ist immer 1.
-            *   `AA.00.0020` ("Konsultation, allgemein; jede weitere Minute"): Menge ist (`dauer_minuten` der Konsultation - 5) / 1.
-            *   Beispiel: Eine allgemeine Konsultation von 25 Minuten Dauer führt zu:
-                *   `AA.00.0010`, `menge`: 1
-                *   `AA.00.0020`, `menge`: (25 - 5) / 1 = 20)
-        *   Stelle sicher, dass `dauer_minuten` korrekt für die gesamte Konsultation extrahiert wird, bevor diese Aufteilung erfolgt.
-    *   **Spezifische Anweisung für "Warzenentfernung mit Kürette":** Wenn im Behandlungstext explizit "Warzenentfernung" (oder direkte Synonyme) UND die Verwendung einer "Kürette" oder "Schneidekürette" (oder direkte Übersetzungen) erwähnt wird:
-    *   Gib alle LKN zurück, die Du finden konntest, auch wenn Du einzelne Leistungen nicht identifizieren konntest.
+1. Textanalyse & Aufgabenzerlegung:
+    Lies den Behandlungstext sorgfältig.
+    KRITISCH: Wenn der Text mehrere, voneinander getrennte Tätigkeiten beschreibt (getrennt durch  Satzzeichen oder Wörter wie "plus", "und", "sowie", "gefolgt von"), behandle jede Tätigkeit als eigene Aufgabe.
+    Beispiel: "Hausärztliche Konsultation 15 Min plus 10 Minuten Beratung Kind"
+    Aufgabe 1: "Hausärztliche Konsultation 15 Min"
+    Aufgabe 2: "10 Minuten Beratung Kind"
+    Weise Zeitangaben und andere Details immer der korrekten Aufgabe zu.
+2. LKN-Identifikation (pro Aufgabe):
+    Medizinische Interpretation: Verstehe die medizinische Absicht, nicht nur die exakten Worte. Nutze dein Wissen über Synonyme, Fachbegriffe und Umschreibungen.
+    Beispiele: "Entfernung" ist gleichbedeutend mit "Abtragen". Eine "Warze" ist eine "benigne Hautläsion". "Linksherzkatheter" ist "Koronarographie".
+    WICHTIG: Wenn eine Prozedur im Katalog nur als Pauschale existiert (z.B. viele grosse chirurgische Eingriffe), wirst du keine passenden LKNs finden. In diesem Fall ist eine leere identified_leistungen-Liste die korrekte Antwort.
+3. SPEZIALREGELN für LKNs und Mengenberechnung:
+    A) Logik für Konsultationen (Kapitel AA & CA):
+        Diese Logik gilt nur für Tätigkeiten wie "Konsultation", "Sprechstunde", "hausärztliche Konsultation".
+        Schritt 1: Extrahiere die Gesamtdauer dieser Konsultation in Minuten (z.B. "15 Minuten").
+        Schritt 2: Wähle das Kapitel:
+        CA (Hausarzt): Wenn der Text "Hausarzt" oder "hausärztlich" enthält.
+        AA (Allgemein): In ALLEN ANDEREN FÄLLEN von allgemeiner Konsultation.
+        Schritt 3: Wende die folgende Aufteilungsregel strikt an:
+        Basis-LKN: AA.00.0010 oder CA.00.0010 ("erste 5 Min."). Die Menge ist IMMER 1.
+        Zusatz-LKN: Nur wenn die Dauer über 5 Minuten liegt, füge AA.00.0020 oder CA.00.0020 ("jede weitere Min.") hinzu.
+        Menge der Zusatz-LKN: Die Menge ist EXAKT (Dauer in Minuten - 5).
+        Beispiel "Konsultation 15 Minuten": -> AA.00.0010 (Menge 1) + AA.00.0020 (Menge 10).
+    B) Logik für andere zeitbasierte Leistungen:
+        Dies gilt für alle anderen LKNs mit Zeitangabe (z.B. "pro 1 Min.", "pro 5 Min.").
+        Beispiel: "...Abtragen Warze... 5 Minuten" findet die LKN MK.05.0070 ("...pro 1 Min.").
+        Mengenberechnung: Die Menge ist EXAKT (Dauer der Tätigkeit / Zeiteinheit der LKN).
+        Beispiel: 5 Minuten für eine "pro 1 Min."-LKN -> menge = 5 / 1 = 5.
+        Beispiel: 10 Minuten für eine "pro 5 Min."-LKN -> menge = 10 / 5 = 2.
+4. Strikte Validierung:
+    Für JEDE identifizierte LKN: Prüfe BUCHSTABE FÜR BUCHSTABE und ZIFFER FÜR ZIFFER, dass der Code im Katalog existiert.
+    Nur LKNs, die diese Prüfung bestehen, kommen in die finale Liste.
+5. Kontextinformationen extrahieren:
+    Extrahiere die im Text genannten Werte (dauer_minuten, menge_allgemein, alter, etc.).
+    Wenn es mehrere Zeitangaben gibt, extrahiere die Dauer der Hauptleistung oder die Gesamtdauer.
+6. Begründung:
+    Fasse kurz zusammen, warum du die LKNs gewählt hast und wie du die Mengen berechnet hast. Beziehe dich dabei auf deine Analyse aus den vorherigen Schritten.
 
-2.  **Typ & Beschreibung hinzufügen:**
-    *   Füge für jede **validierte** LKN in der `identified_leistungen`-Liste den korrekten `typ` und die `beschreibung` **direkt und unverändert aus dem bereitgestellten Katalogkontext für DIESE LKN** hinzu.
+Output-Format: NUR valides JSON, KEIN anderer Text.
 
-3.  **Kontextinformationen extrahieren (KRITISCH für Zusatzbedingungen):**
-    *   Extrahiere **nur explizit genannte** Werte aus dem "Behandlungstext":
-        *   `dauer_minuten` (Zahl, z.B. für Konsultationen)
-        *   `menge_allgemein` (Zahl, z.B. "3 Warzen entfernt")
-        *   `alter` (Zahl, Alter des Patienten)
-        *   `geschlecht` ('weiblich', 'männlich', 'divers', 'unbekannt')
-        *   `seitigkeit` (String: 'einseitig', 'beidseits', 'links', 'rechts', 'unbekannt'. Leite 'beidseits' auch von "bds." oder "beide Augen" etc. ab. Wenn keine Angabe, dann 'unbekannt'.)
-        *   `anzahl_prozeduren` (Zahl: Falls eine Anzahl von Eingriffen genannt wird, die nicht direkt die Menge einer einzelnen LKN ist, z.B. "zwei Injektionen". Wenn nicht explizit genannt, dann `null`.)
-    *   Wenn ein Wert nicht explizit genannt wird, setze ihn auf `null` (außer `seitigkeit`, die 'unbekannt' sein kann).
-
-4.  **Menge bestimmen (pro validierter LKN):**
-    *   Standardmenge ist `1`.
-    *   **Zeitbasiert (Primärregel):** Wenn die Katalog-Beschreibung einer LKN explizit eine Zeiteinheit angibt (z.B. "pro Minute", "pro 5 Min.", "jede weitere Minute"), UND `dauer_minuten` (Y) für diese spezifische LKN relevant ist (dies kann die Gesamtdauer oder eine spezifisch zugewiesene Dauer für diese LKN sein):
-        *   Interpretiere die Zeiteinheit X aus der LKN-Beschreibung (z.B. X=1 für "pro Minute", X=5 für "pro 5 Min.").
-        *   Setze `menge = Y / X`. Stelle sicher, dass das Ergebnis eine Ganzzahl ist und kaufmännisch gerundet wird, falls nötig, aber meist sollte Y ein Vielfaches von X sein.
-        *   Diese Regel ist anzuwenden, wenn die LKN die gesamte Dauer Y abdeckt oder einen klar definierten Teil davon, der durch Y repräsentiert wird.
-        *   Für LKNs, die auf eine *Basisdauer* folgen (z.B. "jede weitere Minute nach den ersten Z Minuten"), ist Y die Restdauer (Gesamtdauer der Konsultation - Z Minuten Basisleistung).
-    *   **Allgemein:** Wenn `menge_allgemein` (Z) extrahiert wurde UND LKN nicht zeitbasiert ist (oder die zeitbasierte Regel nicht zutrifft) UND `anzahl_prozeduren` `null` ist (oder nicht passt), setze `menge` = Z.
-    *   **Spezifische Anzahl Prozeduren:** Wenn `anzahl_prozeduren` extrahiert wurde und sich klar auf die aktuelle LKN bezieht (z.B. "zwei Injektionen" und LKN ist Injektion), setze `menge` = `anzahl_prozeduren`. Dies hat Vorrang vor `menge_allgemein` für diese LKN.
-    *   Sicherstellen: `menge` >= 1.
-    *   Wenn eine Prozedur "Seitigkeit" verlangt, dann erzeuge bei "beidseits" Menge = 2 UND "Seitigkeit" = "beidseits" .
-
-5.  **Begründung:**
-    *   **Kurze** `begruendung_llm`, warum die **validierten** LKNs gewählt wurden. Beziehe dich auf Text und **Katalog-Beschreibungen**.
-
-**Output-Format:** **NUR** valides JSON, **KEIN** anderer Text.
 ```json
 {{
   "identified_leistungen": [
