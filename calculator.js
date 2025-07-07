@@ -10,8 +10,10 @@ let data_pauschaleBedingungen = [];
 let data_tardocGesamt = [];
 let data_tabellen = [];
 let data_interpretationen = {};
+let data_dignitaeten = []; // For DIGNITAETEN.json
 let interpretationMap = {};
 let groupInfoMap = {};
+let dignitaetenMap = {}; // For mapping dignity codes to text
 
 // Zusätzliche Pauschalen-Infos
 let selectedPauschaleDetails = null;
@@ -65,7 +67,9 @@ const DYN_TEXT = {
         potentialIcds: 'Mögliche ICD-Diagnosen',
         thIcdCode: 'ICD Code',
         thIcdText: 'Beschreibung',
-        diffTaxpoints: 'Differenz Taxpunkte'
+        diffTaxpoints: 'Differenz Taxpunkte',
+        implantsIncluded: 'Implantate inbegriffen',
+        dignitiesLabel: 'Dignitäten'
     },
     fr: {
         spinnerWorking: 'Vérification en cours...',
@@ -113,7 +117,9 @@ const DYN_TEXT = {
         potentialIcds: 'Diagnostics ICD possibles',
         thIcdCode: 'Code ICD',
         thIcdText: 'Description',
-        diffTaxpoints: 'Différence points tarifaires'
+        diffTaxpoints: 'Différence points tarifaires',
+        implantsIncluded: 'Implants inclus',
+        dignitiesLabel: 'Dignités'
     },
     it: {
         spinnerWorking: 'Verifica in corso...',
@@ -161,7 +167,9 @@ const DYN_TEXT = {
         potentialIcds: 'Possibili diagnosi ICD',
         thIcdCode: 'Codice ICD',
         thIcdText: 'Descrizione',
-        diffTaxpoints: 'Differenza punti tariffari'
+        diffTaxpoints: 'Differenza punti tariffari',
+        implantsIncluded: 'Impianti inclusi',
+        dignitiesLabel: 'Dignità'
     }
 };
 
@@ -261,7 +269,8 @@ const DATA_PATHS = {
     pauschaleBedingungen: 'data/PAUSCHALEN_Bedingungen.json',
     tardocGesamt: 'data/TARDOC_Tarifpositionen.json',
     tabellen: 'data/PAUSCHALEN_Tabellen.json',
-    interpretationen: 'data/TARDOC_Interpretationen.json'
+    interpretationen: 'data/TARDOC_Interpretationen.json',
+    dignitaeten: 'data/DIGNITAETEN.json' // Path for the new dignities file
 };
 
 // Referenz zum Mouse Spinner
@@ -606,12 +615,13 @@ async function loadData() {
             fetchJSON(DATA_PATHS.pauschaleBedingungen),
             fetchJSON(DATA_PATHS.tardocGesamt),
             fetchJSON(DATA_PATHS.tabellen),
-            fetchJSON(DATA_PATHS.interpretationen)
+            fetchJSON(DATA_PATHS.interpretationen),
+            fetchJSON(DATA_PATHS.dignitaeten) // Fetch dignities
         ]);
 
         [ data_leistungskatalog, data_pauschaleLeistungsposition, data_pauschalen,
           data_pauschaleBedingungen, data_tardocGesamt, data_tabellen,
-          data_interpretationen ] = loadedDataArray;
+          data_interpretationen, data_dignitaeten ] = loadedDataArray; // Assign dignities data
 
         interpretationMap = {};
         if (data_interpretationen) {
@@ -641,9 +651,26 @@ async function loadData() {
         if (!Array.isArray(data_pauschaleBedingungen) || data_pauschaleBedingungen.length === 0) missingDataErrors.push("Pauschalen-Bedingungen");
         if (!Array.isArray(data_tabellen) || data_tabellen.length === 0) missingDataErrors.push("Referenz-Tabellen");
         if (!interpretationMap || Object.keys(interpretationMap).length === 0) missingDataErrors.push("Interpretationen");
+        if (!Array.isArray(data_dignitaeten) || data_dignitaeten.length === 0) missingDataErrors.push("Dignitäten"); // Check dignities data
         if (missingDataErrors.length > 0) {
              throw new Error(`Folgende kritische Daten fehlen oder konnten nicht geladen werden: ${missingDataErrors.join(', ')}.`);
         }
+
+        // DignitaetenMap aufbauen
+        dignitaetenMap = {};
+        if (Array.isArray(data_dignitaeten)) {
+            data_dignitaeten.forEach(dignity => {
+                if (dignity && dignity.Dignitaet_Code) {
+                    dignitaetenMap[dignity.Dignitaet_Code] = dignity;
+                }
+            });
+        }
+         if (Object.keys(dignitaetenMap).length === 0) {
+             console.warn("DignitaetenMap konnte nicht erstellt werden oder ist leer.");
+             // Optional: Fehler werfen, wenn Dignitäten kritisch sind
+             // missingDataErrors.push("Dignitäten-Mapping");
+         }
+
 
         // Leistungsgruppen-Übersicht aufbauen
         groupInfoMap = {};
@@ -1046,14 +1073,49 @@ function displayPauschale(abrechnungsObjekt) {
     const pauschaleTP = escapeHtml(pauschaleDetails[PAUSCHALE_TP_KEY] || 'N/A');
     const pauschaleErklaerung = pauschaleDetails[PAUSCHALE_ERKLAERUNG_KEY] || "";
 
+    let tableRowsHtml = `
+        <tr>
+            <td>${pauschaleCode}</td>
+            <td>${pauschaleText}</td>
+            <td>${pauschaleTP}</td>
+        </tr>`;
+
+    // Add "Implantate inbegriffen" if applicable
+    if (pauschaleDetails.Implantate_inbegriffen === true) {
+        tableRowsHtml += `
+            <tr>
+                <td colspan="3" style="font-style: italic; text-align: left;">${tDyn('implantsIncluded')}</td>
+            </tr>`;
+    }
+
+    // Add "Dignitaeten" if applicable
+    const dignitaetenString = pauschaleDetails.Dignitaeten;
+    if (dignitaetenString && typeof dignitaetenString === 'string' && dignitaetenString.trim() !== "") {
+        const dignityCodes = dignitaetenString.split('|').map(code => code.trim()).filter(Boolean);
+        if (dignityCodes.length > 0) {
+            let dignitiesListHtml = "";
+            dignityCodes.forEach(code => {
+                const dignityDetail = dignitaetenMap[code];
+                if (dignityDetail) {
+                    const dignityText = getLangField(dignityDetail, 'Dignitaet_Text') || code; // Fallback to code
+                    dignitiesListHtml += `<div>${escapeHtml(dignityText)}</div>`;
+                } else {
+                    dignitiesListHtml += `<div>${escapeHtml(code)} (Beschreibung nicht gefunden)</div>`; // Fallback
+                }
+            });
+            tableRowsHtml += `
+                <tr>
+                    <th style="text-align: left; vertical-align: top;">${tDyn('dignitiesLabel')}:</th>
+                    <td colspan="2">${dignitiesListHtml}</td>
+                </tr>`;
+        }
+    }
+
+
     let detailsContent = `
         <table border="1" style="border-collapse: collapse; width: 100%; margin-bottom: 10px;">
             <thead><tr><th>${tDyn('pauschaleCode')}</th><th>${tDyn('description')}</th><th>${tDyn('taxpoints')}</th></tr></thead>
-            <tbody><tr>
-                <td>${pauschaleCode}</td>
-                <td>${pauschaleText}</td>
-                <td>${pauschaleTP}</td>
-            </tr></tbody>
+            <tbody>${tableRowsHtml}</tbody>
         </table>`;
 
     if (pauschaleErklaerung) {
