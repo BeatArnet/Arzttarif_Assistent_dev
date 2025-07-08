@@ -62,11 +62,12 @@ def get_stage1_prompt(user_input: str, katalog_context: str, lang: str) -> str:
 
 4.  **Détermination de la quantité (par LKN validée):**
     *   La quantité par défaut est `1`.
-    *   **Basé sur le temps (Règle principale):** Si la description du catalogue d'une LKN indique explicitement une unité de temps (par ex. "par minute", "par 5 min", "chaque minute supplémentaire"), ET que `dauer_minuten` (Y) est pertinent pour cette LKN spécifique (cela peut être la durée totale ou une durée spécifiquement attribuée à cette LKN) :
-        *   Interprète l'unité de temps X à partir de la description de la LKN (par ex. X=1 pour "par minute", X=5 pour "par 5 min").
-        *   Fixe `menge = Y / X`. Assure-toi que le résultat est un entier (Y devrait généralement être un multiple de X).
-        *   Cette règle s'applique si la LKN couvre toute la durée Y ou une partie clairement définie représentée par Y.
-        *   Pour les LKN qui suivent une *durée de base* (par ex. "chaque minute supplémentaire après les Z premières minutes"), Y est la durée restante (durée totale de la consultation - Z minutes de service de base).
+    *   **Basé sur le temps (Règle principale pour les LKN NON-AA/CA) :** Si la description du catalogue d'une LKN (qui n'est PAS une prestation de consultation des chapitres AA ou CA) indique explicitement une unité de temps (par ex. "par minute", "par 5 min"), ET qu'une durée en minutes (Y) est clairement attribuable à cette LKN spécifique :
+        *   Interprétez l'unité de temps de la LKN (X) à partir de sa description dans le catalogue (par ex., X=1 si la description indique "par minute", X=5 si "par 5 min").
+        *   **Calcul de la quantité :** La quantité (`menge`) pour cette LKN est alors calculée EXACTEMENT comme Y divisé par X (c.-à-d. `menge = Y / X`).
+        *   **Exemple concret :** Si le texte de traitement mentionne "...curetage d'une verrue pendant 5 minutes" et que la LKN `MK.05.0070` est décrite dans le catalogue comme "...par 1 min" (donc X=1), alors la quantité pour `MK.05.0070` est 5 / 1 = 5.
+        *   **Autre exemple :** Pour une prestation de 10 minutes qui est facturée "par 5 min" (X=5), la quantité serait 10 / 5 = 2.
+        *   Assurez-vous que Y représente bien la durée spécifique de cette prestation individuelle et non la durée totale d'une consultation plus longue (qui serait déjà gérée par les règles spécifiques aux chapitres AA/CA). Le résultat Y/X doit être un entier.
     *   **Général:** si `menge_allgemein` (Z) est extrait ET que la LKN n'est pas basée sur le temps (ou que la règle basée sur le temps ne s'applique pas) ET `anzahl_prozeduren` est `null`, mets `menge` = Z.
     *   **Nombre spécifique de procédures:** si `anzahl_prozeduren` est extrait et se rapporte clairement à la LKN (p. ex. "deux injections"), mets `menge` = `anzahl_prozeduren`. Cela prime sur `menge_allgemein`.
     *   Assure-toi que `menge` >= 1.
@@ -169,11 +170,12 @@ Réponse JSON:"""
 
 4.  **Determinazione della quantità (per LKN convalidata):**
     *   La quantità standard è `1`.
-    *   **Basato sul tempo (Regola principale):** Se la descrizione del catalogo di una LKN indica esplicitamente un'unità di tempo (ad es. "per minuto", "per 5 min", "ogni minuto successivo"), E `dauer_minuten` (Y) è pertinente per questa LKN specifica (può essere la durata totale o una durata specificamente assegnata a questa LKN):
-        *   Interpreta l'unità di tempo X dalla descrizione della LKN (ad es. X=1 per "per minuto", X=5 per "per 5 min").
-        *   Imposta `menge = Y / X`. Assicurati che il risultato sia un numero intero (Y dovrebbe generalmente essere un multiplo di X).
-        *   Questa regola si applica se la LKN copre l'intera durata Y o una sua parte chiaramente definita rappresentata da Y.
-        *   Per le LKN che seguono una *durata di base* (ad es. "ogni minuto successivo dopo i primi Z minuti"), Y è la durata rimanente (durata totale della consultazione - Z minuti di prestazione base).
+    *   **Basato sul tempo (Regola principale per LKN NON-AA/CA):** Se la descrizione nel catalogo di una LKN (che NON è una prestazione di consultazione dei capitoli AA o CA) indica esplicitamente un'unità di tempo (ad es. "per minuto", "per 5 min"), E una durata in minuti (Y) è chiaramente attribuibile a questa LKN specifica:
+        *   Interpreti l'unità di tempo della LKN (X) dalla sua descrizione nel catalogo (ad es., X=1 se la descrizione indica "per minuto", X=5 se "per 5 min").
+        *   **Calcolo della quantità:** La quantità (`menge`) per questa LKN è quindi calcolata ESATTAMENTE come Y diviso X (cioè `menge = Y / X`).
+        *   **Esempio concreto:** Se il testo del trattamento menziona "...curettage di verruca per 5 minuti" e la LKN `MK.05.0070` è descritta nel catalogo come "...per 1 min" (quindi X=1), allora la quantità per `MK.05.0070` è 5 / 1 = 5.
+        *   **Altro esempio:** Per una prestazione di 10 minuti che è fatturata "per 5 min" (X=5), la quantità sarebbe 10 / 5 = 2.
+        *   Si assicuri che Y rappresenti la durata specifica di questa singola prestazione e non la durata totale di una consultazione più lunga (che sarebbe già gestita dalle regole specifiche dei capitoli AA/CA). Il risultato Y/X deve essere un numero intero.
     *   **Generale:** se `menge_allgemein` (Z) è stato estratto E la LKN non è basata sul tempo (o la regola basata sul tempo non è applicabile) E `anzahl_prozeduren` è `null`, imposta `menge` = Z.
     *   **Numero specifico di procedure:** se `anzahl_prozeduren` è stato estratto e si riferisce chiaramente alla LKN (ad es. "due iniezioni"), imposta `menge` = `anzahl_prozeduren`. Questo prevale su `menge_allgemein`.
     *   Assicurati che `menge` >= 1.
