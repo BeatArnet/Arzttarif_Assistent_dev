@@ -292,5 +292,41 @@ class TestPauschaleLogic(unittest.TestCase):
             get_group_operator_for_pauschale("HX", conditions, default=DEFAULT_GROUP_OPERATOR),
         )
 
+    def test_or_groups_all_false(self):
+        """All groups false with global OR should return False."""
+        conditions = [
+            {
+                "BedingungsID": 1,
+                "Pauschale": "OGF",
+                "Gruppe": 1,
+                "Operator": "UND",
+                "Bedingungstyp": "LKN",
+                "Werte": "A",
+            },
+            {
+                "BedingungsID": 2,
+                "Pauschale": "OGF",
+                "Gruppe": 2,
+                "Operator": "UND",
+                "Bedingungstyp": "ICD",
+                "Werte": "B12",
+            },
+            {
+                "BedingungsID": 3,
+                "Pauschale": "OGF",
+                "Gruppe": 3,
+                "Operator": "UND",
+                "Bedingungstyp": "ANZAHL",
+                "Vergleichsoperator": ">=",
+                "Werte": "2",
+            },
+        ]
+
+        context = {"LKN": ["X"], "ICD": ["D00"], "Anzahl": 1}
+
+        self.assertFalse(
+            evaluate_structured_conditions("OGF", context, conditions, {}, group_operator="ODER")
+        )
+
 if __name__ == "__main__":
     unittest.main()
