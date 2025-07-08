@@ -143,6 +143,9 @@ TARDOC_INTERP_PATH = DATA_DIR / "TARDOC_Interpretationen.json"
 PAUSCHALE_LP_PATH = DATA_DIR / "PAUSCHALEN_Leistungspositionen.json"
 PAUSCHALEN_PATH = DATA_DIR / "PAUSCHALEN_Pauschalen.json"
 PAUSCHALE_BED_PATH = DATA_DIR / "PAUSCHALEN_Bedingungen.json"
+# Hinweis: Das Feld "BedingungsID" in dieser Datei ist nicht eindeutig.
+# Mehrere Zeilen können denselben Wert teilen und beziehen sich auf eine
+# gemeinsame Bedingungsvorlage.
 TABELLEN_PATH = DATA_DIR / "PAUSCHALEN_Tabellen.json"
 BASELINE_RESULTS_PATH = DATA_DIR / "baseline_results.json"
 BEISPIELE_PATH = DATA_DIR / "beispiele.json"
