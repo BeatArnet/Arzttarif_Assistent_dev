@@ -1077,27 +1077,25 @@ function displayPauschale(abrechnungsObjekt) {
 
     let tableRowsHtml = `
         <tr>
-            <td><b>${pauschaleCode}</b></td> 
+            <td><b>${pauschaleCode}</b></td>
             <td>${pauschaleText}</td>
             <td>${pauschaleTP}</td>
         </tr>`;
 
-    let combinedInfoParts = [];
-
-    // "Implantate inbegriffen"
+    let implantsHtml = '';
     if (pauschaleDetails.Implantate_inbegriffen === true) {
-        combinedInfoParts.push(escapeHtml(tDyn('implantsIncluded')));
+        implantsHtml = escapeHtml(tDyn('implantsIncluded'));
     }
 
-    // "Dignitaeten"
+    let dignitiesHtml = '';
     const dignitaetenString = pauschaleDetails.Dignitaeten;
     if (dignitaetenString && typeof dignitaetenString === 'string' && dignitaetenString.trim() !== "") {
         const dignityCodes = dignitaetenString.split('|').map(code => String(code).trim()).filter(Boolean);
         if (dignityCodes.length > 0) {
-            if (Object.keys(dignitaetenMap).length === 0 && combinedInfoParts.length === 0) { // Only warn if map is empty AND we intend to show dignities
+            if (Object.keys(dignitaetenMap).length === 0) {
                 console.warn("DignitaetenMap is empty when trying to display dignities. Dignities will show 'Beschreibung nicht gefunden'. Check data loading for 'data/DIGNITAETEN.json'.");
             }
-            
+
             let dignitiesDisplayList = [];
             dignityCodes.forEach(code => {
                 const dignityDetail = dignitaetenMap[code];
@@ -1108,28 +1106,30 @@ function displayPauschale(abrechnungsObjekt) {
                         description = dignityDetail.DignitaetText_f || dignityDetail.DignitaetText || code;
                     } else if (lang === 'it') {
                         description = dignityDetail.DignitaetText_i || dignityDetail.DignitaetText || code;
-                    } else { 
+                    } else {
                         description = dignityDetail.DignitaetText || code;
                     }
                     dignitiesDisplayList.push(`${escapeHtml(code)}, ${escapeHtml(description)}`);
                 } else {
-                    if (Object.keys(dignitaetenMap).length > 0) { // Avoid spamming if map is generally empty
-                         console.warn(`No dignityDetail found in dignitaetenMap for code '${code}'.`);
+                    if (Object.keys(dignitaetenMap).length > 0) {
+                        console.warn(`No dignityDetail found in dignitaetenMap for code '${code}'.`);
                     }
-                    dignitiesDisplayList.push(`${escapeHtml(code)}, ${escapeHtml(tDyn('descriptionNotFound', {code: code}))}`); // Assuming you might add a more specific translation
+                    dignitiesDisplayList.push(`${escapeHtml(code)}, ${escapeHtml(tDyn('descriptionNotFound', {code: code}))}`);
                 }
             });
-            
-            if(dignitiesDisplayList.length > 0) {
-                 combinedInfoParts.push(`${escapeHtml(tDyn('dignitiesLabel'))}: ${dignitiesDisplayList.join("; ")}`);
+
+            if (dignitiesDisplayList.length > 0) {
+                dignitiesHtml = `<b>${escapeHtml(tDyn('dignitiesLabel'))}:</b><br>${dignitiesDisplayList.join('<br>')}`;
             }
         }
     }
 
-    if (combinedInfoParts.length > 0) {
+    if (implantsHtml || dignitiesHtml) {
         tableRowsHtml += `
             <tr>
-                <td colspan="3" style="text-align: left;">${combinedInfoParts.join(". ")}</td>
+                <td></td>
+                <td>${implantsHtml}</td>
+                <td>${dignitiesHtml}</td>
             </tr>`;
     }
 
