@@ -369,5 +369,18 @@ class TestPauschaleLogic(unittest.TestCase):
             evaluate_structured_conditions("ALT", context_fail, conditions, {})
         )
 
+    def test_score_based_selection(self):
+        """Higher scoring Pauschale should be chosen even if suffix later."""
+        from regelpruefer_pauschale import determine_applicable_pauschale
+
+        pauschalen_dict = {
+            "X00.01A": {"Pauschale": "X00.01A", "Pauschale_Text": "A", "Taxpunkte": "100"},
+            "X00.01B": {"Pauschale": "X00.01B", "Pauschale_Text": "B", "Taxpunkte": "200"},
+        }
+        result = determine_applicable_pauschale(
+            "", [], {}, [], [], pauschalen_dict, {}, {}, {"X00.01A", "X00.01B"}
+        )
+        self.assertEqual(result["details"]["Pauschale"], "X00.01B")
+
 if __name__ == "__main__":
     unittest.main()

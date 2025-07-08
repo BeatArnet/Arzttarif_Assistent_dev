@@ -981,6 +981,10 @@ def determine_applicable_pauschale(
     valid_candidates = [cand for cand in evaluated_candidates if cand["is_valid_structured"]]
     print(f"DEBUG: Struktur-gültige Kandidaten nach Prüfung: {[c['code'] for c in valid_candidates]}")
 
+    # Score pro gültigem Kandidaten berechnen (hier: Taxpunkte als Beispiel)
+    for cand in valid_candidates:
+        cand["score"] = cand.get("taxpunkte", 0)
+
     selected_candidate_info = None
     if valid_candidates:
         specific_valid_candidates = [c for c in valid_candidates if not str(c['code']).startswith('C9')]
@@ -998,18 +1002,21 @@ def determine_applicable_pauschale(
         
         if chosen_list_for_selection:
             print(f"INFO: Auswahl aus {len(chosen_list_for_selection)} struktur-gültigen {selection_type_message} Kandidaten.")
-            
-            # Sortierung: A vor B vor E (d.h. Suffix-Buchstabe aufsteigend)
-            def sort_key_pauschale_suffix(candidate):
-                code_str = str(candidate['code'])
-                match = re.match(r"([A-Z0-9.]+)([A-Z])$", code_str)
-                if match:
-                    return (match.group(1), ord(match.group(2))) # Stamm, dann ASCII des Suffix
-                return (code_str, 0) # Kein Suffix oder unerwartetes Format
 
-            chosen_list_for_selection.sort(key=sort_key_pauschale_suffix)
-            selected_candidate_info = chosen_list_for_selection[0] # Die "einfachste" passende (A ist besser als B)
-            print(f"INFO: Gewählte Pauschale nach Sortierung (Suffix A-Z -> einfachste zuerst): {selected_candidate_info['code']}")
+            # Score je Kandidat ermitteln (hier einfach Taxpunkte als Beispiel)
+            for cand in chosen_list_for_selection:
+                cand["score"] = cand.get("taxpunkte", 0)
+
+            # Sortierung: Höchster Score zuerst, bei Gleichstand entscheidet nur der Buchstabensuffix
+            def sort_key_score_suffix(candidate):
+                code_str = str(candidate['code'])
+                match = re.search(r"([A-Z])$", code_str)
+                suffix_ord = ord(match.group(1)) if match else ord('Z') + 1
+                return (-candidate.get("score", 0), suffix_ord)
+
+            chosen_list_for_selection.sort(key=sort_key_score_suffix)
+            selected_candidate_info = chosen_list_for_selection[0]
+            print(f"INFO: Gewählte Pauschale nach Score-Sortierung: {selected_candidate_info['code']}")
             # print(f"   DEBUG: Sortierte Kandidatenliste ({selection_type_message}): {[c['code'] for c in chosen_list_for_selection]}")
         else:
              # Sollte nicht passieren, wenn valid_candidates nicht leer war, aber zur Sicherheit
