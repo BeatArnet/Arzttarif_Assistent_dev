@@ -184,19 +184,88 @@ def get_beschreibung_fuer_icd_im_backend(
     # print(f"DEBUG: ICD {icd_code} nicht in spezifischer oder Haupttabelle gefunden.")
     return icd_code # Wenn nirgends gefunden, Code selbst zurückgeben
 
-def get_group_operator_for_pauschale(
-    pauschale_code: str, bedingungen_data: List[Dict], default: str = "UND"
+def get_group_operator_for_pauschale( # noqa: C901
+    pauschale_code: str, bedingungen_data: List[Dict], default_single_group: str = "UND", default_multi_group: str = "ODER"
 ) -> str:
-    """Liefert den Gruppenoperator (UND/ODER) fuer eine Pauschale."""
-    for cond in bedingungen_data:
-        if cond.get("Pauschale") == pauschale_code and "GruppenOperator" in cond:
-            op = str(cond.get("GruppenOperator", "")).strip().upper()
+    """
+    Liefert den Operator (UND/ODER), der ZWISCHEN den Ergebnissen der Haupt-Logikgruppen
+    einer Pauschale angewendet werden soll.
+
+    Die Ermittlung erfolgt nach folgender Priorisierung:
+    1.  Verwendet den Wert des Feldes "GruppenOperator", falls dieses in einem
+        Bedingungseintrag der Pauschale explizit definiert ist.
+    2.  Wenn "GruppenOperator" nicht gefunden wird, verwendet die Funktion den Wert des
+        Feldes "ZwischengruppenOperator" (ein neu eingeführtes Schlüsselwort für
+        klarere Semantik), falls dieses in einem Bedingungseintrag der Pauschale
+        explizit definiert ist.
+    3.  Wenn keines der beiden oben genannten Felder explizit definiert ist,
+        greift eine Default-Logik:
+        a.  "ODER" (konfigurierbar über `default_multi_group`), wenn die Pauschale
+            Bedingungen in mehr als einer distinkten Logik-Gruppe aufweist.
+            Dies basiert auf der Annahme, dass mehrere Hauptgruppen typischerweise
+            alternative Erfüllungspfade darstellen.
+        b.  "UND" (konfigurierbar über `default_single_group`), wenn die Pauschale
+            Bedingungen nur in einer einzigen Logik-Gruppe hat oder keine
+            gruppenspezifischen Bedingungen definiert sind.
+
+    Args:
+        pauschale_code (str): Der Code der Pauschale, für die der Operator ermittelt werden soll.
+        bedingungen_data (List[Dict]): Eine Liste aller Bedingungsdefinitionen.
+        default_single_group (str, optional): Der Default-Operator für Pauschalen mit
+                                              einer oder keiner Gruppe. Standard: "UND".
+        default_multi_group (str, optional): Der Default-Operator für Pauschalen mit
+                                             mehreren Gruppen. Standard: "ODER".
+
+    Returns:
+        str: Der zu verwendende Operator ("UND" oder "ODER").
+    """
+    # PAUSCHALE_KEY = 'Pauschale' # Bereits globaler in evaluate_structured_conditions, hier nicht nötig
+    GRUPPEN_OPERATOR_KEY = "GruppenOperator"
+    ZWISCHENGRUPPEN_OPERATOR_KEY = "ZwischengruppenOperator" # Neues Schlüsselwort
+
+    # Filtere Bedingungen für die aktuelle Pauschale, um die Suche zu beschleunigen
+    # und die Gruppenermittlung nur auf relevante Bedingungen zu beschränken.
+    relevant_conditions = [cond for cond in bedingungen_data if cond.get("Pauschale") == pauschale_code]
+
+    # 1. Suche nach explizitem "GruppenOperator"
+    for cond in relevant_conditions:
+        if GRUPPEN_OPERATOR_KEY in cond:
+            op = str(cond.get(GRUPPEN_OPERATOR_KEY, "")).strip().upper()
             if op in ("UND", "ODER"):
+                # print(f"DEBUG get_group_operator: Pauschale {pauschale_code} - Gefunden expliziter GruppenOperator: {op}")
                 return op
-    return default
+
+    # 2. Suche nach explizitem "ZwischengruppenOperator" (neues Schlüsselwort)
+    for cond in relevant_conditions:
+        if ZWISCHENGRUPPEN_OPERATOR_KEY in cond:
+            op = str(cond.get(ZWISCHENGRUPPEN_OPERATOR_KEY, "")).strip().upper()
+            if op in ("UND", "ODER"):
+                # print(f"DEBUG get_group_operator: Pauschale {pauschale_code} - Gefunden expliziter ZwischengruppenOperator: {op}")
+                return op
+
+    # 3. Wenn nichts explizit gesetzt ist, Default basierend auf Anzahl der Gruppen bestimmen
+    if not relevant_conditions: # Keine Bedingungen für die Pauschale
+        # print(f"DEBUG get_group_operator: Pauschale {pauschale_code} - Keine Bedingungen, Default: {default_single_group}")
+        return default_single_group
+
+    # Ermittle die Anzahl der einzigartigen Gruppen für diese Pauschale
+    # Das Feld 'Gruppe' kann auch Strings enthalten (z.B. 'Ohne_Gruppe'), daher Set von Any
+    unique_groups: Set[Any] = set()
+    for cond in relevant_conditions:
+        if "Gruppe" in cond: # Nur Bedingungen berücksichtigen, die einer Gruppe zugeordnet sind
+            unique_groups.add(cond.get("Gruppe"))
+
+    # print(f"DEBUG get_group_operator: Pauschale {pauschale_code} - Unique groups: {unique_groups}")
+
+    if len(unique_groups) > 1:
+        # print(f"DEBUG get_group_operator: Pauschale {pauschale_code} - Mehrere Gruppen ({len(unique_groups)}), kein expliziter Operator, Default: {default_multi_group}")
+        return default_multi_group
+    else: # Eine Gruppe oder keine expliziten Gruppen (z.B. alle implizit in Gruppe 1 oder 'Ohne_Gruppe')
+        # print(f"DEBUG get_group_operator: Pauschale {pauschale_code} - Eine oder keine Gruppe, kein expliziter Operator, Default: {default_single_group}")
+        return default_single_group
 
 # === FUNKTION ZUR AUSWERTUNG DER STRUKTURIERTEN LOGIK (UND/ODER) ===
-def evaluate_structured_conditions(
+def evaluate_structured_conditions( # noqa: C901
     pauschale_code: str,
     context: Dict,
     pauschale_bedingungen_data: List[Dict],
