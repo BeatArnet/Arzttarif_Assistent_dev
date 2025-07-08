@@ -15,6 +15,8 @@ Dies ist ein Prototyp einer Webanwendung zur Unterstützung bei der Abrechnung m
   der Bedingungsgruppen. Fehlt diese Spalte, wird der Operator heuristisch
   bestimmt: Wenn mehrere Gruppen vorhanden sind und in der ersten Gruppe
   mindestens eine Zeile den Operator `ODER` nutzt, gilt `ODER` global.
+- Optional kann ein `debug`-Flag genutzt werden, um die pro Gruppe erzeugten
+  Booleschen Ausdrücke samt Ergebnis auszugeben.
 - Die mehrsprachigen Prompts für LLM Stufe 1 und Stufe wurden in  `prompts.py` ausgelagert
 - Funktionale Erweiterung umfassen:
     - interaktive Info-Pop-ups, 
@@ -69,6 +71,7 @@ Der Assistent ist in den drei Landessprachen DE, FR und IT verfügbar. Die Sprac
           2. `ANZAHL >= 2`  (Operator `UND`)
           3. `LKN IN LISTE OP`
           der Ausdruck `(SEITIGKEIT = B ODER ANZAHL >= 2) UND LKN IN LISTE OP` ableiten. Berücksichtigt wird zudem das `useIcd`-Flag.
+        *   Bei gesetztem `debug=True` gibt die Funktion die pro Gruppe generierten Booleschen Ausdrücke samt Ergebnis aus.
         *   **Auswahl der besten Pauschale (`determine_applicable_pauschale`):** Wählt aus den struktur-gültigen Pauschalen die "komplexeste passende" (niedrigster Suffix-Buchstabe, z.B. A vor B vor E) aus der bevorzugten Kategorie (spezifisch vor Fallback).
         *   Generiert detailliertes HTML für die Bedingungsprüfung und eine Begründung der Auswahl.
     *   **Entscheidung & TARDOC-Vorbereitung:** Entscheidet "Pauschale vor TARDOC". Wenn keine Pauschale anwendbar ist, bereitet es die TARDOC-Liste (`regelpruefer.prepare_tardoc_abrechnung`) vor.
