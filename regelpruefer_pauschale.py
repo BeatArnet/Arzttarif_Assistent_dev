@@ -107,6 +107,38 @@ def check_single_condition(
                 print(f"WARNUNG (check_single PATIENTENBEDINGUNG): Unbekanntes Feld '{feld_ref}'.")
                 return True # Oder False, je nach gewünschtem Verhalten
 
+        elif bedingungstyp == "ALTER IN JAHREN BEI EINTRITT":
+            alter_eintritt = context.get("AlterBeiEintritt")
+            if alter_eintritt is None:
+                return False
+            try:
+                alter_val = int(alter_eintritt)
+                regel_wert = int(werte_str)
+                vergleichsoperator = condition.get("Vergleichsoperator")
+
+                if vergleichsoperator == ">=":
+                    return alter_val >= regel_wert
+                elif vergleichsoperator == "<=":
+                    return alter_val <= regel_wert
+                elif vergleichsoperator == ">":
+                    return alter_val > regel_wert
+                elif vergleichsoperator == "<":
+                    return alter_val < regel_wert
+                elif vergleichsoperator == "=":
+                    return alter_val == regel_wert
+                elif vergleichsoperator == "!=":
+                    return alter_val != regel_wert
+                else:
+                    print(
+                        f"WARNUNG (check_single ALTER BEI EINTRITT): Unbekannter Vergleichsoperator '{vergleichsoperator}'."
+                    )
+                    return False
+            except (ValueError, TypeError) as e_alter:
+                print(
+                    f"FEHLER (check_single ALTER BEI EINTRITT) Konvertierung: {e_alter}. Regelwert: '{werte_str}', Kontextwert: '{alter_eintritt}'"
+                )
+                return False
+
         elif bedingungstyp == "ANZAHL":
             if provided_anzahl is None: return False
             try:
@@ -1243,6 +1275,9 @@ def get_simplified_conditions(pauschale_code: str, bedingungen_data: list[dict])
                 condition_tuple = (final_cond_type_for_comparison, wert_repr)
             else: # Für andere Patientenbedingungen (z.B. Geschlecht)
                 condition_tuple = (final_cond_type_for_comparison, wert.lower())
+        elif typ_original == "ALTER IN JAHREN BEI EINTRITT":
+            final_cond_type_for_comparison = 'PATIENT_ALTER_EINTRITT'
+            condition_tuple = (final_cond_type_for_comparison, f"{vergleichsop}{wert}")
         elif typ_original == "ANZAHL":
             final_cond_type_for_comparison = 'ANZAHL_CHECK'
             condition_tuple = (final_cond_type_for_comparison, f"{vergleichsop}{wert}")
@@ -1363,8 +1398,14 @@ def generate_condition_detail_html(
             else: condition_html += html.escape(", ".join(cond_value_comp))
         
         elif cond_type_comp.startswith('PATIENT_'):
-            feld_name = cond_type_comp.split('_', 1)[1].capitalize()
-            condition_html += translate('patient_condition', lang, field=html.escape(feld_name), value=html.escape(str(cond_value_comp)))
+            feld_name_raw = cond_type_comp.split('_', 1)[1]
+            feld_name = feld_name_raw.replace('_', ' ').capitalize()
+            condition_html += translate(
+                'patient_condition',
+                lang,
+                field=html.escape(feld_name),
+                value=html.escape(str(cond_value_comp)),
+            )
         
         elif cond_type_comp == 'ANZAHL_CHECK':
             condition_html += translate('anzahl_condition', lang, value=html.escape(str(cond_value_comp)))

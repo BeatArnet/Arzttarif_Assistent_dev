@@ -347,5 +347,27 @@ class TestPauschaleLogic(unittest.TestCase):
             evaluate_structured_conditions("DEEP", context_false, conditions, {})
         )
 
+    def test_alter_in_jahren_bei_eintritt(self):
+        conditions = [
+            {
+                "BedingungsID": 1,
+                "Pauschale": "ALT",
+                "Gruppe": 1,
+                "Operator": "UND",
+                "Bedingungstyp": "ALTER IN JAHREN BEI EINTRITT",
+                "Vergleichsoperator": "<",
+                "Werte": "16",
+            }
+        ]
+        context_ok = {"AlterBeiEintritt": 10}
+        context_fail = {"AlterBeiEintritt": 20}
+
+        self.assertTrue(
+            evaluate_structured_conditions("ALT", context_ok, conditions, {})
+        )
+        self.assertFalse(
+            evaluate_structured_conditions("ALT", context_fail, conditions, {})
+        )
+
 if __name__ == "__main__":
     unittest.main()
