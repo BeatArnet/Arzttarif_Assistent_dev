@@ -128,7 +128,7 @@ import sys
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s',
                     stream=sys.stdout) # Log to stdout
-logger = logging.getLogger('app') # Create a logger instance
+logger = logging.getLogger(__name__)  # Module-level logger
 
 # --- Konfiguration ---
 load_dotenv()
@@ -174,7 +174,7 @@ def default_evaluate_fallback( # Matches: evaluate_structured_conditions(pauscha
     pauschale_bedingungen_data: List[Dict[Any, Any]],
     tabellen_dict_by_table: Dict[str, List[Dict[Any, Any]]]
 ) -> bool:
-    print("WARNUNG: Fallback für 'evaluate_structured_conditions' aktiv.")
+    logger.warning("Fallback für 'evaluate_structured_conditions' aktiv.")
     return False
 
 def default_check_html_fallback(
@@ -185,14 +185,14 @@ def default_check_html_fallback(
     leistungskatalog_dict: Dict[str, Dict[Any, Any]],
     lang: str = 'de'
 ) -> Dict[str, Any]:
-    print("WARNUNG: Fallback für 'check_pauschale_conditions' aktiv.")
+    logger.warning("Fallback für 'check_pauschale_conditions' aktiv.")
     return {"html": "HTML-Prüfung nicht verfügbar (Fallback)", "errors": ["Fallback aktiv"], "trigger_lkn_condition_met": False}
 
 def default_get_simplified_conditions_fallback( # Matches: get_simplified_conditions(pauschale_code: str, bedingungen_data: list[dict]) -> set
     pauschale_code: str,
     bedingungen_data: List[Dict[Any, Any]]
 ) -> Set[Any]:
-    print("WARNUNG: Fallback für 'get_simplified_conditions' aktiv.")
+    logger.warning("Fallback für 'get_simplified_conditions' aktiv.")
     return set()
 
 def default_generate_condition_detail_html_fallback(
@@ -201,7 +201,7 @@ def default_generate_condition_detail_html_fallback(
     tabellen_dict_by_table: Dict[Any, Any],
     lang: str = 'de',
 ) -> str:
-    print("WARNUNG: Fallback für 'generate_condition_detail_html' aktiv.")
+    logger.warning("Fallback für 'generate_condition_detail_html' aktiv.")
     return "<li>Detail-Generierung fehlgeschlagen (Fallback)</li>"
 
 def default_determine_applicable_pauschale_fallback(
@@ -215,7 +215,7 @@ def default_determine_applicable_pauschale_fallback(
     potential_pauschale_codes_set_param: Set[str],
     lang_param: str = 'de'
 ) -> Dict[str, Any]:
-    print("WARNUNG: Fallback für 'determine_applicable_pauschale' aktiv.")
+    logger.warning("Fallback für 'determine_applicable_pauschale' aktiv.")
     return {"type": "Error", "message": "Pauschalen-Hauptprüfung nicht verfügbar (Fallback)"}
 
 # --- Initialisiere Funktionsvariablen mit Fallbacks ---
@@ -231,55 +231,74 @@ try:
     # Für regelpruefer.py (LKN-Regeln)
     rp_lkn_module = None
     import regelpruefer as rp_lkn_module
-    print("✓ Regelprüfer LKN (regelpruefer.py) Modul geladen.")
+    logger.info("✓ Regelprüfer LKN (regelpruefer.py) Modul geladen.")
     if hasattr(rp_lkn_module, 'prepare_tardoc_abrechnung'):
         prepare_tardoc_abrechnung_func = rp_lkn_module.prepare_tardoc_abrechnung
-        print("DEBUG: 'prepare_tardoc_abrechnung' aus regelpruefer.py zugewiesen.")
+        logger.info("DEBUG: 'prepare_tardoc_abrechnung' aus regelpruefer.py zugewiesen.")
     else:
-        print("FEHLER: 'prepare_tardoc_abrechnung' NICHT in regelpruefer.py gefunden! Verwende Fallback.")
+        logger.error("FEHLER: 'prepare_tardoc_abrechnung' NICHT in regelpruefer.py gefunden! Verwende Fallback.")
         def prepare_tardoc_lkn_fb(r: List[Dict[Any,Any]], l: Dict[str, Dict[Any,Any]], lang_param: str = 'de') -> Dict[str,Any]:
             return {"type":"Error", "message":"TARDOC Prep Fallback (LKN Funktion fehlt)"}
         prepare_tardoc_abrechnung_func = prepare_tardoc_lkn_fb
 except ImportError:
-    print("FEHLER: regelpruefer.py nicht gefunden! Verwende Fallbacks für LKN-Regelprüfung.")
+    logger.error("FEHLER: regelpruefer.py nicht gefunden! Verwende Fallbacks für LKN-Regelprüfung.")
     def prepare_tardoc_lkn_import_fb(r: List[Dict[Any,Any]], l: Dict[str, Dict[Any,Any]], lang_param: str = 'de') -> Dict[str,Any]:
         return {"type":"Error", "message":"TARDOC Prep Fallback (LKN Modulimportfehler)"}
     prepare_tardoc_abrechnung_func = prepare_tardoc_lkn_import_fb
 
 try:
     # Für regelpruefer_pauschale.py
-    print("INFO: Versuche, regelpruefer_pauschale.py zu importieren...")
+    logger.info("INFO: Versuche, regelpruefer_pauschale.py zu importieren...")
     import regelpruefer_pauschale as rpp_module
-    print(f"DEBUG: Importversuch abgeschlossen. rpp_module ist: {rpp_module}")
-    print(f"DEBUG: Inhalt von rpp_module: {dir(rpp_module)}")
-    print("✓ Regelprüfer Pauschalen (regelpruefer_pauschale.py) Modul geladen.")
+    logger.info("DEBUG: Importversuch abgeschlossen. rpp_module ist: %s", rpp_module)
+    logger.info("DEBUG: Inhalt von rpp_module: %s", dir(rpp_module))
+    logger.info("✓ Regelprüfer Pauschalen (regelpruefer_pauschale.py) Modul geladen.")
 
     if rpp_module and hasattr(rpp_module, 'evaluate_structured_conditions'):
         evaluate_structured_conditions = rpp_module.evaluate_structured_conditions
-    else: print("FEHLER: 'evaluate_structured_conditions' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv.")
+    else:
+        logger.error("FEHLER: 'evaluate_structured_conditions' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv.")
 
     if rpp_module and hasattr(rpp_module, 'check_pauschale_conditions'):
         check_pauschale_conditions = rpp_module.check_pauschale_conditions  # type: ignore[attr-defined]
-    else: print("FEHLER: 'check_pauschale_conditions' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv.")
+    else:
+        logger.error(
+            "FEHLER: 'check_pauschale_conditions' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv."
+        )
 
     if rpp_module and hasattr(rpp_module, 'get_simplified_conditions'):
         get_simplified_conditions = rpp_module.get_simplified_conditions  # type: ignore[attr-defined]
-    else: print("FEHLER: 'get_simplified_conditions' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv.")
+    else:
+        logger.error(
+            "FEHLER: 'get_simplified_conditions' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv."
+        )
 
     if rpp_module and hasattr(rpp_module, 'generate_condition_detail_html'):
         generate_condition_detail_html = rpp_module.generate_condition_detail_html  # type: ignore[attr-defined]
-    else: print("FEHLER: 'generate_condition_detail_html' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv.")
+    else:
+        logger.error(
+            "FEHLER: 'generate_condition_detail_html' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv."
+        )
 
     if rpp_module and hasattr(rpp_module, 'determine_applicable_pauschale'):
         determine_applicable_pauschale_func = rpp_module.determine_applicable_pauschale  # type: ignore[attr-defined]
-        print("DEBUG: 'determine_applicable_pauschale' aus regelpruefer_pauschale.py zugewiesen.")
-    else: print("FEHLER: 'determine_applicable_pauschale' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv.")
+        logger.info("DEBUG: 'determine_applicable_pauschale' aus regelpruefer_pauschale.py zugewiesen.")
+    else:
+        logger.error(
+            "FEHLER: 'determine_applicable_pauschale' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv."
+        )
 
 except ImportError as e_imp:
-    print(f"FEHLER (ImportError): regelpruefer_pauschale.py konnte nicht importiert werden: {e_imp}! Standard-Fallbacks bleiben aktiv.")
+    logger.error(
+        "FEHLER (ImportError): regelpruefer_pauschale.py konnte nicht importiert werden: %s! Standard-Fallbacks bleiben aktiv.",
+        e_imp,
+    )
     traceback.print_exc()
 except Exception as e_gen: # Fängt auch andere Fehler während des Imports
-    print(f"FEHLER (Allgemein beim Import): Ein Fehler trat beim Laden von regelpruefer_pauschale.py auf: {e_gen}! Standard-Fallbacks bleiben aktiv.")
+    logger.error(
+        "FEHLER (Allgemein beim Import): Ein Fehler trat beim Laden von regelpruefer_pauschale.py auf: %s! Standard-Fallbacks bleiben aktiv.",
+        e_gen,
+    )
     traceback.print_exc()
     # Setze rpp_module auf None, um hasattr-Fehler unten zu vermeiden, falls es nicht initialisiert wurde
     rpp_module = None # Sicherstellen, dass es definiert ist, auch wenn der Import fehlschlug
@@ -333,7 +352,7 @@ def create_app() -> FlaskType:
     # Daten nur einmal laden – egal ob lokal oder Render-Worker
     global daten_geladen
     if not daten_geladen:
-        print("INFO: Initialer Daten-Load beim App-Start …")
+        logger.info("INFO: Initialer Daten-Load beim App-Start …")
         if not load_data():
             raise RuntimeError("Kritische Daten konnten nicht geladen werden.")
 
@@ -347,7 +366,7 @@ def load_data() -> bool:
     global tabellen_dict_by_table, daten_geladen
 
     all_loaded_successfully = True
-    print("--- Lade Daten ---")
+    logger.info("--- Lade Daten ---")
     # Reset all data containers
     leistungskatalog_data.clear(); leistungskatalog_dict.clear(); regelwerk_dict.clear(); tardoc_tarif_dict.clear(); tardoc_interp_dict.clear()
     pauschale_lp_data.clear(); pauschalen_data.clear(); pauschalen_dict.clear(); pauschale_bedingungen_data.clear(); tabellen_data.clear()
@@ -366,13 +385,13 @@ def load_data() -> bool:
 
     for name, (path, target_list_ref, key_field, target_dict_ref) in files_to_load.items():
         try:
-            print(f"  Versuche {name} von {path} zu laden...")
+            logger.info("  Versuche %s von %s zu laden...", name, path)
             if path.is_file():
                 with open(path, 'r', encoding='utf-8') as f:
                     data_from_file = json.load(f)
 
                 if not isinstance(data_from_file, list):
-                     print(f"  WARNUNG: {name}-Daten in '{path}' sind keine Liste, überspringe.")
+                     logger.warning("  WARNUNG: %s-Daten in '%s' sind keine Liste, überspringe.", name, path)
                      continue
 
                 if target_dict_ref is not None and key_field is not None:
@@ -384,13 +403,13 @@ def load_data() -> bool:
                                if key_value: # Stelle sicher, dass key_value nicht None ist
                                    target_dict_ref[str(key_value)] = item # Konvertiere zu str für Konsistenz
                                    items_in_dict += 1
-                     print(f"  ✓ {name}-Daten '{path}' geladen ({items_in_dict} Einträge im Dict).")
+                     logger.info("  ✓ %s-Daten '%s' geladen (%s Einträge im Dict).", name, path, items_in_dict)
 
                 if target_list_ref is not None:
                      target_list_ref.clear() # target_list_ref ist die globale Liste
                      target_list_ref.extend(data_from_file)
                      if target_dict_ref is None: # Nur loggen, wenn nicht schon fürs Dict geloggt
-                          print(f"  ✓ {name}-Daten '{path}' geladen ({len(target_list_ref)} Einträge in Liste).")
+                          logger.info("  ✓ %s-Daten '%s' geladen (%s Einträge in Liste).", name, path, len(target_list_ref))
 
                 if name == "Tabellen": # Spezifische Behandlung für 'Tabellen'
                     TAB_KEY = "Tabelle"
@@ -403,18 +422,18 @@ def load_data() -> bool:
                                 if normalized_key not in tabellen_dict_by_table:
                                     tabellen_dict_by_table[normalized_key] = []
                                 tabellen_dict_by_table[normalized_key].append(item)
-                    print(f"  ✓ Tabellen-Daten gruppiert nach Tabelle ({len(tabellen_dict_by_table)} Tabellen).")
+                    logger.info("  ✓ Tabellen-Daten gruppiert nach Tabelle (%s Tabellen).", len(tabellen_dict_by_table))
                     missing_keys_check = ['cap13', 'cap14', 'or', 'nonor', 'nonelt', 'ambp.pz', 'anast', 'c08.50']
                     not_found_keys_check = {k for k in missing_keys_check if k not in tabellen_dict_by_table}
                     if not_found_keys_check:
-                         print(f"  FEHLER: Kritische Tabellenschlüssel fehlen in tabellen_dict_by_table: {not_found_keys_check}!")
+                         logger.error("  FEHLER: Kritische Tabellenschlüssel fehlen in tabellen_dict_by_table: %s!", not_found_keys_check)
                          all_loaded_successfully = False
             else:
-                print(f"  FEHLER: {name}-Datei nicht gefunden: {path}")
+                logger.error("  FEHLER: %s-Datei nicht gefunden: %s", name, path)
                 if name in ["Leistungskatalog", "Pauschalen", "TARDOC_TARIF", "TARDOC_INTERP", "PauschaleBedingungen", "Tabellen"]:
                     all_loaded_successfully = False
         except (json.JSONDecodeError, IOError, Exception) as e:
-             print(f"  FEHLER beim Laden/Verarbeiten von {name} ({path}): {e}")
+             logger.error("  FEHLER beim Laden/Verarbeiten von %s (%s): %s", name, path, e)
              all_loaded_successfully = False
              traceback.print_exc()
 
@@ -423,17 +442,17 @@ def load_data() -> bool:
         global baseline_results
         with open(BASELINE_RESULTS_PATH, 'r', encoding='utf-8') as f:
             baseline_results = json.load(f)
-        print(f"  ✓ Baseline-Ergebnisse geladen ({len(baseline_results)}) Beispiele.)")
+        logger.info("  ✓ Baseline-Ergebnisse geladen (%s Beispiele.)", len(baseline_results))
     except Exception as e:
-        print(f"  WARNUNG: Baseline-Resultate konnten nicht geladen werden: {e}")
+        logger.warning("  WARNUNG: Baseline-Resultate konnten nicht geladen werden: %s", e)
         baseline_results = {}
     try:
         global examples_data
         with open(BEISPIELE_PATH, 'r', encoding='utf-8') as f:
             examples_data = json.load(f)
-        print(f"  ✓ Beispiel-Daten geladen ({len(examples_data)}) Einträge.)")
+        logger.info("  ✓ Beispiel-Daten geladen (%s Einträge.)", len(examples_data))
     except Exception as e:
-        print(f"  WARNUNG: Beispiel-Daten konnten nicht geladen werden: {e}")
+        logger.warning("  WARNUNG: Beispiel-Daten konnten nicht geladen werden: %s", e)
         examples_data = []
 
     # Regelwerk direkt aus TARDOC_Tarifpositionen extrahieren
@@ -443,23 +462,23 @@ def load_data() -> bool:
             rules = info.get("Regeln")
             if rules:
                 regelwerk_dict[lkn] = rules
-        print(f"  ✓ Regelwerk aus TARDOC geladen ({len(regelwerk_dict)} LKNs mit Regeln).")
+        logger.info("  ✓ Regelwerk aus TARDOC geladen (%s LKNs mit Regeln).", len(regelwerk_dict))
     except Exception as e:
-        print(f"  FEHLER beim Extrahieren des Regelwerks aus TARDOC: {e}")
+        logger.error("  FEHLER beim Extrahieren des Regelwerks aus TARDOC: %s", e)
         traceback.print_exc(); regelwerk_dict.clear(); all_loaded_successfully = False
 
     # Compute document frequencies for ranking
     compute_token_doc_freq()
-    print(f"  ✓ Token-Dokumentfrequenzen berechnet ({len(token_doc_freq)}) Tokens).")
+    logger.info("  ✓ Token-Dokumentfrequenzen berechnet (%s Tokens).", len(token_doc_freq))
 
-    print("--- Daten laden abgeschlossen ---")
+    logger.info("--- Daten laden abgeschlossen ---")
     if not all_loaded_successfully:
-        print("WARNUNG: Einige kritische Daten konnten nicht geladen werden!")
+        logger.warning("WARNUNG: Einige kritische Daten konnten nicht geladen werden!")
         daten_geladen = False
     else:
-        print("INFO: Alle Daten erfolgreich geladen.")
+        logger.info("INFO: Alle Daten erfolgreich geladen.")
         daten_geladen = True
-    print(f"DEBUG: load_data() beendet. leistungskatalog_dict leer? {not leistungskatalog_dict}")
+    logger.info("DEBUG: load_data() beendet. leistungskatalog_dict leer? %s", not leistungskatalog_dict)
     return all_loaded_successfully
 
 # Einsatz von Flask
