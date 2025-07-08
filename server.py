@@ -590,6 +590,15 @@ def call_gemini_stage1(user_input: str, katalog_context: str, lang: str = "de") 
         logger.info(f"LLM_S1_PARSED_JSON_BEFORE_VALIDATION: {json.dumps(llm_response_json, indent=2, ensure_ascii=False)}")
 
         # Strikte Validierung der Hauptstruktur
+        # Handle case where the response is a list containing a single JSON object
+        if isinstance(llm_response_json, list):
+            if len(llm_response_json) == 1 and isinstance(llm_response_json[0], dict):
+                llm_response_json = llm_response_json[0]
+                logger.info("LLM_S1_INFO: JSON-Antwort war eine Liste, erstes Element wurde extrahiert.")
+            else:
+                logger.error(f"LLM_S1_ERROR: Antwort ist eine Liste, aber nicht im erwarteten Format (einelementige Liste mit Objekt): {type(llm_response_json)}")
+                raise ValueError("Antwort ist eine Liste, aber nicht im erwarteten Format.")
+
         if not isinstance(llm_response_json, dict):
             logger.error(f"LLM_S1_ERROR: Antwort ist kein JSON-Objekt, sondern {type(llm_response_json)}")
             raise ValueError("Antwort ist kein JSON-Objekt.")
