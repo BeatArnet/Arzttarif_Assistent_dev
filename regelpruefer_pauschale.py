@@ -256,7 +256,33 @@ def get_group_operator_for_pauschale(
 
 
 def _evaluate_boolean_tokens(tokens: List[Any]) -> bool:
-    """Evaluate a boolean expression from a sequence of tokens."""
+    """Evaluate a boolean expression represented as tokens.
+
+    Parameters
+    ----------
+    tokens : list
+        Sequence of tokens forming the expression. Each token is either
+        ``True``/``False`` or one of the strings ``"AND"``, ``"OR"``,
+        ``"("`` or ``")``.
+
+    Returns
+    -------
+    bool
+        Result of the evaluated boolean expression.
+
+    Notes
+    -----
+    The implementation uses a simplified shunting-yard algorithm to
+    transform the infix expression into Reverse Polish Notation before
+    evaluation.
+
+    Examples
+    --------
+    >>> _evaluate_boolean_tokens([True, "AND", False])
+    False
+    >>> _evaluate_boolean_tokens(["(", True, "OR", False, ")", "AND", True])
+    True
+    """
     precedence = {"AND": 2, "OR": 1}
     output: List[Any] = []
     op_stack: List[str] = []
@@ -309,13 +335,46 @@ def evaluate_structured_conditions(
     group_operator: str = DEFAULT_GROUP_OPERATOR,  # Dieser Operator gilt ZWISCHEN den Gruppen
     debug: bool = False,
 ) -> bool:
-    """
-    Bewertet die Bedingungen einer Pauschale.
-    Bedingungen werden zuerst nach 'Gruppe' gruppiert.
-    Innerhalb jeder Gruppe wird die Logik basierend auf 'Ebene' und 'Operator' ausgewertet.
-    Die Ergebnisse der Gruppen werden dann mit dem globalen 'group_operator' verknüpft.
-    Wenn ``debug`` ``True`` ist, wird für jede Gruppe der zusammengesetzte
-    Boolesche Ausdruck inklusive Ergebnis ausgegeben.
+    """Prüft die UND/ODER-Bedingungen einer Pauschale.
+
+    Parameters
+    ----------
+    pauschale_code : str
+        Code der zu prüfenden Pauschale.
+    context : dict
+        Laufzeitkontext (z.B. LKN, ICD, Patientendaten).
+    pauschale_bedingungen_data : list[dict]
+        Alle Bedingungsdefinitionen aller Pauschalen.
+    tabellen_dict_by_table : dict
+        Tabelleninhalte für Tabellen-Bedingungen.
+    group_operator : str, optional
+        Logischer Operator zwischen Gruppen (``"UND"`` oder ``"ODER"``).
+    debug : bool, optional
+        Gibt detaillierte Auswertungsinformationen auf ``stdout`` aus.
+
+    Returns
+    -------
+    bool
+        ``True`` wenn die Pauschale unter Berücksichtigung aller Gruppen gültig
+        ist, sonst ``False``.
+
+    Notes
+    -----
+    Die Funktion gruppiert zunächst alle Regeln nach dem ``"Gruppe"``-Feld und
+    erstellt pro Gruppe einen booleschen Ausdruck gemäß den Spalten ``"Ebene"``
+    und ``"Operator"``. Jeder Ausdruck wird anschließend mit
+    :func:`_evaluate_boolean_tokens` ausgewertet. Die Ergebnisse aller Gruppen
+    werden schließlich mit ``group_operator`` (``all`` oder ``any``) kombiniert.
+
+    Examples
+    --------
+    >>> evaluate_structured_conditions(
+    ...     "CAT",
+    ...     {"Seitigkeit": "beidseits", "LKN": ["OP"]},
+    ...     conditions,
+    ...     {},
+    ... )
+    True
     """
     PAUSCHALE_KEY = 'Pauschale'
     GRUPPE_KEY = 'Gruppe'
@@ -509,8 +568,60 @@ def determine_applicable_pauschale(
     potential_pauschale_codes_input: Set[str] | None = None, # Optional vorabgefilterte Codes
     lang: str = 'de'
     ) -> dict:
-    """
-    Ermittelt die anwendbarste Pauschale durch Auswertung der strukturierten Bedingungen.
+    """Finde die bestmögliche Pauschale anhand der Regeln.
+
+    Parameters
+    ----------
+    user_input : str
+        Ursprüngliche Benutzereingabe (nur zu Loggingzwecken).
+    rule_checked_leistungen : list[dict]
+        Bereits regelgeprüfte Leistungen.
+    context : dict
+        Kontextdaten wie LKN, ICD, Alter oder Seitigkeit.
+    pauschale_lp_data : list[dict]
+        Zuordnung von LKN zu Pauschalen.
+    pauschale_bedingungen_data : list[dict]
+        Detaillierte Bedingungsdefinitionen.
+    pauschalen_dict : dict
+        Stammdaten aller Pauschalen.
+    leistungskatalog_dict : dict
+        LKN-Katalog für Beschreibungen.
+    tabellen_dict_by_table : dict
+        Inhalte referenzierter Tabellen.
+    potential_pauschale_codes_input : set[str], optional
+        Vorab festgelegte Kandidaten. Wird ``None`` übergeben, ermittelt die
+        Funktion mögliche Codes aus den Kontext-LKN.
+    lang : str, optional
+        Sprache der Ausgaben, Standard ``"de"``.
+
+    Returns
+    -------
+    dict
+        Ergebnis mit ausgewählter Pauschale, Erklärungs-HTML und allen
+        bewerteten Kandidaten.
+
+    Notes
+    -----
+    Zunächst werden anhand der LKN sowie der Bedingungsdefinitionen mögliche
+    Kandidaten gesammelt. Für jeden Code wird
+    :func:`evaluate_structured_conditions` aufgerufen. Aus den gültigen
+    Pauschalen wird der Kandidat mit dem höchsten Score (Taxpunkte) und dem
+    niedrigsten Buchstabensuffix gewählt.
+
+    Examples
+    --------
+    >>> result = determine_applicable_pauschale(
+    ...     "",
+    ...     rule_checked_leistungen,
+    ...     {"LKN": ["C04.51B"], "Seitigkeit": "re"},
+    ...     lp_data,
+    ...     bedingungen,
+    ...     pauschalen,
+    ...     leistungskatalog,
+    ...     tabellen,
+    ... )
+    >>> result["type"]
+    'Pauschale'
     """
     print("INFO: Starte Pauschalenermittlung mit strukturierter Bedingungsprüfung...")
     PAUSCHALE_ERKLAERUNG_KEY = 'pauschale_erklaerung_html'; POTENTIAL_ICDS_KEY = 'potential_icds'
