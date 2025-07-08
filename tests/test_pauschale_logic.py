@@ -231,9 +231,7 @@ class TestPauschaleLogic(unittest.TestCase):
         }
 
         self.assertTrue(
-            evaluate_structured_conditions(
-                "C04.51B", context_missing_lavage, bedingungen, tab_dict, group_operator="UND"
-            )
+            evaluate_structured_conditions("C04.51B", context_missing_lavage, bedingungen, tab_dict)
         )
 
     def test_nested_levels(self):

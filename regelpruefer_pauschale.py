@@ -14,8 +14,8 @@ __all__ = [
 ]
 
 # Standardoperator zur Verknüpfung der Bedingungsgruppen.
-# Kann bei Bedarf mit wenig Aufwand wieder auf "UND" geändert werden.
-DEFAULT_GROUP_OPERATOR = "ODER"
+# "UND" ist der konservative Default und kann zentral angepasst werden.
+DEFAULT_GROUP_OPERATOR = "UND"
 
 # === FUNKTION ZUR PRÜFUNG EINER EINZELNEN BEDINGUNG ===
 def check_single_condition(

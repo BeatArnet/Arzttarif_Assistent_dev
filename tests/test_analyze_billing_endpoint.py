@@ -195,8 +195,10 @@ class TestAnalyzeBillingEndpoint(unittest.TestCase):
             # Wir prüfen hier, dass AA.00.0020 NICHT in den abgerechneten Leistungen ist.
             if abrechnung.get('type') == 'TARDOC':
                 leistungen = abrechnung.get('leistungen', [])
-                self.assertTrue(any(l['lkn'] == 'AA.00.0020' for l in leistungen),
-                                "AA.00.0020 sollte abgerechnet werden, wenn AA.00.0010 fehlt.")
+                self.assertTrue(
+                    any(l['lkn'] == 'AA.00.0020' for l in leistungen),
+                    "AA.00.0020 sollte abgerechnet werden, wenn AA.00.0010 fehlt."
+                )
             elif abrechnung.get('type') == 'Error':
                 self.assertIn("Keine abrechenbaren TARDOC-Leistungen", abrechnung.get('message', ''),
                               "Fehlermeldung für keine abrechenbaren Leistungen erwartet.")
