@@ -82,6 +82,9 @@ Der Assistent ist in den drei Landessprachen DE, FR und IT verfügbar. Die Sprac
     *   `PAUSCHALEN_Leistungspositionen.json`: Direkte LKN-zu-Pauschale-Links.
     *   `PAUSCHALEN_Pauschalen.json`: Pauschalendefinitionen.
     *   `PAUSCHALEN_Bedingungen.json`: Strukturierte Bedingungen für Pauschalen.
+        Das Feld `BedingungsID` ist **nicht eindeutig**. Es dient lediglich als
+        Kennzeichen einer gemeinsamen Bedingungsvorlage, die in mehreren
+        Pauschalen verwendet wird.
     *   `PAUSCHALEN_Tabellen.json`: Nachschlagetabellen für Codes in Bedingungen.
     *   `TARDOC_Tarifpositionen.json`: Details und Regeldefinitionen für TARDOC-Einzelleistungen.
     *   `TARDOC_Interpretationen.json`: Erläuterungen und Kapiteltexte zu TARDOC-Positionen.
