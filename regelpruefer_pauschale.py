@@ -289,9 +289,13 @@ def evaluate_structured_conditions(
     OPERATOR_KEY = 'Operator'
     EBENE_KEY = 'Ebene'
     BED_ID_KEY = 'BedingungsID'
+    BED_TYP_KEY = 'Bedingungstyp'
 
     conditions_for_this_pauschale = [
-        cond for cond in pauschale_bedingungen_data if cond.get(PAUSCHALE_KEY) == pauschale_code
+        cond
+        for cond in pauschale_bedingungen_data
+        if cond.get(PAUSCHALE_KEY) == pauschale_code
+        and str(cond.get(BED_TYP_KEY, "")).upper() != "AST VERBINDUNGSOPERATOR"
     ]
 
     if not conditions_for_this_pauschale:
@@ -455,7 +459,10 @@ def check_pauschale_conditions(
     GRUPPE_KEY = 'Gruppe'
 
     conditions_for_this_pauschale = [
-        cond for cond in pauschale_bedingungen_data if cond.get(PAUSCHALE_KEY_IN_BEDINGUNGEN) == pauschale_code
+        cond
+        for cond in pauschale_bedingungen_data
+        if cond.get(PAUSCHALE_KEY_IN_BEDINGUNGEN) == pauschale_code
+        and str(cond.get(BED_TYP_KEY, "")).upper() != "AST VERBINDUNGSOPERATOR"
     ]
 
     if not conditions_for_this_pauschale:

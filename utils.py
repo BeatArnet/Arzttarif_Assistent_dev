@@ -355,6 +355,11 @@ _COND_TYPE_TRANSLATIONS: Dict[str, Dict[str, str]] = {
         'de': 'SEITIGKEIT',
         'fr': 'Latéralité',
         'it': 'Lateralità'
+    },
+    'AST VERBINDUNGSOPERATOR': {
+        'de': 'AST VERBINDUNGSOPERATOR',
+        'fr': 'opérateur de liaison AST',
+        'it': 'operatore di collegamento AST'
     }
 }
 
