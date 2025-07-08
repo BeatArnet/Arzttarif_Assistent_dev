@@ -3,7 +3,11 @@ import sys
 import pathlib
 import json
 sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))
-from regelpruefer_pauschale import evaluate_structured_conditions, DEFAULT_GROUP_OPERATOR
+from regelpruefer_pauschale import (
+    evaluate_structured_conditions,
+    DEFAULT_GROUP_OPERATOR,
+    get_group_operator_for_pauschale,
+)
 
 class TestPauschaleLogic(unittest.TestCase):
     def test_or_operator_in_group(self):
@@ -274,6 +278,18 @@ class TestPauschaleLogic(unittest.TestCase):
         context_missing_c = {"LKN": ["B"]}
         self.assertFalse(
             evaluate_structured_conditions("NEST", context_missing_c, conditions, {})
+        )
+
+    def test_infer_group_operator_from_first_group_rows(self):
+        """If any row in the first group uses ODER and multiple groups exist, ODER is used globally."""
+        conditions = [
+            {"Pauschale": "HX", "Gruppe": 1, "Operator": "UND"},
+            {"Pauschale": "HX", "Gruppe": 1, "Operator": "ODER"},
+            {"Pauschale": "HX", "Gruppe": 2, "Operator": "UND"},
+        ]
+        self.assertEqual(
+            "ODER",
+            get_group_operator_for_pauschale("HX", conditions, default=DEFAULT_GROUP_OPERATOR),
         )
 
 if __name__ == "__main__":

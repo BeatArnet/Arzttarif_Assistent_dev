@@ -12,7 +12,9 @@ Dies ist ein Prototyp einer Webanwendung zur Unterstützung bei der Abrechnung m
 - `evaluate_structured_conditions` unterstützt einen konfigurierbaren
   `GruppenOperator` (Standard `UND`, einstellbar über
   `DEFAULT_GROUP_OPERATOR` in `regelpruefer_pauschale.py`) für die Verknüpfung
-  der Bedingungsgruppen.
+  der Bedingungsgruppen. Fehlt diese Spalte, wird der Operator heuristisch
+  bestimmt: Wenn mehrere Gruppen vorhanden sind und in der ersten Gruppe
+  mindestens eine Zeile den Operator `ODER` nutzt, gilt `ODER` global.
 - Die mehrsprachigen Prompts für LLM Stufe 1 und Stufe wurden in  `prompts.py` ausgelagert
 - Funktionale Erweiterung umfassen:
     - interaktive Info-Pop-ups, 

@@ -199,20 +199,24 @@ def get_group_operator_for_pauschale(
                 return op
 
     # Heuristik: Wenn keine explizite Angabe vorhanden ist, aber mehrere Gruppen
-    # existieren und die erste Gruppe mit "ODER" beginnt, werten wir dies als
-    # globalen Gruppenoperator "ODER".
-    first_operator = None
+    # existieren und in der ersten Gruppe mindestens eine Zeile mit "ODER"
+    # verknüpft ist, werten wir dies als globalen Gruppenoperator "ODER".
+    first_group_id = None
     groups_seen: List[Any] = []
+    first_group_has_oder = False
     for cond in bedingungen_data:
         if cond.get("Pauschale") != pauschale_code:
             continue
         grp = cond.get("Gruppe")
+        if first_group_id is None:
+            first_group_id = grp
         if grp not in groups_seen:
             groups_seen.append(grp)
-            if first_operator is None:
-                first_operator = str(cond.get("Operator", "")).strip().upper()
+        if grp == first_group_id:
+            if str(cond.get("Operator", "")).strip().upper() == "ODER":
+                first_group_has_oder = True
 
-    if len(groups_seen) > 1 and first_operator == "ODER":
+    if len(groups_seen) > 1 and first_group_has_oder:
         return "ODER"
 
     return default
