@@ -228,6 +228,20 @@ pytest
 Die Tests setzen unter anderem Flask und weitere Pakete aus der
 `requirements.txt` voraus.
 
+## Logging und Debugging
+
+Sowohl `server.py` als auch `regelpruefer_pauschale.py` verwenden das Python
+`logging`-Modul. Standardmäßig wird auf Stufe `INFO` protokolliert. Um bei der
+Entwicklung detailliertere Ausgaben zu erhalten, kann der Loglevel zur Laufzeit
+angehoben werden:
+
+```python
+import logging
+logging.getLogger('app').setLevel(logging.DEBUG)
+```
+
+Damit erscheinen auch alle `DEBUG`-Meldungen auf der Konsole.
+
 ## Disclaimer
 
 Alle Auskünfte erfolgen ohne Gewähr. Diese Anwendung ist ein Prototyp und dient nur zu Demonstrations- und Testzwecken. Für offizielle und verbindliche Informationen konsultieren Sie bitte das Portal  OAAT-OTMA AG: [https://tarifbrowser.oaat-otma.ch/startPortal](https://tarifbrowser.oaat-otma.ch/startPortal).
