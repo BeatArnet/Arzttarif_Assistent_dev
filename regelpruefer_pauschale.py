@@ -221,6 +221,52 @@ def get_group_operator_for_pauschale(
 
     return default
 
+
+def _evaluate_boolean_tokens(tokens: List[Any]) -> bool:
+    """Evaluate a boolean expression from a sequence of tokens."""
+    precedence = {"AND": 2, "OR": 1}
+    output: List[Any] = []
+    op_stack: List[str] = []
+
+    for tok in tokens:
+        if isinstance(tok, bool):
+            output.append(tok)
+        elif tok in ("AND", "OR"):
+            while op_stack and op_stack[-1] in ("AND", "OR") and precedence[op_stack[-1]] >= precedence[tok]:
+                output.append(op_stack.pop())
+            op_stack.append(tok)
+        elif tok == "(":
+            op_stack.append(tok)
+        elif tok == ")":
+            while op_stack and op_stack[-1] != "(":
+                output.append(op_stack.pop())
+            if not op_stack:
+                raise ValueError("Unmatched closing parenthesis")
+            op_stack.pop()
+        else:
+            raise ValueError(f"Unknown token {tok}")
+
+    while op_stack:
+        op = op_stack.pop()
+        if op == "(":
+            raise ValueError("Unmatched opening parenthesis")
+        output.append(op)
+
+    stack: List[bool] = []
+    for tok in output:
+        if isinstance(tok, bool):
+            stack.append(tok)
+        else:
+            if len(stack) < 2:
+                raise ValueError("Insufficient operands")
+            b = stack.pop()
+            a = stack.pop()
+            stack.append(a and b if tok == "AND" else a or b)
+
+    if len(stack) != 1:
+        raise ValueError("Invalid boolean expression")
+    return stack[0]
+
 # === FUNKTION ZUR AUSWERTUNG DER STRUKTURIERTEN LOGIK (UND/ODER) ===
 def evaluate_structured_conditions(
     pauschale_code: str,
@@ -297,56 +343,57 @@ def evaluate_structured_conditions(
         # `sorted_conditions_overall` und die anschließende Gruppierung erfolgt.
         # conditions_in_group = sorted(conditions_in_group, key=lambda c: (c.get(EBENE_KEY, 1), c.get(BED_ID_KEY, 0)))
 
-        baseline_level_group = 1 # Basislevel für die Ebenenberechnung
-        # Das erste Level ist das Level der ersten Bedingung in der sortierten Gruppe
+        baseline_level_group = 1  # Basislevel für die Ebenenberechnung
         first_level_group = conditions_in_group[0].get(EBENE_KEY, 1)
 
         first_res_group = check_single_condition(
             conditions_in_group[0], context, tabellen_dict_by_table
         )
 
-        # Aufbau des Ausdrucks für die aktuelle Gruppe
-        # Klammern für die erste Bedingung relativ zum Basislevel
-        expr_parts_group: List[str] = ["(" * (first_level_group - baseline_level_group), str(bool(first_res_group))]
+        # Token-Liste für den booleschen Ausdruck der Gruppe
+        tokens_group: List[Any] = ["("] * (first_level_group - baseline_level_group)
+        tokens_group.append(bool(first_res_group))
 
         prev_level_group = first_level_group
-        # Der Operator der ersten Bedingung wird als prev_op für die zweite Bedingung verwendet.
         prev_op_group = conditions_in_group[0].get(OPERATOR_KEY, "UND").upper()
 
-        for i_cond_grp in range(1, len(conditions_in_group)):
-            cond_grp = conditions_in_group[i_cond_grp]
-            cur_level_group = cond_grp.get(EBENE_KEY, baseline_level_group) # Default zum Basislevel
+        for cond_grp in conditions_in_group[1:]:
+            cur_level_group = cond_grp.get(EBENE_KEY, baseline_level_group)
 
             if cur_level_group < prev_level_group:
-                expr_parts_group.append(")" * (prev_level_group - cur_level_group))
+                tokens_group.extend(")" for _ in range(prev_level_group - cur_level_group))
 
-            # Der Operator `prev_op_group` stammt von der *vorherigen* Bedingung und verknüpft sie mit der aktuellen.
-            expr_parts_group.append(" and " if prev_op_group == "UND" else " or ")
+            tokens_group.append("AND" if prev_op_group == "UND" else "OR")
 
             if cur_level_group > prev_level_group:
-                expr_parts_group.append("(" * (cur_level_group - prev_level_group))
+                tokens_group.extend("(" for _ in range(cur_level_group - prev_level_group))
 
             cur_res_group = check_single_condition(cond_grp, context, tabellen_dict_by_table)
-            expr_parts_group.append(str(bool(cur_res_group)))
+            tokens_group.append(bool(cur_res_group))
 
             prev_level_group = cur_level_group
-            prev_op_group = cond_grp.get(OPERATOR_KEY, "UND").upper() # Operator für die *nächste* Verknüpfung
+            prev_op_group = cond_grp.get(OPERATOR_KEY, "UND").upper()
 
-        # Schließende Klammern für die Ebenen der Gruppe
-        expr_parts_group.append(")" * (prev_level_group - baseline_level_group))
-        expr_str_group = "".join(expr_parts_group)
+        tokens_group.extend(")" for _ in range(prev_level_group - baseline_level_group))
+
+        expr_str_group = "".join(
+            str(t).lower() if isinstance(t, bool) else (" and " if t == "AND" else " or " if t == "OR" else t)
+            for t in tokens_group
+        )
 
         try:
-            group_result_this_group = bool(eval(expr_str_group))
+            group_result_this_group = _evaluate_boolean_tokens(tokens_group)
             group_results_bool.append(group_result_this_group)
             if debug:
                 print(
                     f"DEBUG Gruppe {group_id}: {expr_str_group} => {group_result_this_group}"
                 )
         except Exception as e_eval_group:
-            print(f"FEHLER bei Gruppenlogik-Ausdruck (Pauschale: {pauschale_code}, Gruppe: {group_id}) '{expr_str_group}': {e_eval_group}")
+            print(
+                f"FEHLER bei Gruppenlogik-Ausdruck (Pauschale: {pauschale_code}, Gruppe: {group_id}) '{expr_str_group}': {e_eval_group}"
+            )
             traceback.print_exc()
-            group_results_bool.append(False) # Bei Fehler gilt die Gruppe als nicht erfüllt
+            group_results_bool.append(False)
 
     if not group_results_bool:
         # Dies sollte nur passieren, wenn grouped_conditions leer war, was oben abgefangen wird.
