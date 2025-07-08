@@ -109,6 +109,10 @@
             color: var(--danger) !important;
             font-weight: bold !important;
         }
+        #output details summary::marker,
+        .info-modal details summary::marker {
+            color: var(--primary);
+        }
         #output details ul { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; }
         #output details li { margin-bottom: 4px; }
         #output details table { margin-top: 8px; margin-bottom: 10px; }
@@ -116,11 +120,11 @@
 
         /* --- Spezifisches Styling für Bedingungsprüfung --- */
         #output .condition-group {
-            border: 1px solid #ddd;
+            border: 1px solid #bbb;
             border-radius: 4px;
             padding: 12px;
             margin-bottom: 12px;
-            background-color: #fdfdfd;
+            background-color: #f7f7f7;
         }
         #output .condition-group-title {
             font-weight: bold;
@@ -293,6 +297,16 @@
     .info-modal {
         background:#fff; padding:20px; max-width:600px; max-height:80vh;
         overflow-y:auto; border-radius:4px; box-shadow:0 2px 8px rgba(0,0,0,0.3);
+    }
+    .info-modal a, a.info-link {
+        background: var(--primary-light);
+        color: var(--primary);
+        padding: 2px 4px;
+        border-radius: 3px;
+        text-decoration: none;
+    }
+    .info-modal a:hover, a.info-link:hover {
+        text-decoration: underline;
     }
     .modal-close { float:right; background:none; border:none; font-size:1.2em; cursor:pointer; }
     .top-info {
