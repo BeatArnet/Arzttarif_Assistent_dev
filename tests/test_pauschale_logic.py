@@ -104,7 +104,7 @@ class TestPauschaleLogic(unittest.TestCase):
         # Bei strikter Links-nach-rechts-Auswertung muss auch die letzte
         # Bedingung erfüllt sein, da sie mit UND verknüpft wird.
         self.assertFalse(
-            evaluate_structured_conditions("CAT", context, conditions, {})
+            evaluate_structured_conditions("CAT", context, conditions, {}, debug=True)
         )
     @unittest.skip("Known issue")
 
@@ -221,7 +221,7 @@ class TestPauschaleLogic(unittest.TestCase):
 
         self.assertTrue(
             evaluate_structured_conditions(
-                "C04.51B", context_ok, bedingungen, tab_dict, group_operator="UND"
+                "C04.51B", context_ok, bedingungen, tab_dict, group_operator="UND", debug=True
             )
         )
 
@@ -231,7 +231,7 @@ class TestPauschaleLogic(unittest.TestCase):
         }
 
         self.assertTrue(
-            evaluate_structured_conditions("C04.51B", context_missing_lavage, bedingungen, tab_dict)
+            evaluate_structured_conditions("C04.51B", context_missing_lavage, bedingungen, tab_dict, debug=True)
         )
 
     def test_nested_levels(self):
@@ -268,12 +268,12 @@ class TestPauschaleLogic(unittest.TestCase):
 
         context_ok = {"LKN": ["B", "C"]}
         self.assertTrue(
-            evaluate_structured_conditions("NEST", context_ok, conditions, {})
+            evaluate_structured_conditions("NEST", context_ok, conditions, {}, debug=True)
         )
 
         context_missing_c = {"LKN": ["B"]}
         self.assertFalse(
-            evaluate_structured_conditions("NEST", context_missing_c, conditions, {})
+            evaluate_structured_conditions("NEST", context_missing_c, conditions, {}, debug=True)
         )
 
 if __name__ == "__main__":
