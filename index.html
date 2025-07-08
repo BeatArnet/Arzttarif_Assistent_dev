@@ -119,14 +119,16 @@
         #output details th, #output details td { padding: 6px; font-size: 0.95em; }
 
         /* --- Spezifisches Styling für Bedingungsprüfung --- */
-        #output .condition-group {
+        #output .condition-group,
+        .info-modal .condition-group {
             border: 1px solid #bbb;
             border-radius: 4px;
             padding: 12px;
             margin-bottom: 12px;
             background-color: #f7f7f7;
         }
-        #output .condition-group-title {
+        #output .condition-group-title,
+        .info-modal .condition-group-title {
             font-weight: bold;
             margin-bottom: 10px;
             font-size: 0.95em;
@@ -134,7 +136,8 @@
             padding-bottom: 5px;
             border-bottom: 1px solid #eee;
         }
-        #output .condition-separator { /* Das "ODER" zwischen Gruppen */
+        #output .condition-separator,
+        .info-modal .condition-separator { /* Das "ODER" zwischen Gruppen */
             text-align: left;
             font-weight: bold;
             margin: 8px 0 8px 5px;
@@ -142,7 +145,8 @@
             font-size: 0.9em;
         }
         /* Styling für eine einzelne Bedingungszeile */
-        #output .condition-item-row {
+        #output .condition-item-row,
+        .info-modal .condition-item-row {
             display: flex;
             align-items: baseline; /* Alternative zu flex-start oder center */
             gap: 6px;
@@ -150,7 +154,8 @@
             padding-left: 5px;
         }
         /* Styling für das Status-Icon (Container für SVG) */
-        #output .condition-status-icon {
+        #output .condition-status-icon,
+        .info-modal .condition-status-icon {
             width: 18px;
             height: 18px;
             flex-shrink: 0;
@@ -165,27 +170,32 @@
             border-radius: 3px;
         }
         /* Styling für das SVG-Icon selbst */
-        #output .condition-status-icon svg {
+        #output .condition-status-icon svg,
+        .info-modal .condition-status-icon svg {
             display: block;
             width: 100%;
             height: 100%;
         }
         /* Farben für die SVG-Icons setzen */
-        #output .condition-status-icon.condition-icon-fulfilled svg {
+        #output .condition-status-icon.condition-icon-fulfilled svg,
+        .info-modal .condition-status-icon.condition-icon-fulfilled svg {
             fill: var(--accent); /* Grüne Farbe */
         }
-        #output .condition-status-icon.condition-icon-not-fulfilled svg {
+        #output .condition-status-icon.condition-icon-not-fulfilled svg,
+        .info-modal .condition-status-icon.condition-icon-not-fulfilled svg {
             fill: var(--danger); /* Rote Farbe */
         }
         /* Styling für den Bedingungstyp */
-        #output .condition-type-display {
+        #output .condition-type-display,
+        .info-modal .condition-type-display {
             color: #555;
             font-size: 0.9em;
             white-space: nowrap;
             line-height: 1.5; /* An Haupttext anpassen */
         }
         /* Wrapper für den Haupttext der Bedingung */
-        #output .condition-text-wrapper {
+        #output .condition-text-wrapper,
+        .info-modal .condition-text-wrapper {
             flex-grow: 1;
             line-height: 1.5;
         }
