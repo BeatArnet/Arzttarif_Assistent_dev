@@ -1,9 +1,12 @@
 # regelpruefer_pauschale.py (Version mit korrigiertem Import und 9 Argumenten)
 import traceback
 import json
-from typing import Dict, List, Any, Set # <-- Set hier importieren
+import logging
+from typing import Dict, List, Any, Set  # <-- Set hier importieren
 from utils import escape, get_table_content, get_lang_field, translate, translate_condition_type
 import re, html
+
+logger = logging.getLogger(__name__)
 
 __all__ = [
     "evaluate_structured_conditions",
@@ -104,7 +107,10 @@ def check_single_condition(
                      return provided_geschlecht_str == wert_regel_explizit.strip().lower()
                  return False # Wenn Regelwert kein String ist
             else:
-                print(f"WARNUNG (check_single PATIENTENBEDINGUNG): Unbekanntes Feld '{feld_ref}'.")
+                logger.warning(
+                    "WARNUNG (check_single PATIENTENBEDINGUNG): Unbekanntes Feld '%s'.",
+                    feld_ref,
+                )
                 return True # Oder False, je nach gewünschtem Verhalten
 
         elif bedingungstyp == "ALTER IN JAHREN BEI EINTRITT":
@@ -129,13 +135,17 @@ def check_single_condition(
                 elif vergleichsoperator == "!=":
                     return alter_val != regel_wert
                 else:
-                    print(
-                        f"WARNUNG (check_single ALTER BEI EINTRITT): Unbekannter Vergleichsoperator '{vergleichsoperator}'."
+                    logger.warning(
+                        "WARNUNG (check_single ALTER BEI EINTRITT): Unbekannter Vergleichsoperator '%s'.",
+                        vergleichsoperator,
                     )
                     return False
             except (ValueError, TypeError) as e_alter:
-                print(
-                    f"FEHLER (check_single ALTER BEI EINTRITT) Konvertierung: {e_alter}. Regelwert: '{werte_str}', Kontextwert: '{alter_eintritt}'"
+                logger.error(
+                    "FEHLER (check_single ALTER BEI EINTRITT) Konvertierung: %s. Regelwert: '%s', Kontextwert: '%s'",
+                    e_alter,
+                    werte_str,
+                    alter_eintritt,
                 )
                 return False
 
@@ -153,10 +163,18 @@ def check_single_condition(
                 elif vergleichsoperator == "=": return kontext_anzahl_val == regel_wert_anzahl_val
                 elif vergleichsoperator == "!=": return kontext_anzahl_val != regel_wert_anzahl_val
                 else:
-                    print(f"WARNUNG (check_single ANZAHL): Unbekannter Vergleichsoperator '{vergleichsoperator}'.")
+                    logger.warning(
+                        "WARNUNG (check_single ANZAHL): Unbekannter Vergleichsoperator '%s'.",
+                        vergleichsoperator,
+                    )
                     return False
             except (ValueError, TypeError) as e_anzahl:
-                print(f"FEHLER (check_single ANZAHL) Konvertierung: {e_anzahl}. Regelwert: '{werte_str}', Kontextwert: '{provided_anzahl}'")
+                logger.error(
+                    "FEHLER (check_single ANZAHL) Konvertierung: %s. Regelwert: '%s', Kontextwert: '%s'",
+                    e_anzahl,
+                    werte_str,
+                    provided_anzahl,
+                )
                 return False
 
         elif bedingungstyp == "SEITIGKEIT":
@@ -178,13 +196,26 @@ def check_single_condition(
                 elif regel_wert_seitigkeit_norm == 'r': return provided_seitigkeit_str != 'rechts'
                 else: return provided_seitigkeit_str != regel_wert_seitigkeit_norm
             else:
-                print(f"WARNUNG (check_single SEITIGKEIT): Unbekannter Vergleichsoperator '{vergleichsoperator}'.")
+                logger.warning(
+                    "WARNUNG (check_single SEITIGKEIT): Unbekannter Vergleichsoperator '%s'.",
+                    vergleichsoperator,
+                )
                 return False
         else:
-            print(f"WARNUNG (check_single): Unbekannter Pauschalen-Bedingungstyp '{bedingungstyp}'. Wird als False angenommen.")
+            logger.warning(
+                "WARNUNG (check_single): Unbekannter Pauschalen-Bedingungstyp '%s'. Wird als False angenommen.",
+                bedingungstyp,
+            )
             return False
     except Exception as e:
-        print(f"FEHLER (check_single) für P: {pauschale_code_for_debug} G: {gruppe_for_debug} Typ: {bedingungstyp}, Werte: {werte_str}: {e}")
+        logger.error(
+            "FEHLER (check_single) für P: %s G: %s Typ: %s, Werte: %s: %s",
+            pauschale_code_for_debug,
+            gruppe_for_debug,
+            bedingungstyp,
+            werte_str,
+            e,
+        )
         traceback.print_exc()
         return False
 
@@ -421,12 +452,19 @@ def evaluate_structured_conditions(
             group_result_this_group = _evaluate_boolean_tokens(tokens_group)
             group_results_bool.append(group_result_this_group)
             if debug:
-                print(
-                    f"DEBUG Gruppe {group_id}: {expr_str_group} => {group_result_this_group}"
+                logger.info(
+                    "DEBUG Gruppe %s: %s => %s",
+                    group_id,
+                    expr_str_group,
+                    group_result_this_group,
                 )
         except Exception as e_eval_group:
-            print(
-                f"FEHLER bei Gruppenlogik-Ausdruck (Pauschale: {pauschale_code}, Gruppe: {group_id}) '{expr_str_group}': {e_eval_group}"
+            logger.error(
+                "FEHLER bei Gruppenlogik-Ausdruck (Pauschale: %s, Gruppe: %s) '%s': %s",
+                pauschale_code,
+                group_id,
+                expr_str_group,
+                e_eval_group,
             )
             traceback.print_exc()
             group_results_bool.append(False)
@@ -444,8 +482,11 @@ def evaluate_structured_conditions(
         final_result = all(group_results_bool)
 
     if debug:
-        print(
-            f"DEBUG Ergebnis Pauschale {pauschale_code}: {group_results_bool} -> {final_result}"
+        logger.info(
+            "DEBUG Ergebnis Pauschale %s: %s -> %s",
+            pauschale_code,
+            group_results_bool,
+            final_result,
         )
 
     return final_result
@@ -873,7 +914,7 @@ def determine_applicable_pauschale(
     """
     Ermittelt die anwendbarste Pauschale durch Auswertung der strukturierten Bedingungen.
     """
-    print("INFO: Starte Pauschalenermittlung mit strukturierter Bedingungsprüfung...")
+    logger.info("INFO: Starte Pauschalenermittlung mit strukturierter Bedingungsprüfung...")
     PAUSCHALE_ERKLAERUNG_KEY = 'pauschale_erklaerung_html'; POTENTIAL_ICDS_KEY = 'potential_icds'
     LKN_KEY_IN_RULE_CHECKED = 'lkn'; PAUSCHALE_KEY_IN_PAUSCHALEN = 'Pauschale' # In PAUSCHALEN_Pauschalen
     PAUSCHALE_TEXT_KEY_IN_PAUSCHALEN = 'Pauschale_Text'
@@ -884,9 +925,12 @@ def determine_applicable_pauschale(
     potential_pauschale_codes: Set[str] = set()
     if potential_pauschale_codes_input is not None:
         potential_pauschale_codes = potential_pauschale_codes_input
-        print(f"DEBUG: Verwende übergebene potenzielle Pauschalen: {potential_pauschale_codes}")
+        logger.info(
+            "DEBUG: Verwende übergebene potenzielle Pauschalen: %s",
+            potential_pauschale_codes,
+        )
     else:
-        print("DEBUG: Suche potenzielle Pauschalen (da nicht übergeben)...")
+        logger.info("DEBUG: Suche potenzielle Pauschalen (da nicht übergeben)...")
         # LKNs aus dem Kontext (regelkonform + gemappt) für die Suche verwenden
         context_lkns_for_search = {str(lkn).upper() for lkn in context.get("LKN", []) if lkn}
         # print(f"  Kontext-LKNs für Suche: {context_lkns_for_search}")
@@ -930,7 +974,10 @@ def determine_applicable_pauschale(
                     if not table_refs_cond.isdisjoint(context_lkns_in_tables_cache[lkn_ctx]):
                         potential_pauschale_codes.add(pc)
                         break # Ein Treffer für diese Bedingung reicht
-        print(f"DEBUG: Finale potenzielle Pauschalen nach LKN-basierter Suche: {potential_pauschale_codes}")
+        logger.info(
+            "DEBUG: Finale potenzielle Pauschalen nach LKN-basierter Suche: %s",
+            potential_pauschale_codes,
+        )
 
 
     if not potential_pauschale_codes:
@@ -961,7 +1008,11 @@ def determine_applicable_pauschale(
             )
             bedingungs_html = check_res.get("html", "")
         except Exception as e_eval:
-            print(f"FEHLER bei evaluate_structured_conditions für Pauschale {code}: {e_eval}")
+            logger.error(
+                "FEHLER bei evaluate_structured_conditions für Pauschale %s: %s",
+                code,
+                e_eval,
+            )
             traceback.print_exc()
 
         tp_raw = pauschalen_dict[code].get("Taxpunkte")
@@ -979,7 +1030,10 @@ def determine_applicable_pauschale(
         })
 
     valid_candidates = [cand for cand in evaluated_candidates if cand["is_valid_structured"]]
-    print(f"DEBUG: Struktur-gültige Kandidaten nach Prüfung: {[c['code'] for c in valid_candidates]}")
+    logger.info(
+        "DEBUG: Struktur-gültige Kandidaten nach Prüfung: %s",
+        [c["code"] for c in valid_candidates],
+    )
 
     # Score pro gültigem Kandidaten berechnen (hier: Taxpunkte als Beispiel)
     for cand in valid_candidates:
@@ -1001,7 +1055,11 @@ def determine_applicable_pauschale(
             selection_type_message = "Fallback (C9x)"
         
         if chosen_list_for_selection:
-            print(f"INFO: Auswahl aus {len(chosen_list_for_selection)} struktur-gültigen {selection_type_message} Kandidaten.")
+            logger.info(
+                "INFO: Auswahl aus %s struktur-gültigen %s Kandidaten.",
+                len(chosen_list_for_selection),
+                selection_type_message,
+            )
 
             # Score je Kandidat ermitteln (hier einfach Taxpunkte als Beispiel)
             for cand in chosen_list_for_selection:
@@ -1016,13 +1074,16 @@ def determine_applicable_pauschale(
 
             chosen_list_for_selection.sort(key=sort_key_score_suffix)
             selected_candidate_info = chosen_list_for_selection[0]
-            print(f"INFO: Gewählte Pauschale nach Score-Sortierung: {selected_candidate_info['code']}")
+            logger.info(
+                "INFO: Gewählte Pauschale nach Score-Sortierung: %s",
+                selected_candidate_info["code"],
+            )
             # print(f"   DEBUG: Sortierte Kandidatenliste ({selection_type_message}): {[c['code'] for c in chosen_list_for_selection]}")
         else:
              # Sollte nicht passieren, wenn valid_candidates nicht leer war, aber zur Sicherheit
              return {"type": "Error", "message": "Interner Fehler bei der Pauschalenauswahl (Kategorisierung fehlgeschlagen).", "evaluated_pauschalen": evaluated_candidates}
     else: # Keine valid_candidates (keine Pauschale hat die strukturierte Prüfung bestanden)
-        print("INFO: Keine Pauschale erfüllt die strukturierten Bedingungen.")
+        logger.info("INFO: Keine Pauschale erfüllt die strukturierten Bedingungen.")
         # Erstelle eine informativere Nachricht, wenn potenzielle Kandidaten da waren
         if potential_pauschale_codes:
             # Hole die Namen der geprüften, aber nicht validen Pauschalen
@@ -1057,10 +1118,16 @@ def determine_applicable_pauschale(
         bedingungs_pruef_html_result = condition_result_html_dict.get("html", "<p class='error'>Fehler bei HTML-Generierung der Bedingungen.</p>")
         condition_errors_html_gen = condition_result_html_dict.get("errors", [])
     except Exception as e_html_gen:
-         print(f"FEHLER bei check_pauschale_conditions (HTML-Generierung) für {best_pauschale_code}: {e_html_gen}")
-         traceback.print_exc()
-         bedingungs_pruef_html_result = f"<p class='error'>Schwerwiegender Fehler bei HTML-Generierung der Bedingungen: {escape(str(e_html_gen))}</p>"
-         condition_errors_html_gen = [f"Fehler HTML-Generierung: {e_html_gen}"]
+        logger.error(
+            "FEHLER bei check_pauschale_conditions (HTML-Generierung) für %s: %s",
+            best_pauschale_code,
+            e_html_gen,
+        )
+        traceback.print_exc()
+        bedingungs_pruef_html_result = (
+            f"<p class='error'>Schwerwiegender Fehler bei HTML-Generierung der Bedingungen: {escape(str(e_html_gen))}</p>"
+        )
+        condition_errors_html_gen = [f"Fehler HTML-Generierung: {e_html_gen}"]
 
     # Erstelle die Erklärung für die Pauschalenauswahl
     # Kontext-LKNs für die Erklärung (aus dem `context` Dictionary)
@@ -1429,7 +1496,11 @@ def generate_condition_detail_html(
             condition_html += f"{html.escape(cond_type_comp)}: {html.escape(str(cond_value_comp))}"
 
     except Exception as e_detail_gen:
-        print(f"FEHLER beim Erstellen der Detailansicht für Vergleichs-Bedingung '{condition_tuple}': {e_detail_gen}")
+        logger.error(
+            "FEHLER beim Erstellen der Detailansicht für Vergleichs-Bedingung '%s': %s",
+            condition_tuple,
+            e_detail_gen,
+        )
         traceback.print_exc()
         condition_html += f"<i>Fehler bei Detailgenerierung: {html.escape(str(e_detail_gen))}</i>"
     
