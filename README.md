@@ -10,7 +10,9 @@ Dies ist ein Prototyp einer Webanwendung zur Unterstützung bei der Abrechnung m
 - `utils.py` bietet ein Übersetzungssystem für Regelmeldungen und Condition-Typen in Deutsch, Französisch und Italienisch.
 - In `regelpruefer_pauschale.py` sorgt eine Operator-Präzedenzlogik für korrektes "UND vor ODER" bei strukturierten Bedingungen.
 - `evaluate_structured_conditions` unterstützt einen konfigurierbaren
-  `GruppenOperator` (Standard `UND`) für die Verknüpfung der Bedingungsgruppen.
+  `GruppenOperator` (Standard `ODER`, einstellbar über
+  `DEFAULT_GROUP_OPERATOR` in `regelpruefer_pauschale.py`) für die Verknüpfung
+  der Bedingungsgruppen.
 - Die mehrsprachigen Prompts für LLM Stufe 1 und Stufe wurden in  `prompts.py` ausgelagert
 - Funktionale Erweiterung umfassen:
     - interaktive Info-Pop-ups, 
@@ -60,7 +62,7 @@ Der Assistent ist in den drei Landessprachen DE, FR und IT verfügbar. Die Sprac
         *   Versucht, TARDOC E/EZ-LKNs auf funktional äquivalente LKNs (oft Typ P/PZ) zu mappen, die als Bedingungen in den potenziellen Pauschalen vorkommen. Die Kandidatenliste für das Mapping wird dynamisch aus den Bedingungen der potenziell relevanten Pauschalen generiert.
     *   **Pauschalen-Anwendbarkeitsprüfung (`regelpruefer_pauschale.py`):**
         *   **Potenzielle Pauschalen finden:** Identifiziert mögliche Pauschalen basierend auf den regelkonformen LKNs (aus `rule_checked_leistungen`) unter Verwendung von `PAUSCHALEN_Leistungspositionen.json` und den LKN-Bedingungen in `PAUSCHALEN_Bedingungen.json`.
-        *   **Strukturierte Bedingungsprüfung (`evaluate_structured_conditions`):** Prüft für jede potenzielle Pauschale, ob ihre Bedingungsgruppen erfüllt sind. Zwischen den Gruppen gilt ein konfigurierbarer `GruppenOperator` (Standard `UND`). Innerhalb einer Gruppe wird die Spalte `Operator` (`UND`/`ODER`) jeder Zeile beachtet und mit "UND vor ODER" ausgewertet. So lässt sich aus einer Zeilenfolge wie
+        *   **Strukturierte Bedingungsprüfung (`evaluate_structured_conditions`):** Prüft für jede potenzielle Pauschale, ob ihre Bedingungsgruppen erfüllt sind. Zwischen den Gruppen gilt ein konfigurierbarer `GruppenOperator` (Standard `ODER`, siehe `DEFAULT_GROUP_OPERATOR`). Innerhalb einer Gruppe wird die Spalte `Operator` (`UND`/`ODER`) jeder Zeile beachtet und mit "UND vor ODER" ausgewertet. So lässt sich aus einer Zeilenfolge wie
           1. `SEITIGKEIT = B` (Operator `ODER`)
           2. `ANZAHL >= 2`  (Operator `UND`)
           3. `LKN IN LISTE OP`
