@@ -291,11 +291,11 @@
           },
           {
             "code": "CA.00.0020",
-            "qty": 15
+            "qty": 10
           },
           {
             "code": "CA.00.0030",
-            "qty": 1
+            "qty": 10
           },
           {
             "code": "CG.15.0010",
@@ -312,11 +312,11 @@
           },
           {
             "code": "CA.00.0020",
-            "qty": 15
+            "qty": 10
           },
           {
             "code": "CA.00.0030",
-            "qty": 1
+            "qty": 10
           },
           {
             "code": "CG.15.0010",
@@ -450,21 +450,21 @@
     "baseline": {
       "de": {
         "pauschale": {
-          "code": "C06.00A",
+          "code": "C06.00B",
           "qty": 1
         },
         "einzelleistungen": []
       },
       "fr": {
         "pauschale": {
-          "code": "C06.00A",
+          "code": "C06.00B",
           "qty": 1
         },
         "einzelleistungen": []
       },
       "it": {
         "pauschale": {
-          "code": "C06.00A",
+          "code": "C06.00B",
           "qty": 1
         },
         "einzelleistungen": []
@@ -565,9 +565,9 @@
     },
     "current": {},
     "query": {
-      "de": "Linksherzkatheter",
-      "fr": "Cathétérisme cardiaque gauche",
-      "it": "Cateterismo cardiaco sinistro"
+      "de": "Rechtsherzkatheter",
+      "fr": "Cathétérisme cardiaque droite",
+      "it": "Cateterismo cardiaco destra"
     }
   },
   "14": {
@@ -629,7 +629,7 @@
     "query": {
       "de": "Fingerfraktur, Nagelung mit Anästhesie durch Anästhesistin",
       "fr": "Fracture du doigt, enclouage avec anesthésie par anesthésiste",
-      "it": "Frattura del dito, chiodaggio  con anestesia eseguita dall'anestesista"
+      "it": "Frattura del dito, chiodaggio con anestesia eseguita dall'anestesista"
     }
   }
 }
