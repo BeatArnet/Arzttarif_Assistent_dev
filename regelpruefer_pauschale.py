@@ -197,6 +197,24 @@ def get_group_operator_for_pauschale(
             op = str(cond.get("GruppenOperator", "")).strip().upper()
             if op in ("UND", "ODER"):
                 return op
+
+    # Heuristik: Wenn keine explizite Angabe vorhanden ist, aber mehrere Gruppen
+    # existieren und die erste Gruppe mit "ODER" beginnt, werten wir dies als
+    # globalen Gruppenoperator "ODER".
+    first_operator = None
+    groups_seen: List[Any] = []
+    for cond in bedingungen_data:
+        if cond.get("Pauschale") != pauschale_code:
+            continue
+        grp = cond.get("Gruppe")
+        if grp not in groups_seen:
+            groups_seen.append(grp)
+            if first_operator is None:
+                first_operator = str(cond.get("Operator", "")).strip().upper()
+
+    if len(groups_seen) > 1 and first_operator == "ODER":
+        return "ODER"
+
     return default
 
 # === FUNKTION ZUR AUSWERTUNG DER STRUKTURIERTEN LOGIK (UND/ODER) ===
