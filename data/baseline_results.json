@@ -450,21 +450,21 @@
     "baseline": {
       "de": {
         "pauschale": {
-          "code": "C06.00B",
+          "code": "C06.00A",
           "qty": 1
         },
         "einzelleistungen": []
       },
       "fr": {
         "pauschale": {
-          "code": "C06.00B",
+          "code": "C06.00A",
           "qty": 1
         },
         "einzelleistungen": []
       },
       "it": {
         "pauschale": {
-          "code": "C06.00B",
+          "code": "C06.00A",
           "qty": 1
         },
         "einzelleistungen": []
