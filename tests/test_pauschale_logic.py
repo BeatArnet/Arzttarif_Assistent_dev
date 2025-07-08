@@ -3,7 +3,7 @@ import sys
 import pathlib
 import json
 sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))
-from regelpruefer_pauschale import evaluate_structured_conditions
+from regelpruefer_pauschale import evaluate_structured_conditions, DEFAULT_GROUP_OPERATOR
 
 class TestPauschaleLogic(unittest.TestCase):
     def test_or_operator_in_group(self):
@@ -173,7 +173,9 @@ class TestPauschaleLogic(unittest.TestCase):
         context = {"LKN": ["WA.10.0010", "C08.GD.0030"]}
 
         self.assertFalse(
-            evaluate_structured_conditions("C00.10A", context, bedingungen, tab_dict)
+            evaluate_structured_conditions(
+                "C00.10A", context, bedingungen, tab_dict, group_operator="UND"
+            )
         )
 
     def test_c03_26d_requires_all_conditions(self):
@@ -193,7 +195,9 @@ class TestPauschaleLogic(unittest.TestCase):
         context = {"LKN": ["WA.10.0010", "C08.GD.0030"]}
 
         self.assertFalse(
-            evaluate_structured_conditions("C03.26D", context, bedingungen, tab_dict)
+            evaluate_structured_conditions(
+                "C03.26D", context, bedingungen, tab_dict, group_operator="UND"
+            )
         )
 
     def test_c04_51b_mixed_operators(self):
@@ -216,7 +220,9 @@ class TestPauschaleLogic(unittest.TestCase):
         }
 
         self.assertTrue(
-            evaluate_structured_conditions("C04.51B", context_ok, bedingungen, tab_dict)
+            evaluate_structured_conditions(
+                "C04.51B", context_ok, bedingungen, tab_dict, group_operator="UND"
+            )
         )
 
         context_missing_lavage = {
