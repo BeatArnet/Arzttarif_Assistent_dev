@@ -224,12 +224,15 @@ def evaluate_structured_conditions(
     pauschale_bedingungen_data: List[Dict],
     tabellen_dict_by_table: Dict[str, List[Dict]],
     group_operator: str = DEFAULT_GROUP_OPERATOR,  # Dieser Operator gilt ZWISCHEN den Gruppen
+    debug: bool = False,
 ) -> bool:
     """
     Bewertet die Bedingungen einer Pauschale.
     Bedingungen werden zuerst nach 'Gruppe' gruppiert.
     Innerhalb jeder Gruppe wird die Logik basierend auf 'Ebene' und 'Operator' ausgewertet.
     Die Ergebnisse der Gruppen werden dann mit dem globalen 'group_operator' verknüpft.
+    Wenn ``debug`` ``True`` ist, wird für jede Gruppe der zusammengesetzte
+    Boolesche Ausdruck inklusive Ergebnis ausgegeben.
     """
     PAUSCHALE_KEY = 'Pauschale'
     GRUPPE_KEY = 'Gruppe'
@@ -332,6 +335,10 @@ def evaluate_structured_conditions(
         try:
             group_result_this_group = bool(eval(expr_str_group))
             group_results_bool.append(group_result_this_group)
+            if debug:
+                print(
+                    f"DEBUG Gruppe {group_id}: {expr_str_group} => {group_result_this_group}"
+                )
         except Exception as e_eval_group:
             print(f"FEHLER bei Gruppenlogik-Ausdruck (Pauschale: {pauschale_code}, Gruppe: {group_id}) '{expr_str_group}': {e_eval_group}")
             traceback.print_exc()
@@ -345,9 +352,16 @@ def evaluate_structured_conditions(
 
     # Verknüpfe die Ergebnisse der einzelnen Gruppen mit dem globalen group_operator
     if group_operator.upper() == "ODER":
-        return any(group_results_bool)
+        final_result = any(group_results_bool)
     else:  # "UND"
-        return all(group_results_bool)
+        final_result = all(group_results_bool)
+
+    if debug:
+        print(
+            f"DEBUG Ergebnis Pauschale {pauschale_code}: {group_results_bool} -> {final_result}"
+        )
+
+    return final_result
 
 # === FUNKTION ZUR HTML-GENERIERUNG DER BEDINGUNGSPRÜFUNG ===
 def check_pauschale_conditions(
