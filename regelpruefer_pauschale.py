@@ -13,6 +13,10 @@ __all__ = [
     "determine_applicable_pauschale",
 ]
 
+# Standardoperator zur Verknüpfung der Bedingungsgruppen.
+# Kann bei Bedarf mit wenig Aufwand wieder auf "UND" geändert werden.
+DEFAULT_GROUP_OPERATOR = "ODER"
+
 # === FUNKTION ZUR PRÜFUNG EINER EINZELNEN BEDINGUNG ===
 def check_single_condition(
     condition: Dict,
@@ -185,7 +189,7 @@ def get_beschreibung_fuer_icd_im_backend(
     return icd_code # Wenn nirgends gefunden, Code selbst zurückgeben
 
 def get_group_operator_for_pauschale(
-    pauschale_code: str, bedingungen_data: List[Dict], default: str = "UND"
+    pauschale_code: str, bedingungen_data: List[Dict], default: str = DEFAULT_GROUP_OPERATOR
 ) -> str:
     """Liefert den Gruppenoperator (UND/ODER) fuer eine Pauschale."""
     for cond in bedingungen_data:
@@ -201,7 +205,7 @@ def evaluate_structured_conditions(
     context: Dict,
     pauschale_bedingungen_data: List[Dict],
     tabellen_dict_by_table: Dict[str, List[Dict]],
-    group_operator: str = "UND",  # Dieser Operator gilt ZWISCHEN den Gruppen
+    group_operator: str = DEFAULT_GROUP_OPERATOR,  # Dieser Operator gilt ZWISCHEN den Gruppen
 ) -> bool:
     """
     Bewertet die Bedingungen einer Pauschale.
@@ -324,7 +328,7 @@ def evaluate_structured_conditions(
     # Verknüpfe die Ergebnisse der einzelnen Gruppen mit dem globalen group_operator
     if group_operator.upper() == "ODER":
         return any(group_results_bool)
-    else: # Default ist UND
+    else:  # "UND"
         return all(group_results_bool)
 
 # === FUNKTION ZUR HTML-GENERIERUNG DER BEDINGUNGSPRÜFUNG ===
@@ -717,7 +721,7 @@ def check_pauschale_conditions(
     # Fürs Erste lassen wir es hier, aber es ist nicht ganz präzise.
     # Besser: determine_applicable_pauschale prüft, ob die gewählte Pauschale eine LKN-Bedingung hatte, die erfüllt wurde.
     final_trigger_lkn_met = False
-    group_op = get_group_operator_for_pauschale(pauschale_code, pauschale_bedingungen_data, default="UND")
+    group_op = get_group_operator_for_pauschale(pauschale_code, pauschale_bedingungen_data, default=DEFAULT_GROUP_OPERATOR)
     if evaluate_structured_conditions(pauschale_code, context, pauschale_bedingungen_data, tabellen_dict_by_table, group_op):
         # Prüfe, ob irgendeine erfüllte LKN-Bedingung in den *gültigen* Gruppen existiert
         for cond_def in conditions_for_this_pauschale:
@@ -821,7 +825,7 @@ def determine_applicable_pauschale(
         is_pauschale_valid_structured = False
         bedingungs_html = ""
         try:
-            grp_op = get_group_operator_for_pauschale(code, pauschale_bedingungen_data, default="UND")
+            grp_op = get_group_operator_for_pauschale(code, pauschale_bedingungen_data, default=DEFAULT_GROUP_OPERATOR)
             is_pauschale_valid_structured = evaluate_structured_conditions(
                 code, context, pauschale_bedingungen_data, tabellen_dict_by_table, grp_op
             )
