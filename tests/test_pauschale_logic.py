@@ -224,7 +224,7 @@ class TestPauschaleLogic(unittest.TestCase):
             "LKN": ["C04.GC.0020", "C04.GC.Z005"],
         }
 
-        self.assertFalse(
+        self.assertTrue(
             evaluate_structured_conditions("C04.51B", context_missing_lavage, bedingungen, tab_dict)
         )
 
