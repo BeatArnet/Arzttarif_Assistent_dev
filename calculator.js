@@ -69,7 +69,8 @@ const DYN_TEXT = {
         thIcdText: 'Beschreibung',
         diffTaxpoints: 'Differenz Taxpunkte',
         implantsIncluded: 'Implantate inbegriffen',
-        dignitiesLabel: 'Dignitäten'
+        dignitiesLabel: 'Dignitäten',
+        descriptionNotFound: 'Beschreibung nicht gefunden'
     },
     fr: {
         spinnerWorking: 'Vérification en cours...',
@@ -119,7 +120,8 @@ const DYN_TEXT = {
         thIcdText: 'Description',
         diffTaxpoints: 'Différence points tarifaires',
         implantsIncluded: 'Implants inclus',
-        dignitiesLabel: 'Dignités'
+        dignitiesLabel: 'Dignités',
+        descriptionNotFound: 'Description non trouvée'
     },
     it: {
         spinnerWorking: 'Verifica in corso...',
@@ -169,7 +171,8 @@ const DYN_TEXT = {
         thIcdText: 'Descrizione',
         diffTaxpoints: 'Differenza punti tariffari',
         implantsIncluded: 'Impianti inclusi',
-        dignitiesLabel: 'Dignità'
+        dignitiesLabel: 'Dignità',
+        descriptionNotFound: 'Descrizione non trovata'
     }
 };
 
@@ -658,20 +661,19 @@ async function loadData() {
 
         // DignitaetenMap aufbauen
         dignitaetenMap = {};
-        if (Array.isArray(data_dignitaeten)) {
+        if (Array.isArray(data_dignitaeten) && data_dignitaeten.length > 0) {
             data_dignitaeten.forEach(dignity => {
-                if (dignity && dignity.Dignitaet_Code) {
-                    dignitaetenMap[dignity.Dignitaet_Code] = dignity;
+                if (dignity && dignity.DignitaetCode) {
+                    dignitaetenMap[String(dignity.DignitaetCode).trim()] = dignity;
                 }
             });
+            if (Object.keys(dignitaetenMap).length === 0) {
+                console.warn("DignitaetenMap is empty after processing data_dignitaeten. Check DignitaetCode fields in the JSON.");
+            }
+        } else {
+            // This warning will now also catch the case where data_dignitaeten is an empty array.
+            console.warn("data_dignitaeten is not a non-empty array. DignitaetenMap will be empty. Ensure 'data/DIGNITAETEN.json' is loaded correctly and contains data.");
         }
-         if (Object.keys(dignitaetenMap).length === 0) {
-             console.warn("DignitaetenMap konnte nicht erstellt werden oder ist leer.");
-             // Optional: Fehler werfen, wenn Dignitäten kritisch sind
-             // missingDataErrors.push("Dignitäten-Mapping");
-         }
-
-
         // Leistungsgruppen-Übersicht aufbauen
         groupInfoMap = {};
         data_tardocGesamt.forEach(item => {
@@ -1075,40 +1077,60 @@ function displayPauschale(abrechnungsObjekt) {
 
     let tableRowsHtml = `
         <tr>
-            <td>${pauschaleCode}</td>
+            <td><b>${pauschaleCode}</b></td> 
             <td>${pauschaleText}</td>
             <td>${pauschaleTP}</td>
         </tr>`;
 
-    // Add "Implantate inbegriffen" if applicable
+    let combinedInfoParts = [];
+
+    // "Implantate inbegriffen"
     if (pauschaleDetails.Implantate_inbegriffen === true) {
-        tableRowsHtml += `
-            <tr>
-                <td colspan="3" style="font-style: italic; text-align: left;">${tDyn('implantsIncluded')}</td>
-            </tr>`;
+        combinedInfoParts.push(escapeHtml(tDyn('implantsIncluded')));
     }
 
-    // Add "Dignitaeten" if applicable
+    // "Dignitaeten"
     const dignitaetenString = pauschaleDetails.Dignitaeten;
     if (dignitaetenString && typeof dignitaetenString === 'string' && dignitaetenString.trim() !== "") {
-        const dignityCodes = dignitaetenString.split('|').map(code => code.trim()).filter(Boolean);
+        const dignityCodes = dignitaetenString.split('|').map(code => String(code).trim()).filter(Boolean);
         if (dignityCodes.length > 0) {
-            let dignitiesListHtml = "";
+            if (Object.keys(dignitaetenMap).length === 0 && combinedInfoParts.length === 0) { // Only warn if map is empty AND we intend to show dignities
+                console.warn("DignitaetenMap is empty when trying to display dignities. Dignities will show 'Beschreibung nicht gefunden'. Check data loading for 'data/DIGNITAETEN.json'.");
+            }
+            
+            let dignitiesDisplayList = [];
             dignityCodes.forEach(code => {
                 const dignityDetail = dignitaetenMap[code];
+                let description;
                 if (dignityDetail) {
-                    const dignityText = getLangField(dignityDetail, 'Dignitaet_Text') || code; // Fallback to code
-                    dignitiesListHtml += `<div>${escapeHtml(dignityText)}</div>`;
+                    const lang = (typeof currentLang === 'undefined') ? 'de' : currentLang;
+                    if (lang === 'fr') {
+                        description = dignityDetail.DignitaetText_f || dignityDetail.DignitaetText || code;
+                    } else if (lang === 'it') {
+                        description = dignityDetail.DignitaetText_i || dignityDetail.DignitaetText || code;
+                    } else { 
+                        description = dignityDetail.DignitaetText || code;
+                    }
+                    dignitiesDisplayList.push(`${escapeHtml(code)}, ${escapeHtml(description)}`);
                 } else {
-                    dignitiesListHtml += `<div>${escapeHtml(code)} (Beschreibung nicht gefunden)</div>`; // Fallback
+                    if (Object.keys(dignitaetenMap).length > 0) { // Avoid spamming if map is generally empty
+                         console.warn(`No dignityDetail found in dignitaetenMap for code '${code}'.`);
+                    }
+                    dignitiesDisplayList.push(`${escapeHtml(code)}, ${escapeHtml(tDyn('descriptionNotFound', {code: code}))}`); // Assuming you might add a more specific translation
                 }
             });
-            tableRowsHtml += `
-                <tr>
-                    <th style="text-align: left; vertical-align: top;">${tDyn('dignitiesLabel')}:</th>
-                    <td colspan="2">${dignitiesListHtml}</td>
-                </tr>`;
+            
+            if(dignitiesDisplayList.length > 0) {
+                 combinedInfoParts.push(`${escapeHtml(tDyn('dignitiesLabel'))}: ${dignitiesDisplayList.join("; ")}`);
+            }
         }
+    }
+
+    if (combinedInfoParts.length > 0) {
+        tableRowsHtml += `
+            <tr>
+                <td colspan="3" style="text-align: left;">${combinedInfoParts.join(". ")}</td>
+            </tr>`;
     }
 
 
