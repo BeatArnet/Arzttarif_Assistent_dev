@@ -3,7 +3,7 @@ import sys
 import pathlib
 import json
 sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))
-from regelpruefer_pauschale import (
+from conditions import (
     evaluate_structured_conditions,
     DEFAULT_GROUP_OPERATOR,
     get_group_operator_for_pauschale,
@@ -371,7 +371,7 @@ class TestPauschaleLogic(unittest.TestCase):
 
     def test_score_based_selection(self):
         """Higher scoring Pauschale should be chosen even if suffix later."""
-        from regelpruefer_pauschale import determine_applicable_pauschale
+        from selector import determine_applicable_pauschale
 
         pauschalen_dict = {
             "X00.01A": {"Pauschale": "X00.01A", "Pauschale_Text": "A", "Taxpunkte": "100"},

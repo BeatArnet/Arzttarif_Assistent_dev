@@ -244,42 +244,22 @@ except ImportError:
     prepare_tardoc_abrechnung_func = prepare_tardoc_lkn_import_fb
 
 try:
-    # Für regelpruefer_pauschale.py
-    print("INFO: Versuche, regelpruefer_pauschale.py zu importieren...")
-    import regelpruefer_pauschale as rpp_module
-    print(f"DEBUG: Importversuch abgeschlossen. rpp_module ist: {rpp_module}")
-    print(f"DEBUG: Inhalt von rpp_module: {dir(rpp_module)}")
-    print("✓ Regelprüfer Pauschalen (regelpruefer_pauschale.py) Modul geladen.")
+    import conditions as cond_module
+    import html_report as html_module
+    import selector as selector_module
+    print("✓ Module conditions, html_report und selector geladen.")
 
-    if rpp_module and hasattr(rpp_module, 'evaluate_structured_conditions'):
-        evaluate_structured_conditions = rpp_module.evaluate_structured_conditions
-    else: print("FEHLER: 'evaluate_structured_conditions' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv.")
-
-    if rpp_module and hasattr(rpp_module, 'check_pauschale_conditions'):
-        check_pauschale_conditions = rpp_module.check_pauschale_conditions  # type: ignore[attr-defined]
-    else: print("FEHLER: 'check_pauschale_conditions' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv.")
-
-    if rpp_module and hasattr(rpp_module, 'get_simplified_conditions'):
-        get_simplified_conditions = rpp_module.get_simplified_conditions  # type: ignore[attr-defined]
-    else: print("FEHLER: 'get_simplified_conditions' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv.")
-
-    if rpp_module and hasattr(rpp_module, 'generate_condition_detail_html'):
-        generate_condition_detail_html = rpp_module.generate_condition_detail_html  # type: ignore[attr-defined]
-    else: print("FEHLER: 'generate_condition_detail_html' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv.")
-
-    if rpp_module and hasattr(rpp_module, 'determine_applicable_pauschale'):
-        determine_applicable_pauschale_func = rpp_module.determine_applicable_pauschale  # type: ignore[attr-defined]
-        print("DEBUG: 'determine_applicable_pauschale' aus regelpruefer_pauschale.py zugewiesen.")
-    else: print("FEHLER: 'determine_applicable_pauschale' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv.")
-
+    evaluate_structured_conditions = cond_module.evaluate_structured_conditions
+    check_pauschale_conditions = html_module.check_pauschale_conditions
+    get_simplified_conditions = html_module.get_simplified_conditions
+    generate_condition_detail_html = html_module.generate_condition_detail_html
+    determine_applicable_pauschale_func = selector_module.determine_applicable_pauschale
 except ImportError as e_imp:
-    print(f"FEHLER (ImportError): regelpruefer_pauschale.py konnte nicht importiert werden: {e_imp}! Standard-Fallbacks bleiben aktiv.")
+    print(f"FEHLER (ImportError): Spezialmodule konnten nicht importiert werden: {e_imp}! Standard-Fallbacks bleiben aktiv.")
     traceback.print_exc()
-except Exception as e_gen: # Fängt auch andere Fehler während des Imports
-    print(f"FEHLER (Allgemein beim Import): Ein Fehler trat beim Laden von regelpruefer_pauschale.py auf: {e_gen}! Standard-Fallbacks bleiben aktiv.")
+except Exception as e_gen:
+    print(f"FEHLER (Allgemein beim Import): Ein Fehler trat beim Laden der Spezialmodule auf: {e_gen}! Standard-Fallbacks bleiben aktiv.")
     traceback.print_exc()
-    # Setze rpp_module auf None, um hasattr-Fehler unten zu vermeiden, falls es nicht initialisiert wurde
-    rpp_module = None # Sicherstellen, dass es definiert ist, auch wenn der Import fehlschlug
 
 # --- Globale Datencontainer ---
 leistungskatalog_data: list[dict] = []
