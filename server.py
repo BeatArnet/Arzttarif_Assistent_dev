@@ -937,12 +937,21 @@ def get_LKNs_from_pauschalen_conditions(
                         if lkn_upper not in processed_lkn_codes:
                             desc = item.get('Code_Text') or leistungskatalog.get(lkn_upper, {}).get('Beschreibung', 'N/A') # Verwende umbenannt
                             condition_lkns_with_desc[lkn_upper] = desc
-                            processed_lkn_codes.add(lkn_upper)
+                processed_lkn_codes.add(lkn_upper)
         for lkn_upper in current_lkns_to_add:
             if lkn_upper not in processed_lkn_codes:
                 desc = leistungskatalog.get(lkn_upper, {}).get('Beschreibung', 'N/A') # Verwende umbenannt
                 condition_lkns_with_desc[lkn_upper] = desc
                 processed_lkn_codes.add(lkn_upper)
+
+    # Ergänze WA.10-Codes aus Tabelle ANAST, wenn bereits Anästhesie-LKNs vorhanden sind
+    if any(code.startswith('WA.') for code in condition_lkns_with_desc):
+        for item in get_table_content('ANAST', 'service_catalog', tabellen_dict):
+            code = str(item.get('Code', '')).upper()
+            if code.startswith('WA.10') and code not in processed_lkn_codes:
+                desc = item.get('Code_Text') or leistungskatalog.get(code, {}).get('Beschreibung', 'N/A')
+                condition_lkns_with_desc[code] = desc
+                processed_lkn_codes.add(code)
     # print(f"  DEBUG (get_LKNs_from_pauschalen): {len(condition_lkns_with_desc)} einzigartige Bedingungs-LKNs gefunden.")
     return condition_lkns_with_desc
 
@@ -1365,16 +1374,34 @@ def analyze_billing():
             mapping_process_had_connection_error = False
 
             if tardoc_lkns_to_map_list and mapping_candidate_lkns_dict:
+                anast_table_content_codes = {
+                    str(item['Code']).upper()
+                    for item in get_table_content("ANAST", "service_catalog", tabellen_dict_by_table)
+                    if item.get('Code')
+                }
                 for tardoc_leistung_map_obj in tardoc_lkns_to_map_list:
                     t_lkn_code = tardoc_leistung_map_obj.get('lkn')
                     t_lkn_desc = tardoc_leistung_map_obj.get('beschreibung')
                     current_candidates_for_llm = mapping_candidate_lkns_dict
-                    if isinstance(t_lkn_code, str) and t_lkn_code.startswith('AG.'):
-                        anast_table_content_codes = {
-                            str(item['Code']).upper() for item in get_table_content("ANAST", "service_catalog", tabellen_dict_by_table) if item.get('Code') # Globale Variable
-                        }
+
+                    is_anesthesia_related = False
+                    if isinstance(t_lkn_code, str):
+                        t_lkn_code_upper = t_lkn_code.upper()
+                        desc_lower = str(t_lkn_desc or "").lower()
+                        is_anesthesia_related = (
+                            t_lkn_code_upper.startswith('AG.')
+                            or t_lkn_code_upper.startswith('WA.20')
+                            or 'anästh' in desc_lower
+                            or 'anesth' in desc_lower
+                            or 'sedierung' in desc_lower
+                            or 'sedation' in desc_lower
+                            or 'pda' in desc_lower
+                        )
+
+                    if is_anesthesia_related:
                         filtered_anast_candidates = {
-                            k: v for k, v in mapping_candidate_lkns_dict.items()
+                            k: v
+                            for k, v in mapping_candidate_lkns_dict.items()
                             if k.startswith('WA.') or k in anast_table_content_codes
                         }
                         if filtered_anast_candidates:
