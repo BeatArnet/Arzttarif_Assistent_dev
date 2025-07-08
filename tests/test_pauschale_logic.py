@@ -328,5 +328,24 @@ class TestPauschaleLogic(unittest.TestCase):
             evaluate_structured_conditions("OGF", context, conditions, {}, group_operator="ODER")
         )
 
+    def test_deeply_nested_levels(self):
+        """Expressions with mehrstufiger Ebene sollen korrekt ausgewertet werden."""
+        conditions = [
+            {"BedingungsID": 1, "Pauschale": "DEEP", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "A", "Ebene": 1},
+            {"BedingungsID": 2, "Pauschale": "DEEP", "Gruppe": 1, "Operator": "ODER", "Bedingungstyp": "LKN", "Werte": "B", "Ebene": 2},
+            {"BedingungsID": 3, "Pauschale": "DEEP", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "C", "Ebene": 3},
+            {"BedingungsID": 4, "Pauschale": "DEEP", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "D", "Ebene": 3},
+        ]
+
+        context_true = {"LKN": ["A", "C", "D"]}
+        self.assertTrue(
+            evaluate_structured_conditions("DEEP", context_true, conditions, {})
+        )
+
+        context_false = {"LKN": ["A", "C"]}
+        self.assertFalse(
+            evaluate_structured_conditions("DEEP", context_false, conditions, {})
+        )
+
 if __name__ == "__main__":
     unittest.main()
