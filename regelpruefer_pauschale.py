@@ -1046,8 +1046,9 @@ def determine_applicable_pauschale(
     best_pauschale_details = selected_candidate_info["details"].copy() # Kopie für Modifikationen
 
     # Generiere HTML für die Bedingungsprüfung der ausgewählten Pauschale
-    bedingungs_pruef_html_result = render_condition_results_html(
-        check_pauschale_conditions(
+    condition_errors_html_gen = [] # Initialize with an empty list
+    try:
+        condition_result_html_dict = check_pauschale_conditions(
             best_pauschale_code,
             context,
             pauschale_bedingungen_data,
@@ -1056,10 +1057,11 @@ def determine_applicable_pauschale(
             lang
         )
         bedingungs_pruef_html_result = condition_result_html_dict.get("html", "<p class='error'>Fehler bei HTML-Generierung der Bedingungen.</p>")
-        condition_errors_html_gen = condition_result_html_dict.get("errors", [])
+        # Errors from check_pauschale_conditions itself (if any were designed to be returned, currently it's an empty list)
+        condition_errors_html_gen.extend(condition_result_html_dict.get("errors", []))
     except Exception as e_html_gen:
         logger.error(
-            "FEHLER bei check_pauschale_conditions (HTML-Generierung) für %s: %s",
+            "FEHLER bei Aufruf von check_pauschale_conditions (HTML-Generierung) für %s: %s",
             best_pauschale_code,
             e_html_gen,
         )
