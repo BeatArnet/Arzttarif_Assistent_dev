@@ -150,8 +150,8 @@ BEISPIELE_PATH = DATA_DIR / "beispiele.json"
 # --- Typ-Aliase für Klarheit ---
 EvaluateStructuredConditionsType = Callable[[str, Dict[Any, Any], List[Dict[Any, Any]], Dict[str, List[Dict[Any, Any]]]], bool]
 CheckPauschaleConditionsType = Callable[
-    [str, Dict[Any, Any], List[Dict[Any, Any]], Dict[str, List[Dict[Any, Any]]], Dict[str, Dict[Any, Any]], str],
-    Dict[str, Any]
+    [str, Dict[Any, Any], List[Dict[Any, Any]], Dict[str, List[Dict[Any, Any]]]],
+    List[Dict[str, Any]]
 ]
 GetSimplifiedConditionsType = Callable[[str, List[Dict[Any, Any]]], Set[Any]]
 GenerateConditionDetailHtmlType = Callable[
@@ -178,12 +178,10 @@ def default_check_html_fallback(
     pauschale_code: str,
     context: Dict[Any, Any],
     pauschale_bedingungen_data: List[Dict[Any, Any]],
-    tabellen_dict_by_table: Dict[str, List[Dict[Any, Any]]],
-    leistungskatalog_dict: Dict[str, Dict[Any, Any]],
-    lang: str = 'de'
-) -> Dict[str, Any]:
+    tabellen_dict_by_table: Dict[str, List[Dict[Any, Any]]]
+) -> List[Dict[str, Any]]:
     print("WARNUNG: Fallback für 'check_pauschale_conditions' aktiv.")
-    return {"html": "HTML-Prüfung nicht verfügbar (Fallback)", "errors": ["Fallback aktiv"], "trigger_lkn_condition_met": False}
+    return []
 
 def default_get_simplified_conditions_fallback( # Matches: get_simplified_conditions(pauschale_code: str, bedingungen_data: list[dict]) -> set
     pauschale_code: str,
@@ -913,13 +911,23 @@ def get_LKNs_from_pauschalen_conditions(
                         lkn_upper = str(lkn_code).upper() # str(lkn_code)
                         if lkn_upper not in processed_lkn_codes:
                             desc = item.get('Code_Text') or leistungskatalog.get(lkn_upper, {}).get('Beschreibung', 'N/A') # Verwende umbenannt
-                            condition_lkns_with_desc[lkn_upper] = desc
-                            processed_lkn_codes.add(lkn_upper)
+                condition_lkns_with_desc[lkn_upper] = desc
+                processed_lkn_codes.add(lkn_upper)
         for lkn_upper in current_lkns_to_add:
             if lkn_upper not in processed_lkn_codes:
                 desc = leistungskatalog.get(lkn_upper, {}).get('Beschreibung', 'N/A') # Verwende umbenannt
                 condition_lkns_with_desc[lkn_upper] = desc
                 processed_lkn_codes.add(lkn_upper)
+
+    # Wenn WA.20-Leistungen enthalten sind, füge alle Codes aus der ANAST-Tabelle hinzu
+    if any(code.startswith('WA.20.') for code in condition_lkns_with_desc):
+        anast_entries = tabellen_dict.get('anast', []) + tabellen_dict.get('ANAST', [])
+        for item in anast_entries:
+            lkn_code = str(item.get('Code', '')).upper()
+            if lkn_code and lkn_code not in processed_lkn_codes:
+                desc = item.get('Code_Text') or leistungskatalog.get(lkn_code, {}).get('Beschreibung', 'N/A')
+                condition_lkns_with_desc[lkn_code] = desc
+                processed_lkn_codes.add(lkn_code)
     # print(f"  DEBUG (get_LKNs_from_pauschalen): {len(condition_lkns_with_desc)} einzigartige Bedingungs-LKNs gefunden.")
     return condition_lkns_with_desc
 
