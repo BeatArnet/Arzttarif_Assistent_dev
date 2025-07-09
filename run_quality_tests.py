@@ -1,7 +1,10 @@
 import json
+import logging
 from pathlib import Path
 from typing import List
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
 
 # Load environment variables from .env file at the very beginning
 load_dotenv()
@@ -21,7 +24,9 @@ def run_tests() -> None:
     # Überprüfe hier den Status von daten_geladen aus dem server Modul.
     from server import daten_geladen as server_daten_geladen
     if not server_daten_geladen:
-        print("Fehler: Server-Daten wurden nicht korrekt initialisiert. Tests können nicht ausgeführt werden.")
+        logger.error(
+            "Fehler: Server-Daten wurden nicht korrekt initialisiert. Tests können nicht ausgeführt werden."
+        )
         return
 
     results: List[bool] = []
@@ -35,7 +40,12 @@ def run_tests() -> None:
                     json={"id": int(ex_id), "lang": lang},
                 )
                 if resp.status_code != 200:
-                    print(f"Beispiel {ex_id} [{lang}] Fehler: HTTP {resp.status_code}")
+                    logger.error(
+                        "Beispiel %s [%s] Fehler: HTTP %s",
+                        ex_id,
+                        lang,
+                        resp.status_code,
+                    )
                     results.append(False)
                     continue
 
@@ -43,12 +53,18 @@ def run_tests() -> None:
                 passed = bool(data.get("passed"))
                 diff = data.get("diff", "")
                 status = "PASS" if passed else "FAIL"
-                print(f"Beispiel {ex_id} [{lang}]: {status}{' - ' + diff if diff else ''}")
+                logger.info(
+                    "Beispiel %s [%s]: %s%s",
+                    ex_id,
+                    lang,
+                    status,
+                    f" - {diff}" if diff else "",
+                )
                 results.append(passed)
 
     total = len(results)
     passed_count = sum(1 for r in results if r)
-    print(f"\n{passed_count}/{total} Tests bestanden.")
+    logger.info("\n%s/%s Tests bestanden.", passed_count, total)
 
 
 if __name__ == "__main__":
