@@ -1,4 +1,30 @@
 # regelpruefer_pauschale.py (Version mit korrigiertem Import und 9 Argumenten)
+'''
+Die Datei regelpruefer_pauschale.py implementiert eine mehrstufige Prüfung, um aus den möglichen Pauschalen die passende auszuwählen:
+
+Potenzielle Pauschalen ermitteln
+Aus den regelgeprüften LKNs werden mithilfe der Verknüpfungen aus PAUSCHALEN_Leistungspositionen.json und den LKN-Bedingungen 
+in PAUSCHALEN_Bedingungen.json zunächst alle in Frage kommenden Pauschalen bestimmt
+
+Strukturierte Bedingungsprüfung
+Für jede gefundene Pauschale werden die Bedingungszeilen anhand der UND/ODER‑Logik geprüft (evaluate_structured_conditions). 
+Dabei wird der in der Bedingungsdatei angegebene GruppenOperator beachtet. Innerhalb einer Gruppe wird 
+der Operator jeder Zeile („UND“ oder „ODER“) berücksichtigt, sodass sich ein boolescher Ausdruck ergibt 
+(z. B. (SEITIGKEIT = B ODER ANZAHL >= 2) UND LKN IN LISTE OP)
+
+Beste Pauschale wählen
+Nur Pauschalen, deren gesamte Bedingungslogik erfüllt ist, bleiben im Rennen. 
+Aus diesen wird in determine_applicable_pauschale der Kandidat mit dem höchsten Score (Taxpunkte) und dem niedrigsten Suffix gewählt. 
+Fallback‑Pauschalen (Codes C90‑C99) werden nur herangezogen, wenn keine spezifische Pauschale gültig ist
+
+Ergebnisaufbereitung
+check_pauschale_conditions erzeugt anschließend ein strukturiertes HTML mit dem Erfüllungsstatus jeder einzelnen Bedingung 
+und liefert zusammen mit der Begründung das Endresultat zurück.
+
+Zusammengefasst basiert die Pauschalenprüfung also auf einer systematischen Suche nach passenden Codes 
+und einer detaillierten Auswertung der Bedingungsgruppen (UND/ODER‑Logik). 
+Validierte Kandidaten werden nach Komplexität priorisiert und mit erläuternden Details ausgegeben.
+'''
 import traceback
 import json
 import logging
@@ -865,7 +891,8 @@ def determine_applicable_pauschale(
     leistungskatalog_dict: Dict[str, Dict], # Für LKN-Beschreibungen etc.
     tabellen_dict_by_table: Dict[str, List[Dict]], # Für Tabellen-Lookups
     potential_pauschale_codes_input: Set[str] | None = None, # Optional vorabgefilterte Codes
-    lang: str = 'de'
+    lang: str = 'de',
+    debug: bool = False
     ) -> dict:
     """Finde die bestmögliche Pauschale anhand der Regeln.
 
