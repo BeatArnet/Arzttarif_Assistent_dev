@@ -1198,4 +1198,3 @@ def generate_condition_detail_html(
         condition_html += f"<i>Fehler bei Detailgenerierung: {html.escape(str(e_detail_gen))}</i>"
     condition_html += "</li>"
     return condition_html
-# [end of regelpruefer_pauschale.py] # Ensure this is a comment or removed

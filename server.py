@@ -1374,7 +1374,7 @@ def analyze_billing():
                     pauschale_haupt_pruef_kontext,
                     pauschale_lp_data,
                         # pauschale_bedingungen_data, # Ersetzt durch pauschale_bedingungen_indexed
-                        pauschale_bedingungen_indexed, # NEU
+                        pauschale_bedingungen_data, # KORREKTUR: Liste statt Dict
                     pauschalen_dict,
                     leistungskatalog_dict,
                     tabellen_dict_by_table,
@@ -1694,7 +1694,7 @@ def analyze_billing():
                         user_input, rule_checked_leistungen_list, pauschale_haupt_pruef_kontext,
                         pauschale_lp_data,
                         # pauschale_bedingungen_data, # Ersetzt durch pauschale_bedingungen_indexed
-                        pauschale_bedingungen_indexed, # NEU
+                        pauschale_bedingungen_data, # KORREKTUR: Liste statt Dict
                         pauschalen_dict,
                         leistungskatalog_dict, tabellen_dict_by_table, potential_pauschale_codes_set,
                         lang
