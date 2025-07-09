@@ -363,10 +363,10 @@ def evaluate_structured_conditions(
     context: Dict,
     pauschale_bedingungen_data: List[Dict],
     tabellen_dict_by_table: Dict[str, List[Dict]],
-    group_operator: str = DEFAULT_GROUP_OPERATOR,  # Dieser Operator gilt ZWISCHEN den Gruppen
+    # group_operator: str = DEFAULT_GROUP_OPERATOR, # This parameter is no longer used directly as AST defines inter-group logic
     debug: bool = False,
 ) -> bool:
-    """Prüft die UND/ODER-Bedingungen einer Pauschale.
+    """Prüft die UND/ODER-Bedingungen einer Pauschale unter Berücksichtigung von AST VERBINDUNGSOPERATOR.
 
     Parameters
     ----------
@@ -413,83 +413,120 @@ def evaluate_structured_conditions(
     EBENE_KEY = 'Ebene'
     BED_ID_KEY = 'BedingungsID'
     BED_TYP_KEY = 'Bedingungstyp'
+    AST_VERBINDUNGSOPERATOR_TYPE = "AST VERBINDUNGSOPERATOR"
 
-    conditions_for_this_pauschale = [
-        cond
-        for cond in pauschale_bedingungen_data
-        if cond.get(PAUSCHALE_KEY) == pauschale_code
-        and str(cond.get(BED_TYP_KEY, "")).upper() != "AST VERBINDUNGSOPERATOR"
-    ]
+    # 1. Alle Bedingungen für die Pauschale holen und sortieren
+    all_conditions_for_pauschale = sorted(
+        [cond for cond in pauschale_bedingungen_data if cond.get(PAUSCHALE_KEY) == pauschale_code],
+        key=lambda c: (c.get(GRUPPE_KEY, 0), c.get(BED_ID_KEY, 0)) # Sort by Gruppe, then BedingungsID
+    )
 
-    if not conditions_for_this_pauschale:
+    if not all_conditions_for_pauschale:
         return True  # Keine Bedingungen = immer erfüllt
 
-    # Bedingungen nach 'Gruppe' gruppieren
-    grouped_conditions: Dict[Any, List[Dict]] = {}
-    # Sortierung nach Gruppe, dann Ebene, dann ID ist wichtig für die korrekte Verarbeitung
-    # innerhalb von `evaluate_single_group_logic`
-    sorted_conditions_overall = sorted(
-        conditions_for_this_pauschale,
+    # 2. AST-Operatoren und reguläre Bedingungen trennen
+    ast_operators: Dict[int, str] = {} # Key: Gruppe_ID that the AST operator precedes
+    regular_conditions_for_pauschale: List[Dict] = []
+
+    # AST Operatoren sind typischerweise mit der Gruppe *davor* assoziiert
+    # oder haben Ebene 0 und stehen zwischen den Gruppen.
+    # Wir sammeln sie und merken uns den Operator für die *nächste* Verknüpfung.
+    # Ein AST Operator in Gruppe N mit Operator ODER bedeutet: (Ergebnis Gruppe N) ODER (Ergebnis Gruppe N+1)
+
+    # Temporäre Struktur, um AST-Operatoren nach ihrer Gruppe zu speichern
+    # Ein AST-Operator in Gruppe X bestimmt die Verknüpfung von Gruppe X mit Gruppe X+1
+    # oder, falls Ebene 0, die Verknüpfung der vorherigen Hauptgruppe mit der nächsten.
+    # Die Dokumentation sagt: "Der Operator-Wert dieser AST VERBINDUNGSOPERATOR-Zeile (z.B. ODER)
+    # bestimmt, wie Ergebnis_Gruppe_N mit dem Ergebnis_Gruppe_N+1 verknüpft wird."
+    # Und: "Nach der Verarbeitung einer Gruppe prüfen, ob die nächste Zeile ein AST VERBINDUNGSOPERATOR ist."
+    # Dies deutet darauf hin, dass der AST Operator *nach* einer Gruppe relevant ist.
+
+    # Wir gehen davon aus, dass ein AST-Operator, der in Gruppe N gefunden wird,
+    # die Verknüpfung zwischen dem Ergebnis von Gruppe N und dem Ergebnis von Gruppe N+1 steuert.
+    # AST-Operatoren mit Ebene 0 sind spezielle Marker.
+
+    potential_ast_ops_by_preceding_group: Dict[int, str] = {}
+
+    for cond in all_conditions_for_pauschale:
+        if str(cond.get(BED_TYP_KEY, "")).upper() == AST_VERBINDUNGSOPERATOR_TYPE:
+            # Der AST-Operator in Gruppe G steuert die Verknüpfung von G mit G+1
+            # Die Gruppe eines AST Operators ist die Gruppe, *nach* der er wirkt.
+            group_of_ast = cond.get(GRUPPE_KEY)
+            operator_val = str(cond.get(OPERATOR_KEY, DEFAULT_GROUP_OPERATOR)).upper()
+            if group_of_ast is not None and operator_val in ("UND", "ODER"):
+                 potential_ast_ops_by_preceding_group[group_of_ast] = operator_val
+        else:
+            regular_conditions_for_pauschale.append(cond)
+
+    if not regular_conditions_for_pauschale and not potential_ast_ops_by_preceding_group:
+         # Nur AST-Operatoren, keine regulären Bedingungen. Pauschale kann nicht erfüllt sein.
+         # Oder keine Bedingungen überhaupt (bereits oben abgefangen).
+         # Wenn nur AST-Operatoren da sind, ist es unklar, was zu tun ist. Sicher ist False.
+         return False
+    elif not regular_conditions_for_pauschale and potential_ast_ops_by_preceding_group:
+        # Nur AST-Operatoren, aber keine Bedingungen zum Auswerten.
+        return False # Kann nicht logisch ausgewertet werden.
+
+
+    # 3. Reguläre Bedingungen nach 'Gruppe' gruppieren
+    # Sortierung für die innere Logik einer Gruppe: Gruppe, dann Ebene, dann ID
+    # Diese Sortierung ist für die `_evaluate_single_group_logic` Hilfsfunktion.
+    sorted_regular_conditions = sorted(
+        regular_conditions_for_pauschale,
         key=lambda c: (c.get(GRUPPE_KEY, 1), c.get(EBENE_KEY, 1), c.get(BED_ID_KEY, 0))
     )
 
-    for cond in sorted_conditions_overall:
-        group_val = cond.get(GRUPPE_KEY, 1) # Default-Gruppe 1, falls nicht spezifiziert
+    grouped_conditions: Dict[Any, List[Dict]] = {}
+    for cond in sorted_regular_conditions:
+        group_val = cond.get(GRUPPE_KEY, 1)
         if group_val not in grouped_conditions:
             grouped_conditions[group_val] = []
         grouped_conditions[group_val].append(cond)
 
-    if not grouped_conditions: # Sollte nicht passieren, wenn conditions_for_this_pauschale nicht leer ist
-        return True
+    if not grouped_conditions:
+        # Keine regulären Bedingungen vorhanden, nur AST-Operatoren (oder gar nichts)
+        # Dies sollte durch vorherige Checks abgedeckt sein.
+        return True if not potential_ast_ops_by_preceding_group else False
 
-    group_results_bool: List[bool] = []
 
-    # Jede Gruppe separat auswerten
-    # Die Gruppen-IDs werden sortiert, um eine konsistente Auswertungsreihenfolge sicherzustellen.
-    for group_id in sorted(grouped_conditions.keys()):
-        conditions_in_group = grouped_conditions[group_id]
+    # Hilfsfunktion zur Auswertung der Logik *innerhalb* einer einzelnen Gruppe
+    def _evaluate_single_group_logic(
+        conditions_in_group: List[Dict],
+        current_group_id: Any # Für Debugging
+        ) -> bool:
+        if not conditions_in_group:
+            # Gemäß der alten Logik: Eine Gruppe ohne Bedingungen ist per se erfüllt.
+            # Dies ist wichtig, wenn es die einzige Gruppe ist.
+            # Wenn mehrere Gruppen durch UND/ODER verbunden sind, muss dies im Kontext betrachtet werden.
+            # Für die reine Gruppenbewertung: True.
+            return True
 
-        # Logik zur Auswertung einer einzelnen Gruppe (basierend auf Ebene und Operator)
-        # Diese Logik ist im Wesentlichen die vorherige Implementierung von evaluate_structured_conditions,
-        # aber jetzt auf eine einzelne Gruppe angewendet.
-        if not conditions_in_group: # Leere Gruppe
-            # Je nach Definition: Leere Gruppe kann als True oder False gewertet werden.
-            # Wenn Gruppen mit ODER verknüpft sind, ist eine leere (wahre) Gruppe problematisch.
-            # Wenn mit UND, ist eine leere (wahre) Gruppe ok.
-            # Wir nehmen an, eine explizit definierte, aber leere Gruppe ist nicht erfüllt,
-            # es sei denn, der group_operator ist ODER und eine andere Gruppe ist erfüllt.
-            # Sicherer ist, eine leere Gruppe als nicht erfüllt zu werten, wenn sie Teil einer Logik ist.
-            # Für den Moment: Wenn eine Gruppe keine Bedingungen hat, ist sie "erfüllt",
-            # was für UND-Logik zwischen Gruppen unproblematisch ist. Für ODER-Logik
-            # würde eine leere, "erfüllte" Gruppe die Pauschale gültig machen.
-            # Das Standardverhalten "Keine Bedingungen = immer erfüllt" sollte hier gelten.
-            group_results_bool.append(True) # Eine Gruppe ohne Bedingungen ist per se erfüllt
-            continue
-
-        # Sortierung innerhalb der Gruppe nach Ebene, dann BedingungsID ist bereits durch
-        # `sorted_conditions_overall` und die anschließende Gruppierung erfolgt.
-        # conditions_in_group = sorted(conditions_in_group, key=lambda c: (c.get(EBENE_KEY, 1), c.get(BED_ID_KEY, 0)))
-
-        baseline_level_group = 1  # Basislevel für die Ebenenberechnung
+        baseline_level_group = 1
         first_level_group = conditions_in_group[0].get(EBENE_KEY, 1)
-
         first_res_group = check_single_condition(
             conditions_in_group[0], context, tabellen_dict_by_table
         )
-
-        # Token-Liste für den booleschen Ausdruck der Gruppe
         tokens_group: List[Any] = ["("] * (first_level_group - baseline_level_group)
         tokens_group.append(bool(first_res_group))
-
         prev_level_group = first_level_group
         prev_op_group = conditions_in_group[0].get(OPERATOR_KEY, "UND").upper()
 
         for cond_grp in conditions_in_group[1:]:
             cur_level_group = cond_grp.get(EBENE_KEY, baseline_level_group)
-
             if cur_level_group < prev_level_group:
                 tokens_group.extend(")" for _ in range(prev_level_group - cur_level_group))
 
+            # Der Operator der aktuellen Bedingung verknüpft sie mit dem Ergebnis der vorherigen.
+            # In der alten Logik war es prev_op_group. Die Dokumentation sagt:
+            # "Der Operator einer Bedingung X gibt an, wie X mit der vorherigen Bedingung X-1 ... verknüpft ist."
+            # Das bedeutet, der Operator der *aktuellen* Bedingung ist relevant für die Verknüpfung.
+            # Allerdings ist der Operator der *ersten* Bedingung einer (Unter-)Gruppe speziell,
+            # er bestimmt, wie diese Gruppe/dieser Block mit dem vorherigen Block auf gleicher Ebene verbunden wird.
+            # Die _evaluate_boolean_tokens Funktion erwartet aber, dass der Operator *zwischen* den Operanden steht.
+            # Die aktuelle Implementierung von `_evaluate_single_group_logic` verwendet den Operator der *vorherigen* Zeile.
+            # Lassen wir das vorerst so, da es die etablierte Logik für Intra-Gruppen ist.
+            # Der `Operator` einer Bedingung X bezieht sich auf ihre Verknüpfung zur Bedingung X-1.
+            # Also ist `prev_op_group` (der Operator von X-1) korrekt, um X-1 mit X zu verbinden.
             tokens_group.append("AND" if prev_op_group == "UND" else "OR")
 
             if cur_level_group > prev_level_group:
@@ -497,59 +534,81 @@ def evaluate_structured_conditions(
 
             cur_res_group = check_single_condition(cond_grp, context, tabellen_dict_by_table)
             tokens_group.append(bool(cur_res_group))
-
             prev_level_group = cur_level_group
             prev_op_group = cond_grp.get(OPERATOR_KEY, "UND").upper()
 
         tokens_group.extend(")" for _ in range(prev_level_group - baseline_level_group))
-
         expr_str_group = "".join(
             str(t).lower() if isinstance(t, bool) else (" and " if t == "AND" else " or " if t == "OR" else t)
             for t in tokens_group
         )
-
         try:
-            group_result_this_group = _evaluate_boolean_tokens(tokens_group)
-            group_results_bool.append(group_result_this_group)
+            group_result = _evaluate_boolean_tokens(tokens_group)
             if debug:
-                logger.info(
-                    "DEBUG Gruppe %s: %s => %s",
-                    group_id,
-                    expr_str_group,
-                    group_result_this_group,
-                )
-        except Exception as e_eval_group:
+                logger.info("DEBUG Gruppe %s (intern): %s => %s", current_group_id, expr_str_group, group_result)
+            return group_result
+        except Exception as e_eval_single_group:
             logger.error(
-                "FEHLER bei Gruppenlogik-Ausdruck (Pauschale: %s, Gruppe: %s) '%s': %s",
-                pauschale_code,
-                group_id,
-                expr_str_group,
-                e_eval_group,
+                "FEHLER bei Einzelgruppen-Logik (Pauschale: %s, Gruppe: %s) '%s': %s",
+                pauschale_code, current_group_id, expr_str_group, e_eval_single_group,
             )
             traceback.print_exc()
-            group_results_bool.append(False)
+            return False
 
-    if not group_results_bool:
-        # Dies sollte nur passieren, wenn grouped_conditions leer war, was oben abgefangen wird.
-        # Wenn es hier auftritt, bedeutet es, dass es Gruppen gab, aber keine Ergebnisse (Fehler).
-        # Im Zweifel als nicht erfüllt werten.
-        return False
+    # 4. Gruppen auswerten und Ergebnisse sammeln
+    group_results_map: Dict[Any, bool] = {}
+    sorted_group_ids = sorted(grouped_conditions.keys())
 
-    # Verknüpfe die Ergebnisse der einzelnen Gruppen mit dem globalen group_operator
-    if group_operator.upper() == "ODER":
-        final_result = any(group_results_bool)
-    else:  # "UND"
-        final_result = all(group_results_bool)
+    for group_id in sorted_group_ids:
+        conditions_in_this_group = grouped_conditions[group_id]
+        group_results_map[group_id] = _evaluate_single_group_logic(conditions_in_this_group, group_id)
+
+    if not group_results_map: # Sollte nicht passieren, wenn grouped_conditions nicht leer war
+        return False # Keine Gruppenergebnisse, kann nicht als True bewertet werden.
+
+    # 5. Gruppenergebnisse gemäß AST-Operatoren (oder Default) verknüpfen
+    if not sorted_group_ids: # Sollte bereits oben abgefangen sein
+        return True # Keine Gruppen zu evaluieren
+
+    final_result = group_results_map[sorted_group_ids[0]]
+
+    if debug:
+        logger.info("DEBUG Pauschale %s: Ergebnis Gruppe %s = %s", pauschale_code, sorted_group_ids[0], final_result)
+
+    for i in range(len(sorted_group_ids) - 1):
+        current_group_id = sorted_group_ids[i]
+        next_group_id = sorted_group_ids[i+1] # Nicht direkt für Lookup verwendet, nur für Iteration
+
+        # Der AST-Operator, der die Verknüpfung von `current_group_id` mit `next_group_id` steuert,
+        # ist der AST-Operator, der mit `current_group_id` assoziiert ist.
+        inter_group_op_str = potential_ast_ops_by_preceding_group.get(current_group_id, DEFAULT_GROUP_OPERATOR)
+
+        next_group_result = group_results_map[next_group_id]
+
+        if debug:
+            logger.info(
+                "DEBUG Pauschale %s: Verknüpfe (Ergebnis bis Gruppe %s = %s) %s (Ergebnis Gruppe %s = %s)",
+                pauschale_code, current_group_id, final_result, inter_group_op_str, next_group_id, next_group_result
+            )
+
+        if inter_group_op_str == "ODER":
+            final_result = final_result or next_group_result
+        else: # UND (Default)
+            final_result = final_result and next_group_result
+
+        if debug:
+            logger.info("DEBUG Pauschale %s: Neues Zwischenergebnis = %s", pauschale_code, final_result)
+
 
     if debug:
         logger.info(
-            "DEBUG Ergebnis Pauschale %s: %s -> %s",
+            "DEBUG Finales Ergebnis Pauschale %s: %s",
             pauschale_code,
-            group_results_bool,
             final_result,
         )
 
     return final_result
+
 # === PRUEFUNG DER BEDINGUNGEN (STRUKTURIERTES RESULTAT) ===
 def check_pauschale_conditions(
     pauschale_code: str,
@@ -936,9 +995,9 @@ def determine_applicable_pauschale(
         is_pauschale_valid_structured = False
         bedingungs_html = ""
         try:
-            grp_op = get_group_operator_for_pauschale(code, pauschale_bedingungen_data, default=DEFAULT_GROUP_OPERATOR)
+            # grp_op = get_group_operator_for_pauschale(code, pauschale_bedingungen_data, default=DEFAULT_GROUP_OPERATOR) # No longer needed
             is_pauschale_valid_structured = evaluate_structured_conditions(
-                code, context, pauschale_bedingungen_data, tabellen_dict_by_table, grp_op
+                code, context, pauschale_bedingungen_data, tabellen_dict_by_table # Removed grp_op
             )
             check_res = check_pauschale_conditions(
                 code,
