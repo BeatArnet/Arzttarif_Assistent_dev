@@ -369,16 +369,153 @@ class TestPauschaleLogic(unittest.TestCase):
             evaluate_structured_conditions("ALT", context_fail, conditions, {})
         )
 
+    # --- New tests for AST VERBINDUNGSOPERATOR ---
+
+    def test_ast_operator_oder_linking_groups(self):
+        conditions = [
+            {"Pauschale": "AST_TEST_ODER", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "A", "Ebene": 1}, # G1 = True
+            {"Pauschale": "AST_TEST_ODER", "Gruppe": 1, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Operator": "ODER", "Ebene": 0},
+            {"Pauschale": "AST_TEST_ODER", "Gruppe": 2, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "X", "Ebene": 1}  # G2 = False
+        ]
+        context = {"LKN": ["A"]} # Makes G1 true, G2 false
+        self.assertTrue(
+            evaluate_structured_conditions("AST_TEST_ODER", context, conditions, {}, debug=True)
+        )
+
+        context_g2_true = {"LKN": ["X"]} # Makes G1 false, G2 true
+        self.assertTrue(
+            evaluate_structured_conditions("AST_TEST_ODER", context_g2_true, conditions, {}, debug=True)
+        )
+
+        context_all_false = {"LKN": ["Z"]} # Makes G1 false, G2 false
+        self.assertFalse(
+            evaluate_structured_conditions("AST_TEST_ODER", context_all_false, conditions, {}, debug=True)
+        )
+
+    def test_ast_operator_und_linking_groups(self):
+        conditions = [
+            {"Pauschale": "AST_TEST_UND", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "A", "Ebene": 1}, # G1
+            {"Pauschale": "AST_TEST_UND", "Gruppe": 1, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Operator": "UND", "Ebene": 0},
+            {"Pauschale": "AST_TEST_UND", "Gruppe": 2, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "B", "Ebene": 1}  # G2
+        ]
+        context_g1T_g2F = {"LKN": ["A"]} # G1=T, G2=F
+        self.assertFalse(
+            evaluate_structured_conditions("AST_TEST_UND", context_g1T_g2F, conditions, {}, debug=True)
+        )
+
+        context_g1F_g2T = {"LKN": ["B"]} # G1=F, G2=T
+        self.assertFalse(
+            evaluate_structured_conditions("AST_TEST_UND", context_g1F_g2T, conditions, {}, debug=True)
+        )
+
+        context_g1T_g2T = {"LKN": ["A", "B"]} # G1=T, G2=T
+        self.assertTrue(
+            evaluate_structured_conditions("AST_TEST_UND", context_g1T_g2T, conditions, {}, debug=True)
+        )
+
+    def test_default_und_between_groups_without_ast(self):
+        conditions = [
+            {"Pauschale": "AST_DEFAULT_UND", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "A", "Ebene": 1}, # G1
+            # No AST operator for Gruppe 1
+            {"Pauschale": "AST_DEFAULT_UND", "Gruppe": 2, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "B", "Ebene": 1}  # G2
+        ]
+        context_g1T_g2F = {"LKN": ["A"]} # G1=T, G2=F
+        self.assertFalse( # True AND False (default) = False
+            evaluate_structured_conditions("AST_DEFAULT_UND", context_g1T_g2F, conditions, {}, debug=True)
+        )
+
+        context_g1T_g2T = {"LKN": ["A", "B"]} # G1=T, G2=T
+        self.assertTrue( # True AND True (default) = True
+            evaluate_structured_conditions("AST_DEFAULT_UND", context_g1T_g2T, conditions, {}, debug=True)
+        )
+
+    def test_mixed_ast_operators(self):
+        # (G1 ODER G2) UND G3
+        conditions = [
+            {"Pauschale": "AST_MIXED", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G1", "Ebene": 1},
+            {"Pauschale": "AST_MIXED", "Gruppe": 1, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Operator": "ODER", "Ebene": 0}, # G1 ODER G2
+            {"Pauschale": "AST_MIXED", "Gruppe": 2, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G2", "Ebene": 1},
+            {"Pauschale": "AST_MIXED", "Gruppe": 2, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Operator": "UND", "Ebene": 0}, # (PrevResult) UND G3
+            {"Pauschale": "AST_MIXED", "Gruppe": 3, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G3", "Ebene": 1}
+        ]
+        # Case 1: (True OR False) AND True = True
+        context1 = {"LKN": ["G1", "G3"]}
+        self.assertTrue(evaluate_structured_conditions("AST_MIXED", context1, conditions, {}, debug=True))
+
+        # Case 2: (False OR True) AND True = True
+        context2 = {"LKN": ["G2", "G3"]}
+        self.assertTrue(evaluate_structured_conditions("AST_MIXED", context2, conditions, {}, debug=True))
+
+        # Case 3: (True OR True) AND True = True
+        context3 = {"LKN": ["G1", "G2", "G3"]}
+        self.assertTrue(evaluate_structured_conditions("AST_MIXED", context3, conditions, {}, debug=True))
+
+        # Case 4: (False OR False) AND True = False
+        context4 = {"LKN": ["G3"]}
+        self.assertFalse(evaluate_structured_conditions("AST_MIXED", context4, conditions, {}, debug=True))
+
+        # Case 5: (True OR False) AND False = False
+        context5 = {"LKN": ["G1"]}
+        self.assertFalse(evaluate_structured_conditions("AST_MIXED", context5, conditions, {}, debug=True))
+
+    def test_c01_05b_example_from_documentation(self):
+        # Simplified C01.05B: G1 ODER G2 ODER G3 ODER G4 ODER G5
+        # For this test, each group has a single condition.
+        conditions = [
+            # Gruppe 1
+            {"Pauschale": "C01.05B", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G1_COND", "Ebene": 1},
+            {"Pauschale": "C01.05B", "Gruppe": 1, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Operator": "ODER", "Ebene": 0},
+            # Gruppe 2
+            {"Pauschale": "C01.05B", "Gruppe": 2, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G2_COND", "Ebene": 1},
+            {"Pauschale": "C01.05B", "Gruppe": 2, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Operator": "ODER", "Ebene": 0},
+            # Gruppe 3 (internally more complex, but for this test, one condition is enough to represent its result)
+            {"Pauschale": "C01.05B", "Gruppe": 3, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G3_COND", "Ebene": 1},
+            {"Pauschale": "C01.05B", "Gruppe": 3, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Operator": "ODER", "Ebene": 0},
+            # Gruppe 4
+            {"Pauschale": "C01.05B", "Gruppe": 4, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G4_COND", "Ebene": 1},
+            {"Pauschale": "C01.05B", "Gruppe": 4, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Operator": "ODER", "Ebene": 0},
+            # Gruppe 5
+            {"Pauschale": "C01.05B", "Gruppe": 5, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G5_COND", "Ebene": 1}
+            # No AST after last group
+        ]
+
+        # G1=F, G2=F, G3=T, G4=F, G5=F. Expected: True
+        context_g3_true = {"LKN": ["G3_COND"]}
+        self.assertTrue(evaluate_structured_conditions("C01.05B", context_g3_true, conditions, {}, debug=True))
+
+        # All groups false. Expected: False
+        context_all_false = {"LKN": ["NONE"]}
+        self.assertFalse(evaluate_structured_conditions("C01.05B", context_all_false, conditions, {}, debug=True))
+
+        # G5 true, others false. Expected: True
+        context_g5_true = {"LKN": ["G5_COND"]}
+        self.assertTrue(evaluate_structured_conditions("C01.05B", context_g5_true, conditions, {}, debug=True))
+
+
     def test_score_based_selection(self):
         """Higher scoring Pauschale should be chosen even if suffix later."""
-        from selector import determine_applicable_pauschale
+        from regelpruefer_pauschale import determine_applicable_pauschale # Corrected import
+
+        # Minimal pauschale_bedingungen_data, not relevant for this selection logic test
+        pauschale_bedingungen_data = [
+            {"Pauschale": "X00.01A", "Gruppe": 1, "Bedingungstyp": "LKN", "Werte": "ANY"},
+            {"Pauschale": "X00.01B", "Gruppe": 1, "Bedingungstyp": "LKN", "Werte": "ANY"},
+        ]
+        # Dummy tabellen_dict_by_table
+        tabellen_dict_by_table = {}
+        # Dummy leistungskatalog_dict
+        leistungskatalog_dict = {}
+
 
         pauschalen_dict = {
             "X00.01A": {"Pauschale": "X00.01A", "Pauschale_Text": "A", "Taxpunkte": "100"},
             "X00.01B": {"Pauschale": "X00.01B", "Pauschale_Text": "B", "Taxpunkte": "200"},
         }
+        # Context that makes both pauschalen valid (assuming simple conditions)
+        context = {"LKN": ["ANY"]}
+
         result = determine_applicable_pauschale(
-            "", [], {}, [], [], pauschalen_dict, {}, {}, {"X00.01A", "X00.01B"}
+            "", [], context, [], pauschale_bedingungen_data, pauschalen_dict, leistungskatalog_dict, tabellen_dict_by_table, {"X00.01A", "X00.01B"}
         )
         self.assertEqual(result["details"]["Pauschale"], "X00.01B")
 
