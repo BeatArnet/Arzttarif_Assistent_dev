@@ -1519,5 +1519,3 @@ def generate_condition_detail_html(
     
     condition_html += "</li>"
     return condition_html
-
-[end of regelpruefer_pauschale.py]
