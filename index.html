@@ -25,6 +25,8 @@
             line-height: 1.6; padding: 20px;
             background: var(--primary-light); color: var(--text-color);
             font-size: 16px;
+            max-width: 800px; /* Maximale Breite für den Hauptinhalt */
+            margin: 0 auto; /* Zentrierung des Inhalts */
         }
         h1 {
             color: var(--primary);
@@ -48,6 +50,7 @@
             padding: 8px;
             border: 1px solid var(--border-color);
             border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* Subtiler Schatten */
         }
         select { cursor: pointer; }
         .language-select { text-align: right; margin: 0; }
@@ -58,20 +61,26 @@
             padding: 10px 15px; cursor: pointer; margin-top: 10px;
             background: var(--primary); color: #fff; border: none;
             border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15); /* Etwas stärkerer Schatten für Buttons */
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out; /* Sanfter Übergang */
         }
-        button:hover { filter: brightness(1.1); }
-        button:disabled { background-color: #aaa; cursor: not-allowed; }
+        button:hover {
+            filter: brightness(1.15); /* Stärkerer Hover-Effekt */
+            transform: translateY(-1px); /* Leichter Anhebe-Effekt */
+        }
+        button:disabled { background-color: #aaa; cursor: not-allowed; box-shadow: none; transform: none;}
 
         /* --- Output Bereich --- */
         #output {
             margin-top: 20px;
-            border: 1px solid var(--primary-light);
+            border: 1px solid var(--border-color); /* Geändert von --primary-light zu --border-color für Konsistenz */
             padding: 15px;
             background-color: var(--background-color);
             white-space: normal;
             word-wrap: break-word;
             border-radius: 4px;
             min-height: 50px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* Gleicher Schatten wie Eingabefelder */
         }
         #output h2 {
             white-space: pre-wrap;
@@ -305,8 +314,24 @@
             justify-content: center; align-items: center; z-index: 10000;
         }
     .info-modal {
-        background:#fff; padding:20px; max-width:600px; max-height:80vh;
-        overflow-y:auto; border-radius:4px; box-shadow:0 2px 8px rgba(0,0,0,0.3);
+        background: var(--background-color); /* Angepasst an den Output-Bereich */
+        padding: 25px; /* Etwas mehr Padding */
+        max-width: 650px; /* Etwas breiter */
+        max-height: 85vh;
+        overflow-y: auto;
+        border-radius: 6px; /* Etwas größere Rundung */
+        box-shadow: 0 4px 15px rgba(0,0,0,0.35); /* Stärkerer Schatten */
+        border: 1px solid var(--primary); /* Blauer Rand */
+        position: relative; /* Für absolute Positionierung des Schließen-Buttons */
+    }
+    .info-modal h2, .info-modal h3 { /* Titel im Modal */
+        color: var(--primary);
+        margin-top: 0;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .info-modal p, .info-modal li, .info-modal td, .info-modal th {
+        font-size: 0.95em; /* Etwas kleinere Schrift im Modal */
     }
     .info-modal a, a.info-link {
         background: var(--primary-light);
@@ -317,8 +342,26 @@
     }
     .info-modal a:hover, a.info-link:hover {
         text-decoration: underline;
+        filter: brightness(1.1);
     }
-    .modal-close { float:right; background:none; border:none; font-size:1.2em; cursor:pointer; }
+    .modal-close {
+        position: absolute; /* Absolute Positionierung relativ zu .info-modal */
+        top: 10px;
+        right: 15px;
+        background: transparent;
+        border: none;
+        font-size: 1.8em; /* Größer für bessere Sichtbarkeit */
+        font-weight: bold;
+        color: var(--text-color);
+        cursor: pointer;
+        padding: 5px;
+        line-height: 1;
+        transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
+    }
+    .modal-close:hover {
+        color: var(--danger); /* Rote Farbe beim Hover */
+        transform: scale(1.1); /* Leichte Vergrößerung */
+    }
     .top-info {
         position: absolute;
         top: 10px;

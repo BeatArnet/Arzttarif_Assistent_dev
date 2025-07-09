@@ -911,8 +911,8 @@ def get_LKNs_from_pauschalen_conditions(
                         lkn_upper = str(lkn_code).upper() # str(lkn_code)
                         if lkn_upper not in processed_lkn_codes:
                             desc = item.get('Code_Text') or leistungskatalog.get(lkn_upper, {}).get('Beschreibung', 'N/A') # Verwende umbenannt
-                condition_lkns_with_desc[lkn_upper] = desc
-                processed_lkn_codes.add(lkn_upper)
+                            condition_lkns_with_desc[lkn_upper] = desc
+                            processed_lkn_codes.add(lkn_upper)
         for lkn_upper in current_lkns_to_add:
             if lkn_upper not in processed_lkn_codes:
                 desc = leistungskatalog.get(lkn_upper, {}).get('Beschreibung', 'N/A') # Verwende umbenannt
