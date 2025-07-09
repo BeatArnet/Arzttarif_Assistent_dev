@@ -178,7 +178,7 @@ class TestPauschaleLogic(unittest.TestCase):
 
         self.assertFalse(
             evaluate_structured_conditions(
-                "C00.10A", context, bedingungen, tab_dict, group_operator="UND"
+                "C00.10A", context, bedingungen, tab_dict #, group_operator="UND" # Parameter entfernt
             )
         )
 
@@ -200,7 +200,7 @@ class TestPauschaleLogic(unittest.TestCase):
 
         self.assertFalse(
             evaluate_structured_conditions(
-                "C03.26D", context, bedingungen, tab_dict, group_operator="UND"
+                "C03.26D", context, bedingungen, tab_dict #, group_operator="UND" # Parameter entfernt
             )
         )
 
@@ -225,7 +225,7 @@ class TestPauschaleLogic(unittest.TestCase):
 
         self.assertTrue(
             evaluate_structured_conditions(
-                "C04.51B", context_ok, bedingungen, tab_dict, group_operator="UND", debug=True
+                "C04.51B", context_ok, bedingungen, tab_dict, debug=True # Parameter group_operator entfernt
             )
         )
 
@@ -325,7 +325,7 @@ class TestPauschaleLogic(unittest.TestCase):
         context = {"LKN": ["X"], "ICD": ["D00"], "Anzahl": 1}
 
         self.assertFalse(
-            evaluate_structured_conditions("OGF", context, conditions, {}, group_operator="ODER")
+            evaluate_structured_conditions("OGF", context, conditions, {}, debug=True) # Parameter group_operator entfernt, testet jetzt Default UND
         )
 
     def test_deeply_nested_levels(self):
@@ -518,6 +518,67 @@ class TestPauschaleLogic(unittest.TestCase):
             "", [], context, [], pauschale_bedingungen_data, pauschalen_dict, leistungskatalog_dict, tabellen_dict_by_table, {"X00.01A", "X00.01B"}
         )
         self.assertEqual(result["details"]["Pauschale"], "X00.01B")
+
+    def test_c01_05b_hypoglossus_stimulator_scenario(self):
+        # Test C01.05B: Focus on the Hypoglossus Stimulator part (Gruppe 8)
+        # Expected logic: (G1... ODER G3... ODER G5/6... ODER G8... ODER G10...)
+        # We want G8 to be TRUE, and others FALSE, overall result should be TRUE.
+        bedingungen_c01_05b = [
+            # Gruppe 1
+            {"BedingungsID": 531, "Pauschale": "C01.05B", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE", "Werte": "CAP01", "Ebene": 2},
+            {"BedingungsID": 533, "Pauschale": "C01.05B", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE", "Werte": "C01.EG.0010", "Ebene": 3}, # Soll False sein
+            # AST nach Gruppe 1 (eigentlich in Gruppe 2 definiert)
+            {"BedingungsID": 534, "Pauschale": "C01.05B", "Gruppe": 2, "Operator": "ODER", "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Ebene": 0},
+            # Gruppe 3
+            {"BedingungsID": 535, "Pauschale": "C01.05B", "Gruppe": 3, "Operator": "UND", "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE", "Werte": "CAP01", "Ebene": 2},
+            {"BedingungsID": 537, "Pauschale": "C01.05B", "Gruppe": 3, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE", "Werte": "C01.09_10,C01.09_2", "Ebene": 3}, # Soll False sein
+            # AST nach Gruppe 3 (eigentlich in Gruppe 4 definiert)
+            {"BedingungsID": 538, "Pauschale": "C01.05B", "Gruppe": 4, "Operator": "ODER", "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Ebene": 0},
+            # Gruppe 5
+            {"BedingungsID": 539, "Pauschale": "C01.05B", "Gruppe": 5, "Operator": "UND", "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE", "Werte": "CAP01", "Ebene": 2},
+            {"BedingungsID": 541, "Pauschale": "C01.05B", "Gruppe": 5, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE", "Werte": "C01.21_10", "Ebene": 3}, # Soll False sein
+            # Gruppe 6 (Teil des Blocks, der mit Gruppe 5 beginnt)
+            {"BedingungsID": 542, "Pauschale": "C01.05B", "Gruppe": 6, "Operator": "ODER", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE", "Werte": "C01.RA.0030", "Ebene": 3}, # Soll False sein
+            {"BedingungsID": 543, "Pauschale": "C01.05B", "Gruppe": 6, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE", "Werte": "C01.RC.0050", "Ebene": 3}, # Soll False sein
+            # AST nach Gruppe 6 (eigentlich in Gruppe 7 definiert)
+            {"BedingungsID": 544, "Pauschale": "C01.05B", "Gruppe": 7, "Operator": "ODER", "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Ebene": 0},
+            # Gruppe 8 - This block should be TRUE
+            {"BedingungsID": 545, "Pauschale": "C01.05B", "Gruppe": 8, "Operator": "UND", "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE", "Werte": "CAP03", "Ebene": 2}, # Soll True sein
+            {"BedingungsID": 547, "Pauschale": "C01.05B", "Gruppe": 8, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE", "Werte": "C03.GM.0060", "Ebene": 2}, # Soll True sein
+            # AST nach Gruppe 8 (eigentlich in Gruppe 9 definiert)
+            {"BedingungsID": 548, "Pauschale": "C01.05B", "Gruppe": 9, "Operator": "ODER", "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Ebene": 0},
+            # Gruppe 10
+            {"BedingungsID": 549, "Pauschale": "C01.05B", "Gruppe": 10, "Operator": "UND", "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE", "Werte": "CAP05", "Ebene": 2},
+            {"BedingungsID": 551, "Pauschale": "C01.05B", "Gruppe": 10, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE", "Werte": "C01.05_2", "Ebene": 2} # Soll False sein
+        ]
+
+        # Mock tabellen_dict_by_table to make HD conditions evaluate as desired
+        tabellen_dict_by_table_mock = {
+            "cap01": [{"Code": "ANY_CAP01_CODE", "Code_Text": "Desc"}], # Wird für G1, G3, G5 verwendet
+            "cap03": [{"Code": "G8_HD_CODE", "Code_Text": "Desc"}],   # Wird für G8 verwendet
+            "cap05": [{"Code": "ANY_CAP05_CODE", "Code_Text": "Desc"}], # Wird für G10 verwendet
+            "c01.09_10": [], # leer machen, damit G3 fehlschlägt
+            "c01.09_2": [],  # leer machen, damit G3 fehlschlägt
+            "c01.21_10": [], # leer machen, damit G5 fehlschlägt
+            "c01.05_2": [],  # leer machen, damit G10 fehlschlägt
+        }
+
+        context_hypoglossus = {
+            "ICD": ["G8_HD_CODE"], # Erfüllt HD für Gruppe 8 (CAP03)
+            "LKN": ["C03.GM.0060"],  # Erfüllt LPL für Gruppe 8
+            # Andere LKNs/Tabellen nicht im Kontext, damit andere Gruppen fehlschlagen
+        }
+
+        self.assertTrue(
+            evaluate_structured_conditions(
+                "C01.05B",
+                context_hypoglossus,
+                bedingungen_c01_05b,
+                tabellen_dict_by_table_mock,
+                debug=True
+            ),
+            "C01.05B sollte mit Hypoglossus-Kontext (Gruppe 8 erfüllt) und ODER-Verknüpfungen TRUE sein."
+        )
 
 if __name__ == "__main__":
     unittest.main()
