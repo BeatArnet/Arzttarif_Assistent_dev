@@ -427,16 +427,16 @@ def evaluate_structured_conditions(
     # 2. AST-Operatoren und reguläre Bedingungen trennen
     ast_operators: Dict[int, str] = {} # Key: Gruppe_ID that the AST operator precedes
     regular_conditions_for_pauschale: List[Dict] = []
-
+    
     # AST Operatoren sind typischerweise mit der Gruppe *davor* assoziiert
     # oder haben Ebene 0 und stehen zwischen den Gruppen.
     # Wir sammeln sie und merken uns den Operator für die *nächste* Verknüpfung.
     # Ein AST Operator in Gruppe N mit Operator ODER bedeutet: (Ergebnis Gruppe N) ODER (Ergebnis Gruppe N+1)
-
+    
     # Temporäre Struktur, um AST-Operatoren nach ihrer Gruppe zu speichern
     # Ein AST-Operator in Gruppe X bestimmt die Verknüpfung von Gruppe X mit Gruppe X+1
     # oder, falls Ebene 0, die Verknüpfung der vorherigen Hauptgruppe mit der nächsten.
-    # Die Dokumentation sagt: "Der Operator-Wert dieser AST VERBINDUNGSOPERATOR-Zeile (z.B. ODER)
+    # Die Dokumentation sagt: "Der Operator-Wert dieser AST VERBINDUNGSOPERATOR-Zeile (z.B. ODER) 
     # bestimmt, wie Ergebnis_Gruppe_N mit dem Ergebnis_Gruppe_N+1 verknüpft wird."
     # Und: "Nach der Verarbeitung einer Gruppe prüfen, ob die nächste Zeile ein AST VERBINDUNGSOPERATOR ist."
     # Dies deutet darauf hin, dass der AST Operator *nach* einer Gruppe relevant ist.
@@ -462,7 +462,7 @@ def evaluate_structured_conditions(
          # Nur AST-Operatoren, keine regulären Bedingungen. Pauschale kann nicht erfüllt sein.
          # Oder keine Bedingungen überhaupt (bereits oben abgefangen).
          # Wenn nur AST-Operatoren da sind, ist es unklar, was zu tun ist. Sicher ist False.
-         return False
+         return False 
     elif not regular_conditions_for_pauschale and potential_ast_ops_by_preceding_group:
         # Nur AST-Operatoren, aber keine Bedingungen zum Auswerten.
         return False # Kann nicht logisch ausgewertet werden.
@@ -475,10 +475,10 @@ def evaluate_structured_conditions(
         regular_conditions_for_pauschale,
         key=lambda c: (c.get(GRUPPE_KEY, 1), c.get(EBENE_KEY, 1), c.get(BED_ID_KEY, 0))
     )
-
+    
     grouped_conditions: Dict[Any, List[Dict]] = {}
     for cond in sorted_regular_conditions:
-        group_val = cond.get(GRUPPE_KEY, 1)
+        group_val = cond.get(GRUPPE_KEY, 1) 
         if group_val not in grouped_conditions:
             grouped_conditions[group_val] = []
         grouped_conditions[group_val].append(cond)
@@ -501,7 +501,7 @@ def evaluate_structured_conditions(
             # Für die reine Gruppenbewertung: True.
             return True
 
-        baseline_level_group = 1
+        baseline_level_group = 1 
         first_level_group = conditions_in_group[0].get(EBENE_KEY, 1)
         first_res_group = check_single_condition(
             conditions_in_group[0], context, tabellen_dict_by_table
@@ -515,7 +515,7 @@ def evaluate_structured_conditions(
             cur_level_group = cond_grp.get(EBENE_KEY, baseline_level_group)
             if cur_level_group < prev_level_group:
                 tokens_group.extend(")" for _ in range(prev_level_group - cur_level_group))
-
+            
             # Der Operator der aktuellen Bedingung verknüpft sie mit dem Ergebnis der vorherigen.
             # In der alten Logik war es prev_op_group. Die Dokumentation sagt:
             # "Der Operator einer Bedingung X gibt an, wie X mit der vorherigen Bedingung X-1 ... verknüpft ist."
@@ -531,7 +531,7 @@ def evaluate_structured_conditions(
 
             if cur_level_group > prev_level_group:
                 tokens_group.extend("(" for _ in range(cur_level_group - prev_level_group))
-
+            
             cur_res_group = check_single_condition(cond_grp, context, tabellen_dict_by_table)
             tokens_group.append(bool(cur_res_group))
             prev_level_group = cur_level_group
@@ -571,18 +571,18 @@ def evaluate_structured_conditions(
         return True # Keine Gruppen zu evaluieren
 
     final_result = group_results_map[sorted_group_ids[0]]
-
+    
     if debug:
         logger.info("DEBUG Pauschale %s: Ergebnis Gruppe %s = %s", pauschale_code, sorted_group_ids[0], final_result)
 
     for i in range(len(sorted_group_ids) - 1):
         current_group_id = sorted_group_ids[i]
         next_group_id = sorted_group_ids[i+1] # Nicht direkt für Lookup verwendet, nur für Iteration
-
+        
         # Der AST-Operator, der die Verknüpfung von `current_group_id` mit `next_group_id` steuert,
         # ist der AST-Operator, der mit `current_group_id` assoziiert ist.
         inter_group_op_str = potential_ast_ops_by_preceding_group.get(current_group_id, DEFAULT_GROUP_OPERATOR)
-
+        
         next_group_result = group_results_map[next_group_id]
 
         if debug:
@@ -595,7 +595,7 @@ def evaluate_structured_conditions(
             final_result = final_result or next_group_result
         else: # UND (Default)
             final_result = final_result and next_group_result
-
+        
         if debug:
             logger.info("DEBUG Pauschale %s: Neues Zwischenergebnis = %s", pauschale_code, final_result)
 
