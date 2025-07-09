@@ -178,12 +178,10 @@ def default_check_html_fallback(
     pauschale_code: str,
     context: Dict[Any, Any],
     pauschale_bedingungen_data: List[Dict[Any, Any]],
-    tabellen_dict_by_table: Dict[str, List[Dict[Any, Any]]],
-    leistungskatalog_dict: Dict[str, Dict[Any, Any]],
-    lang: str = 'de'
-) -> Dict[str, Any]:
+    tabellen_dict_by_table: Dict[str, List[Dict[Any, Any]]]
+) -> List[Dict[str, Any]]:
     logger.warning("Fallback für 'check_pauschale_conditions' aktiv.")
-    return {"html": "HTML-Prüfung nicht verfügbar (Fallback)", "errors": ["Fallback aktiv"], "trigger_lkn_condition_met": False}
+    return [{"html": "HTML-Prüfung nicht verfügbar (Fallback)", "errors": ["Fallback aktiv"], "trigger_lkn_condition_met": False}]
 
 def default_get_simplified_conditions_fallback( # Matches: get_simplified_conditions(pauschale_code: str, bedingungen_data: list[dict]) -> set
     pauschale_code: str,
