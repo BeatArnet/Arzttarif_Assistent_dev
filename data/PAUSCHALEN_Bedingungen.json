@@ -4662,7 +4662,7 @@
         "BedingungsID": 535,
         "Pauschale": "C01.05B",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP01",
         "Ebene": 2
@@ -4688,7 +4688,7 @@
         "BedingungsID": 539,
         "Pauschale": "C01.05B",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP01",
         "Ebene": 2
@@ -4732,7 +4732,7 @@
         "BedingungsID": 545,
         "Pauschale": "C01.05B",
         "Gruppe": 8,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP03",
         "Ebene": 2
@@ -4749,7 +4749,7 @@
         "BedingungsID": 549,
         "Pauschale": "C01.05B",
         "Gruppe": 10,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP05",
         "Ebene": 2
@@ -4865,7 +4865,7 @@
         "BedingungsID": 565,
         "Pauschale": "C01.15C",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP01",
         "Ebene": 2
@@ -5044,7 +5044,7 @@
         "BedingungsID": 591,
         "Pauschale": "C02.02A",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP02",
         "Ebene": 2
@@ -5106,7 +5106,7 @@
         "BedingungsID": 602,
         "Pauschale": "C02.02C",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP02",
         "Ebene": 2
@@ -5159,7 +5159,7 @@
         "BedingungsID": 610,
         "Pauschale": "C02.02D",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP02",
         "Ebene": 2
@@ -5275,7 +5275,7 @@
         "BedingungsID": 624,
         "Pauschale": "C02.05A",
         "Gruppe": 7,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP02",
         "Ebene": 2
@@ -5310,7 +5310,7 @@
         "BedingungsID": 631,
         "Pauschale": "C02.05B",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP02",
         "Ebene": 2
@@ -5621,7 +5621,7 @@
         "BedingungsID": 676,
         "Pauschale": "C02.30A",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP02",
         "Ebene": 2
@@ -5665,7 +5665,7 @@
         "BedingungsID": 683,
         "Pauschale": "C02.30B",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP02",
         "Ebene": 2
@@ -5772,7 +5772,7 @@
         "BedingungsID": 702,
         "Pauschale": "C03.05Z",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP03",
         "Ebene": 2
@@ -6005,7 +6005,7 @@
         "BedingungsID": 737,
         "Pauschale": "C03.20Z",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP03",
         "Ebene": 2
@@ -6223,7 +6223,7 @@
         "BedingungsID": 768,
         "Pauschale": "C03.26D",
         "Gruppe": 4,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP03",
         "Ebene": 2
@@ -6413,7 +6413,7 @@
         "BedingungsID": 792,
         "Pauschale": "C03.31C",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP03",
         "Ebene": 2
@@ -6475,7 +6475,7 @@
         "BedingungsID": 800,
         "Pauschale": "C03.32Z",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP03",
         "Ebene": 2
@@ -6537,7 +6537,7 @@
         "BedingungsID": 811,
         "Pauschale": "C03.35A",
         "Gruppe": 4,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP03",
         "Ebene": 2
@@ -6590,7 +6590,7 @@
         "BedingungsID": 818,
         "Pauschale": "C03.35B",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP03",
         "Ebene": 2
@@ -6616,7 +6616,7 @@
         "BedingungsID": 823,
         "Pauschale": "C03.35B",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP03",
         "Ebene": 2
@@ -6678,7 +6678,7 @@
         "BedingungsID": 831,
         "Pauschale": "C03.35C",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP03",
         "Ebene": 2
@@ -6713,7 +6713,7 @@
         "BedingungsID": 835,
         "Pauschale": "C03.35C",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP03",
         "Ebene": 2
@@ -6739,7 +6739,7 @@
         "BedingungsID": 840,
         "Pauschale": "C03.35C",
         "Gruppe": 7,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP03",
         "Ebene": 2
@@ -6792,7 +6792,7 @@
         "BedingungsID": 846,
         "Pauschale": "C03.35D",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP03",
         "Ebene": 2
@@ -6809,7 +6809,7 @@
         "BedingungsID": 850,
         "Pauschale": "C03.35D",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP03",
         "Ebene": 2
@@ -7339,7 +7339,7 @@
         "BedingungsID": 918,
         "Pauschale": "C05.04A",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP05",
         "Ebene": 2
@@ -8089,7 +8089,7 @@
         "BedingungsID": 1015,
         "Pauschale": "C05.30A",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP05",
         "Ebene": 2
@@ -8208,7 +8208,7 @@
         "BedingungsID": 1033,
         "Pauschale": "C05.30C",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP05",
         "Ebene": 2
@@ -8315,7 +8315,7 @@
         "BedingungsID": 1054,
         "Pauschale": "C06.00A",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP06",
         "Ebene": 2
@@ -8350,7 +8350,7 @@
         "BedingungsID": 1059,
         "Pauschale": "C06.00A",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP07",
         "Ebene": 2
@@ -8394,7 +8394,7 @@
         "BedingungsID": 1066,
         "Pauschale": "C06.00B",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP06",
         "Ebene": 2
@@ -8429,7 +8429,7 @@
         "BedingungsID": 1070,
         "Pauschale": "C06.00B",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP06",
         "Ebene": 2
@@ -8538,7 +8538,7 @@
         "BedingungsID": 1087,
         "Pauschale": "C06.05B",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP06",
         "Ebene": 2
@@ -8647,7 +8647,7 @@
         "BedingungsID": 1102,
         "Pauschale": "C06.10A",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP06",
         "Ebene": 2
@@ -8863,7 +8863,7 @@
         "BedingungsID": 1133,
         "Pauschale": "C07.60A",
         "Gruppe": 4,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP07",
         "Ebene": 2
@@ -9006,7 +9006,7 @@
         "BedingungsID": 1149,
         "Pauschale": "C07.60C",
         "Gruppe": 8,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP07",
         "Ebene": 2
@@ -9131,7 +9131,7 @@
         "BedingungsID": 1162,
         "Pauschale": "C07.60D",
         "Gruppe": 8,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP07",
         "Ebene": 2
@@ -9499,7 +9499,7 @@
         "BedingungsID": 1210,
         "Pauschale": "C08.02Z",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -9552,7 +9552,7 @@
         "BedingungsID": 1221,
         "Pauschale": "C08.05B",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -9605,7 +9605,7 @@
         "BedingungsID": 1228,
         "Pauschale": "C08.08Z",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -9622,7 +9622,7 @@
         "BedingungsID": 1232,
         "Pauschale": "C08.08Z",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -9666,7 +9666,7 @@
         "BedingungsID": 1240,
         "Pauschale": "C08.10A",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -9764,7 +9764,7 @@
         "BedingungsID": 1256,
         "Pauschale": "C08.20A",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -9844,7 +9844,7 @@
         "BedingungsID": 1270,
         "Pauschale": "C08.20C",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -9897,7 +9897,7 @@
         "BedingungsID": 1280,
         "Pauschale": "C08.21A",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -9941,7 +9941,7 @@
         "BedingungsID": 1291,
         "Pauschale": "C08.21B",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -9994,7 +9994,7 @@
         "BedingungsID": 1301,
         "Pauschale": "C08.21C",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -10020,7 +10020,7 @@
         "BedingungsID": 1307,
         "Pauschale": "C08.21C",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -10046,7 +10046,7 @@
         "BedingungsID": 1313,
         "Pauschale": "C08.21C",
         "Gruppe": 7,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -10099,7 +10099,7 @@
         "BedingungsID": 1323,
         "Pauschale": "C08.21D",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -10125,7 +10125,7 @@
         "BedingungsID": 1328,
         "Pauschale": "C08.21D",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -10151,7 +10151,7 @@
         "BedingungsID": 1333,
         "Pauschale": "C08.21D",
         "Gruppe": 7,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -10177,7 +10177,7 @@
         "BedingungsID": 1338,
         "Pauschale": "C08.21D",
         "Gruppe": 9,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -10194,7 +10194,7 @@
         "BedingungsID": 1343,
         "Pauschale": "C08.21D",
         "Gruppe": 11,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -10220,7 +10220,7 @@
         "BedingungsID": 1348,
         "Pauschale": "C08.21D",
         "Gruppe": 13,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -10273,7 +10273,7 @@
         "BedingungsID": 1358,
         "Pauschale": "C08.22A",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -10299,7 +10299,7 @@
         "BedingungsID": 1364,
         "Pauschale": "C08.22A",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -10343,7 +10343,7 @@
         "BedingungsID": 1373,
         "Pauschale": "C08.22B",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -10405,7 +10405,7 @@
         "BedingungsID": 1386,
         "Pauschale": "C08.25B",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -10575,7 +10575,7 @@
         "BedingungsID": 1415,
         "Pauschale": "C08.30C",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -10628,7 +10628,7 @@
         "BedingungsID": 1429,
         "Pauschale": "C08.30E",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -10681,7 +10681,7 @@
         "BedingungsID": 1439,
         "Pauschale": "C08.30F",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -10707,7 +10707,7 @@
         "BedingungsID": 1444,
         "Pauschale": "C08.30F",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -10769,7 +10769,7 @@
         "BedingungsID": 1457,
         "Pauschale": "C08.33B",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -10849,7 +10849,7 @@
         "BedingungsID": 1468,
         "Pauschale": "C08.33D",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -10902,7 +10902,7 @@
         "BedingungsID": 1477,
         "Pauschale": "C08.35A",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -10955,7 +10955,7 @@
         "BedingungsID": 1491,
         "Pauschale": "C08.35C",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -11026,7 +11026,7 @@
         "BedingungsID": 1502,
         "Pauschale": "C08.35E",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -11088,7 +11088,7 @@
         "BedingungsID": 1514,
         "Pauschale": "C08.40A",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -11132,7 +11132,7 @@
         "BedingungsID": 1524,
         "Pauschale": "C08.40B",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -11203,7 +11203,7 @@
         "BedingungsID": 1535,
         "Pauschale": "C08.40C",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -11229,7 +11229,7 @@
         "BedingungsID": 1541,
         "Pauschale": "C08.40C",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -11561,7 +11561,7 @@
         "BedingungsID": 1589,
         "Pauschale": "C08.50A",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -11578,7 +11578,7 @@
         "BedingungsID": 1593,
         "Pauschale": "C08.50A",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -11622,7 +11622,7 @@
         "BedingungsID": 1600,
         "Pauschale": "C08.50B",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -11729,7 +11729,7 @@
         "BedingungsID": 1613,
         "Pauschale": "C08.50E",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -11791,7 +11791,7 @@
         "BedingungsID": 1619,
         "Pauschale": "C08.80A",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -11835,7 +11835,7 @@
         "BedingungsID": 1626,
         "Pauschale": "C08.80B",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP08",
         "Ebene": 2
@@ -11888,7 +11888,7 @@
         "BedingungsID": 1634,
         "Pauschale": "C09.12A",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP09",
         "Ebene": 2
@@ -12023,7 +12023,7 @@
         "BedingungsID": 1650,
         "Pauschale": "C09.12C",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP09",
         "Ebene": 2
@@ -12058,7 +12058,7 @@
         "BedingungsID": 1656,
         "Pauschale": "C09.12C",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP09",
         "Ebene": 2
@@ -12102,7 +12102,7 @@
         "BedingungsID": 1664,
         "Pauschale": "C09.12D",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP09",
         "Ebene": 2
@@ -12155,7 +12155,7 @@
         "BedingungsID": 1669,
         "Pauschale": "C09.12D",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP09",
         "Ebene": 2
@@ -12172,7 +12172,7 @@
         "BedingungsID": 1675,
         "Pauschale": "C09.12D",
         "Gruppe": 7,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP09",
         "Ebene": 2
@@ -12216,7 +12216,7 @@
         "BedingungsID": 1681,
         "Pauschale": "C09.12D",
         "Gruppe": 9,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP09",
         "Ebene": 2
@@ -12260,7 +12260,7 @@
         "BedingungsID": 1687,
         "Pauschale": "C09.12D",
         "Gruppe": 11,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP09",
         "Ebene": 2
@@ -12286,7 +12286,7 @@
         "BedingungsID": 1692,
         "Pauschale": "C09.12D",
         "Gruppe": 13,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP09",
         "Ebene": 2
@@ -12303,7 +12303,7 @@
         "BedingungsID": 1696,
         "Pauschale": "C09.12D",
         "Gruppe": 15,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP09",
         "Ebene": 2
@@ -12365,7 +12365,7 @@
         "BedingungsID": 1704,
         "Pauschale": "C09.12E",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP09",
         "Ebene": 2
@@ -12418,7 +12418,7 @@
         "BedingungsID": 1709,
         "Pauschale": "C09.12E",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP09",
         "Ebene": 2
@@ -12435,7 +12435,7 @@
         "BedingungsID": 1714,
         "Pauschale": "C09.12E",
         "Gruppe": 7,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP09",
         "Ebene": 2
@@ -12479,7 +12479,7 @@
         "BedingungsID": 1721,
         "Pauschale": "C09.12E",
         "Gruppe": 10,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP09",
         "Ebene": 2
@@ -12514,7 +12514,7 @@
         "BedingungsID": 1725,
         "Pauschale": "C09.12E",
         "Gruppe": 12,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP09",
         "Ebene": 2
@@ -12540,7 +12540,7 @@
         "BedingungsID": 1729,
         "Pauschale": "C09.12E",
         "Gruppe": 14,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP09",
         "Ebene": 2
@@ -12584,7 +12584,7 @@
         "BedingungsID": 1736,
         "Pauschale": "C09.12F",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP09",
         "Ebene": 2
@@ -12619,7 +12619,7 @@
         "BedingungsID": 1743,
         "Pauschale": "C09.12G",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP09",
         "Ebene": 2
@@ -12645,7 +12645,7 @@
         "BedingungsID": 1748,
         "Pauschale": "C09.12G",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP09",
         "Ebene": 2
@@ -12946,7 +12946,7 @@
         "BedingungsID": 1792,
         "Pauschale": "C09.49Z",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP09",
         "Ebene": 2
@@ -13125,7 +13125,7 @@
         "BedingungsID": 1817,
         "Pauschale": "C11.10B",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP11",
         "Ebene": 2
@@ -13196,7 +13196,7 @@
         "BedingungsID": 1830,
         "Pauschale": "C11.49Z",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP11",
         "Ebene": 2
@@ -13231,7 +13231,7 @@
         "BedingungsID": 1834,
         "Pauschale": "C11.49Z",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP11",
         "Ebene": 2
@@ -13284,7 +13284,7 @@
         "BedingungsID": 1842,
         "Pauschale": "C11.50B",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP11",
         "Ebene": 2
@@ -13484,7 +13484,7 @@
         "BedingungsID": 1864,
         "Pauschale": "C11.51B",
         "Gruppe": 4,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP11",
         "Ebene": 2
@@ -13564,7 +13564,7 @@
         "BedingungsID": 1874,
         "Pauschale": "C11.51D",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP11",
         "Ebene": 2
@@ -13600,7 +13600,7 @@
         "BedingungsID": 1878,
         "Pauschale": "C11.51D",
         "Gruppe": 6,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP11",
         "Ebene": 2
@@ -13664,7 +13664,7 @@
         "BedingungsID": 1884,
         "Pauschale": "C11.55Z",
         "Gruppe": 4,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP11",
         "Ebene": 2
@@ -13699,7 +13699,7 @@
         "BedingungsID": 1889,
         "Pauschale": "C11.55Z",
         "Gruppe": 7,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP11",
         "Ebene": 2
@@ -13789,7 +13789,7 @@
         "BedingungsID": 1900,
         "Pauschale": "C11.65A",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP11",
         "Ebene": 2
@@ -13842,7 +13842,7 @@
         "BedingungsID": 1907,
         "Pauschale": "C11.65A",
         "Gruppe": 9,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP11",
         "Ebene": 2
@@ -13895,7 +13895,7 @@
         "BedingungsID": 1915,
         "Pauschale": "C11.65B",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP11",
         "Ebene": 2
@@ -13948,7 +13948,7 @@
         "BedingungsID": 1922,
         "Pauschale": "C11.65C",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP11",
         "Ebene": 2
@@ -14055,7 +14055,7 @@
         "BedingungsID": 1936,
         "Pauschale": "C12.01Z",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP12",
         "Ebene": 2
@@ -14108,7 +14108,7 @@
         "BedingungsID": 1943,
         "Pauschale": "C12.03A",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP12",
         "Ebene": 2
@@ -14143,7 +14143,7 @@
         "BedingungsID": 1948,
         "Pauschale": "C12.03A",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP12",
         "Ebene": 2
@@ -14178,7 +14178,7 @@
         "BedingungsID": 1953,
         "Pauschale": "C12.03A",
         "Gruppe": 7,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP12",
         "Ebene": 2
@@ -14231,7 +14231,7 @@
         "BedingungsID": 1958,
         "Pauschale": "C12.03A",
         "Gruppe": 9,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP12",
         "Ebene": 2
@@ -14302,7 +14302,7 @@
         "BedingungsID": 1971,
         "Pauschale": "C12.09Z",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP12",
         "Ebene": 2
@@ -14328,7 +14328,7 @@
         "BedingungsID": 1974,
         "Pauschale": "C12.09Z",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP12",
         "Ebene": 2
@@ -14354,7 +14354,7 @@
         "BedingungsID": 1978,
         "Pauschale": "C12.09Z",
         "Gruppe": 7,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP12",
         "Ebene": 2
@@ -14435,7 +14435,7 @@
         "BedingungsID": 1990,
         "Pauschale": "C12.10B",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP12",
         "Ebene": 2
@@ -14488,7 +14488,7 @@
         "BedingungsID": 1999,
         "Pauschale": "C12.19Z",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP12",
         "Ebene": 2
@@ -14568,7 +14568,7 @@
         "BedingungsID": 2010,
         "Pauschale": "C12.50A",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP12",
         "Ebene": 2
@@ -14621,7 +14621,7 @@
         "BedingungsID": 2016,
         "Pauschale": "C12.50B",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP12",
         "Ebene": 2
@@ -14665,7 +14665,7 @@
         "BedingungsID": 2021,
         "Pauschale": "C12.65Z",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP12",
         "Ebene": 2
@@ -14736,7 +14736,7 @@
         "BedingungsID": 2030,
         "Pauschale": "C12.70B",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP12",
         "Ebene": 2
@@ -14834,7 +14834,7 @@
         "BedingungsID": 2046,
         "Pauschale": "C13.10C",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP13",
         "Ebene": 2
@@ -14860,7 +14860,7 @@
         "BedingungsID": 2050,
         "Pauschale": "C13.10C",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP13",
         "Ebene": 2
@@ -14886,7 +14886,7 @@
         "BedingungsID": 2054,
         "Pauschale": "C13.10C",
         "Gruppe": 7,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP13",
         "Ebene": 2
@@ -14984,7 +14984,7 @@
         "BedingungsID": 2069,
         "Pauschale": "C13.20C",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP13",
         "Ebene": 2
@@ -15019,7 +15019,7 @@
         "BedingungsID": 2074,
         "Pauschale": "C13.20C",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP13",
         "Ebene": 2
@@ -15369,7 +15369,7 @@
         "BedingungsID": 2125,
         "Pauschale": "C14.10D",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP14",
         "Ebene": 2
@@ -15431,7 +15431,7 @@
         "BedingungsID": 2133,
         "Pauschale": "C14.20A",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP14",
         "Ebene": 2
@@ -15475,7 +15475,7 @@
         "BedingungsID": 2141,
         "Pauschale": "C14.20B",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP14",
         "Ebene": 2
@@ -15546,7 +15546,7 @@
         "BedingungsID": 2151,
         "Pauschale": "C14.40B",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP14",
         "Ebene": 2
@@ -15590,7 +15590,7 @@
         "BedingungsID": 2160,
         "Pauschale": "C22.00A",
         "Gruppe": 3,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE",
         "Werte": "CAP22",
         "Ebene": 2
@@ -15796,7 +15796,7 @@
         "BedingungsID": 2187,
         "Pauschale": "C99.80Z",
         "Gruppe": 5,
-        "Operator": "ODER",
+        "Operator": "UND",
         "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE",
         "Werte": "AMBP.PZ",
         "Ebene": 1
