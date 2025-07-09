@@ -22,9 +22,14 @@
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-            line-height: 1.6; padding: 20px;
-            background: var(--primary-light); color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px 10px; /* Oben/Unten 20px, Links/Rechts 10px */
+            background: var(--primary-light);
+            color: var(--text-color);
             font-size: 16px;
+            width: 100%; /* Volle Breite nutzen */
+            max-width: 1600px; /* Maximale Begrenzung beibehalten */
+            /* margin: 0 auto; wurde entfernt für Linksbündigkeit */
         }
         h1 {
             color: var(--primary);
@@ -48,6 +53,7 @@
             padding: 8px;
             border: 1px solid var(--border-color);
             border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* Subtiler Schatten */
         }
         select { cursor: pointer; }
         .language-select { text-align: right; margin: 0; }
@@ -58,20 +64,26 @@
             padding: 10px 15px; cursor: pointer; margin-top: 10px;
             background: var(--primary); color: #fff; border: none;
             border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15); /* Etwas stärkerer Schatten für Buttons */
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out; /* Sanfter Übergang */
         }
-        button:hover { filter: brightness(1.1); }
-        button:disabled { background-color: #aaa; cursor: not-allowed; }
+        button:hover {
+            filter: brightness(1.15); /* Stärkerer Hover-Effekt */
+            transform: translateY(-1px); /* Leichter Anhebe-Effekt */
+        }
+        button:disabled { background-color: #aaa; cursor: not-allowed; box-shadow: none; transform: none;}
 
         /* --- Output Bereich --- */
         #output {
             margin-top: 20px;
-            border: 1px solid var(--primary-light);
+            border: 1px solid var(--border-color);
             padding: 15px;
             background-color: var(--background-color);
             white-space: normal;
             word-wrap: break-word;
             border-radius: 4px;
             min-height: 50px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         #output h2 {
             white-space: pre-wrap;
@@ -115,8 +127,9 @@
         }
         #output details ul { margin-top: 5px; margin-bottom: 10px; padding-left: 20px; }
         #output details li { margin-bottom: 4px; }
-        #output details table { margin-top: 8px; margin-bottom: 10px; }
-        #output details th, #output details td { padding: 6px; font-size: 0.95em; }
+        #output details table { margin-top: 8px; margin-bottom: 10px; width: 100%; border-collapse: collapse;} /* Breite und Kollaps hinzugefügt */
+        #output details th, #output details td { padding: 6px; font-size: 0.95em; border: 1px solid var(--details-border);} /* Rahmen für Tabellenzellen */
+
 
         /* --- Spezifisches Styling für Bedingungsprüfung --- */
         #output .condition-group,
@@ -148,7 +161,7 @@
         #output .condition-item-row,
         .info-modal .condition-item-row {
             display: flex;
-            align-items: baseline; /* Alternative zu flex-start oder center */
+            align-items: baseline;
             gap: 6px;
             margin-bottom: 8px;
             padding-left: 5px;
@@ -160,12 +173,12 @@
             height: 18px;
             flex-shrink: 0;
             margin-right: 4px;
-            margin-top: 3px; /* Beibehalt für vertikale Feinabstimmung */
+            margin-top: 3px;
             display: inline-flex;
             justify-content: center;
             align-items: center;
             box-sizing: border-box;
-            line-height: 1; /* Kann helfen, das SVG innerhalb des Spans zu zentrieren */
+            line-height: 1;
             border: 1px solid var(--border-color);
             border-radius: 3px;
         }
@@ -191,7 +204,7 @@
             color: #555;
             font-size: 0.9em;
             white-space: nowrap;
-            line-height: 1.5; /* An Haupttext anpassen */
+            line-height: 1.5;
         }
         /* Wrapper für den Haupttext der Bedingung */
         #output .condition-text-wrapper,
@@ -249,13 +262,13 @@
         }
         /* Styling für die aufklappbaren Details im Vergleichsabschnitt */
         #output details ul details.inline-table-details-comparison {
-            display: inline-block; /* Oder block, je nach gewünschtem Layout */
+            display: inline-block;
             margin-left: 5px;
             vertical-align: baseline;
             border: none;
             padding: 0;
             background: transparent;
-            font-size: 1em; /* Erbt Schriftgröße */
+            font-size: 1em;
         }
         #output details ul details.inline-table-details-comparison summary {
             cursor: pointer;
@@ -267,16 +280,15 @@
             padding: 0;
         }
         #output details ul details.inline-table-details-comparison ul {
-            /* Styling für die Liste der LKNs/ICDs in diesen Details */
             margin-top: 3px;
-            font-size: 0.95em; /* Etwas kleiner als der Haupttext der Bedingung */
-            max-height: 120px; /* Etwas weniger hoch */
+            font-size: 0.95em;
+            max-height: 120px;
             overflow-y: auto;
-            border: 1px solid #f0f0f0; /* Hellerer Rand */
+            border: 1px solid #f0f0f0;
             padding: 5px;
             padding-left: 15px;
             list-style-position: outside;
-            background-color: #fdfdfd; /* Leicht anderer Hintergrund */
+            background-color: #fdfdfd;
             border-radius: 3px;
         }
         .disclaimer { font-size: 0.8em; color: #666; margin-top: 30px; }
@@ -302,36 +314,75 @@
         .info-modal-overlay {
             position: fixed; top:0; left:0; right:0; bottom:0;
             background: rgba(0,0,0,0.5); display:none;
-            justify-content: center; align-items: center; z-index: 10000;
+            /* justify-content: center; align-items: center; entfernt für Linksbündigkeit */
+            z-index: 10000;
+            padding-top: 5vh; /* Etwas Abstand von oben */
         }
-    .info-modal {
-        background:#fff; padding:20px; max-width:600px; max-height:80vh;
-        overflow-y:auto; border-radius:4px; box-shadow:0 2px 8px rgba(0,0,0,0.3);
-    }
-    .info-modal a, a.info-link {
-        background: var(--primary-light);
-        color: var(--primary);
-        padding: 2px 4px;
-        border-radius: 3px;
-        text-decoration: none;
-    }
-    .info-modal a:hover, a.info-link:hover {
-        text-decoration: underline;
-    }
-    .modal-close { float:right; background:none; border:none; font-size:1.2em; cursor:pointer; }
-    .top-info {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 0.75em;
-        color: #555;
-    }
-    #qualityLink { color: var(--primary); text-decoration:none; }
-    #qualityLink:hover { text-decoration: underline; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+        .info-modal {
+            background: var(--background-color);
+            padding: 25px;
+            width: 70vw;
+            max-width: 1000px; /* Erhöhte maximale Breite */
+            min-width: 300px;
+            margin-left: 5vw; /* Linksbündig mit etwas Abstand */
+            max-height: 85vh;
+            overflow-y: auto;
+            border-radius: 6px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.35);
+            border: 1px solid var(--primary);
+            position: relative;
+        }
+        .info-modal h2, .info-modal h3 {
+            color: var(--primary);
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .info-modal p, .info-modal li, .info-modal td, .info-modal th {
+            font-size: 0.95em;
+        }
+        .info-modal a, a.info-link {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 2px 4px;
+            border-radius: 3px;
+            text-decoration: none;
+        }
+        .info-modal a:hover, a.info-link:hover {
+            text-decoration: underline;
+            filter: brightness(1.1);
+        }
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: transparent;
+            border: none;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--text-color);
+            cursor: pointer;
+            padding: 5px;
+            line-height: 1;
+            transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+        .modal-close:hover {
+            color: var(--danger);
+            transform: scale(1.1);
+        }
+        .top-info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.75em;
+            color: #555;
+        }
+        #qualityLink { color: var(--primary); text-decoration:none; }
+        #qualityLink:hover { text-decoration: underline; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -492,16 +543,18 @@
 
             const shortKey = "value_" + lang.toUpperCase();
             const extKey = "extendedValue_" + lang.toUpperCase();
-            select.innerHTML = "";
+            select.innerHTML = ""; // Alte Optionen löschen
+            // Platzhalter-Option hinzufügen
+            const placeholderOpt = document.createElement("option");
+            placeholderOpt.textContent = translations[lang].selectPlaceholder;
+            placeholderOpt.value = "";
+            placeholderOpt.disabled = true;
+            placeholderOpt.selected = true;
+            select.appendChild(placeholderOpt);
+
             examplesData.forEach((e,i)=>{
                 const opt = document.createElement("option");
-                if(i===0){
-                    opt.textContent = translations[lang].selectPlaceholder || e.label;
-                    opt.selected = true;
-                    opt.disabled = true;
-                } else {
-                    opt.textContent = e[shortKey] || e.label;
-                }
+                opt.textContent = e[shortKey] || e.label;
                 opt.value = e[extKey] || e[shortKey] || "";
                 select.appendChild(opt);
             });
@@ -532,7 +585,7 @@
             if(qLink) qLink.textContent = t.qualityLink;
             const out = document.getElementById('output');
             if(out){
-                const prev = translations[prevLang];
+                const prev = translations[prevLang] || translations['de'];
                 const content = out.innerHTML.trim();
                 if(!content || content === prev.resultsPlaceholder || content === prev.clickFind){
                     out.textContent = t.resultsPlaceholder;
@@ -558,7 +611,7 @@
             if(sel) sel.value=lang;
             applyLanguage(lang);
             const out=document.getElementById('output');
-            if(out) out.innerHTML='';
+            // Output nicht mehr leeren, damit Ergebnisse bei Reload nicht verschwinden
             const selB=document.getElementById('beispielSelect');
             if(selB) selB.selectedIndex=0;
         }
