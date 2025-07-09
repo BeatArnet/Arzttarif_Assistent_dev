@@ -514,8 +514,31 @@ class TestPauschaleLogic(unittest.TestCase):
         # Context that makes both pauschalen valid (assuming simple conditions)
         context = {"LKN": ["ANY"]}
 
+        # Create an indexed mock for pauschale_bedingungen_indexed
+        pauschale_bedingungen_list_for_mock = [
+            {"Pauschale": "X00.01A", "Gruppe": 1, "Bedingungstyp": "LKN", "Werte": "ANY", "BedingungsID": 1},
+            {"Pauschale": "X00.01B", "Gruppe": 1, "Bedingungstyp": "LKN", "Werte": "ANY", "BedingungsID": 1},
+        ]
+        pauschale_bedingungen_indexed_mock = {}
+        for cond_item in pauschale_bedingungen_list_for_mock:
+            pauschale_code_str = str(cond_item.get("Pauschale"))
+            if pauschale_code_str not in pauschale_bedingungen_indexed_mock:
+                pauschale_bedingungen_indexed_mock[pauschale_code_str] = []
+            pauschale_bedingungen_indexed_mock[pauschale_code_str].append(cond_item)
+
+        for pc_code, cond_list in pauschale_bedingungen_indexed_mock.items(): # Sort each list
+            cond_list.sort(key=lambda c: (c.get('Gruppe', 0), c.get('BedingungsID', 0)))
+
         result = determine_applicable_pauschale(
-            "", [], context, [], pauschale_bedingungen_data, pauschalen_dict, leistungskatalog_dict, tabellen_dict_by_table, {"X00.01A", "X00.01B"}
+            user_input="",
+            rule_checked_leistungen=[],
+            context=context,
+            pauschale_lp_data=[],
+            pauschale_bedingungen_indexed=pauschale_bedingungen_indexed_mock, # Pass the new indexed mock
+            pauschalen_dict=pauschalen_dict,
+            leistungskatalog_dict=leistungskatalog_dict,
+            tabellen_dict_by_table=tabellen_dict_by_table,
+            potential_pauschale_codes_input={"X00.01A", "X00.01B"}
         )
         self.assertEqual(result["details"]["Pauschale"], "X00.01B")
 
