@@ -125,9 +125,32 @@ import logging
 import sys
 
 # Configure logging
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s - %(levelname)s - %(message)s',
-                    stream=sys.stdout) # Log to stdout
+# Custom StreamHandler to handle encoding errors
+class SafeEncodingStreamHandler(logging.StreamHandler):
+    def emit(self, record):
+        try:
+            msg = self.format(record)
+            stream = self.stream
+            # Encode to UTF-8 with replacement for unencodable characters
+            stream.write(msg.encode('utf-8', errors='replace').decode('utf-8', errors='ignore') + self.terminator)
+            self.flush()
+        except Exception:
+            self.handleError(record)
+
+# Get the root logger
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.INFO)
+
+# Remove any existing handlers
+for handler in root_logger.handlers[:]:
+    root_logger.removeHandler(handler)
+
+# Add our custom handler
+safe_handler = SafeEncodingStreamHandler(sys.stdout)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+safe_handler.setFormatter(formatter)
+root_logger.addHandler(safe_handler)
+
 logger = logging.getLogger(__name__)  # Module-level logger
 
 # --- Konfiguration ---
