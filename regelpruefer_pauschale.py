@@ -2,6 +2,7 @@
 import traceback
 import json
 import logging
+import time # Importiere das time Modul
 from typing import Dict, List, Any, Set  # <-- Set hier importieren
 from utils import escape, get_table_content, get_lang_field, translate, translate_condition_type
 import re, html
@@ -1000,11 +1001,16 @@ def determine_applicable_pauschale(
         
         is_pauschale_valid_structured = False
         bedingungs_html = ""
+        if debug: logger.info("DEBUG: Prüfe Pauschale %s", code) # Log vor dem Aufruf
+        start_time_eval = time.time()
         try:
             # grp_op = get_group_operator_for_pauschale(code, pauschale_bedingungen_data, default=DEFAULT_GROUP_OPERATOR) # No longer needed
             is_pauschale_valid_structured = evaluate_structured_conditions(
-                code, context, pauschale_bedingungen_data, tabellen_dict_by_table # Removed grp_op
+                code, context, pauschale_bedingungen_data, tabellen_dict_by_table, debug=debug # Removed grp_op, forward debug
             )
+            end_time_eval = time.time()
+            if debug: logger.info("DEBUG: Pauschale %s geprüft in %.4f Sekunden. Ergebnis: %s", code, end_time_eval - start_time_eval, is_pauschale_valid_structured)
+
             check_res = check_pauschale_conditions(
                 code,
                 context,
