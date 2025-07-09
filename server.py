@@ -331,6 +331,8 @@ pauschalen_dict: dict[str, dict] = {}
 pauschale_bedingungen_data: list[dict] = []
 tabellen_data: list[dict] = []
 tabellen_dict_by_table: dict[str, list[dict]] = {}
+# NEU: Indexierte und vorsortierte Pauschalenbedingungen
+pauschale_bedingungen_indexed: Dict[str, List[Dict[str, Any]]] = {}
 daten_geladen: bool = False
 baseline_results: dict[str, dict] = {}
 examples_data: list[dict] = []
@@ -378,14 +380,14 @@ def create_app() -> FlaskType:
 # --- Daten laden Funktion ---
 def load_data() -> bool:
     global leistungskatalog_data, leistungskatalog_dict, regelwerk_dict, tardoc_tarif_dict, tardoc_interp_dict
-    global pauschale_lp_data, pauschalen_data, pauschalen_dict, pauschale_bedingungen_data, tabellen_data
+    global pauschale_lp_data, pauschalen_data, pauschalen_dict, pauschale_bedingungen_data, pauschale_bedingungen_indexed, tabellen_data
     global tabellen_dict_by_table, daten_geladen
 
     all_loaded_successfully = True
     logger.info("--- Lade Daten ---")
     # Reset all data containers
     leistungskatalog_data.clear(); leistungskatalog_dict.clear(); regelwerk_dict.clear(); tardoc_tarif_dict.clear(); tardoc_interp_dict.clear()
-    pauschale_lp_data.clear(); pauschalen_data.clear(); pauschalen_dict.clear(); pauschale_bedingungen_data.clear(); tabellen_data.clear()
+    pauschale_lp_data.clear(); pauschalen_data.clear(); pauschalen_dict.clear(); pauschale_bedingungen_data.clear(); pauschale_bedingungen_indexed.clear(); tabellen_data.clear()
     tabellen_dict_by_table.clear()
     token_doc_freq.clear()
 
@@ -486,6 +488,48 @@ def load_data() -> bool:
     # Compute document frequencies for ranking
     compute_token_doc_freq()
     logger.info("  ✓ Token-Dokumentfrequenzen berechnet (%s Tokens).", len(token_doc_freq))
+
+    # NEU: Indexiere und sortiere Pauschalbedingungen
+    if pauschale_bedingungen_data and all_loaded_successfully:
+        logger.info("  Beginne Indizierung und Sortierung der Pauschalbedingungen...")
+        pauschale_bedingungen_indexed.clear()
+        PAUSCHALE_KEY_FOR_INDEX = 'Pauschale' # Konstante für Schlüssel
+        GRUPPE_KEY_FOR_SORT = 'Gruppe'
+        BEDID_KEY_FOR_SORT = 'BedingungsID'
+
+        temp_construction_dict: Dict[str, List[Dict[str, Any]]] = {}
+
+        for cond_item in pauschale_bedingungen_data:
+            pauschale_code_val = cond_item.get(PAUSCHALE_KEY_FOR_INDEX)
+            if pauschale_code_val: # Nur wenn Pauschalencode vorhanden ist
+                # Stelle sicher, dass der Code ein String ist
+                pauschale_code_str = str(pauschale_code_val)
+                if pauschale_code_str not in temp_construction_dict:
+                    temp_construction_dict[pauschale_code_str] = []
+                temp_construction_dict[pauschale_code_str].append(cond_item)
+            else:
+                logger.warning("  WARNUNG: Pauschalbedingung ohne Pauschalencode gefunden: %s", cond_item.get('BedingungsID', 'ID unbekannt'))
+
+        for pauschale_code_key, conditions_list in temp_construction_dict.items():
+            # Sortiere die Bedingungen für jeden Pauschalencode
+            # Wichtig: Default-Werte für Sortierschlüssel, falls sie fehlen, um TypeError zu vermeiden
+            conditions_list.sort(
+                key=lambda c: (
+                    c.get(GRUPPE_KEY_FOR_SORT, float('inf')), # Fehlende Gruppen ans Ende
+                    c.get(BEDID_KEY_FOR_SORT, float('inf'))   # Fehlende BedIDs ans Ende
+                )
+            )
+            pauschale_bedingungen_indexed[pauschale_code_key] = conditions_list
+
+        logger.info("  ✓ Pauschalbedingungen indiziert und sortiert (%s Pauschalen mit Bedingungen).", len(pauschale_bedingungen_indexed))
+        # Optional: Logge ein Beispiel, um die Sortierung zu prüfen
+        # if "C01.05B" in pauschale_bedingungen_indexed and logger.isEnabledFor(logging.DEBUG):
+        #     logger.debug("DEBUG: Sortierte Bedingungen für C01.05B (erste 5): %s", pauschale_bedingungen_indexed["C01.05B"][:5])
+    elif not pauschale_bedingungen_data and all_loaded_successfully:
+        logger.warning("  WARNUNG: Keine Pauschalbedingungen zum Indizieren vorhanden (pauschale_bedingungen_data ist leer).")
+    elif not all_loaded_successfully:
+        logger.warning("  WARNUNG: Überspringe Indizierung der Pauschalbedingungen aufgrund vorheriger Ladefehler.")
+
 
     logger.info("--- Daten laden abgeschlossen ---")
     if not all_loaded_successfully:
@@ -1165,8 +1209,11 @@ def analyze_billing():
     # The detailed print below can be removed or kept based on preference, as logger.info now captures it.
     # For this exercise, I'll keep it to exactly match the prompt's request of adding the logger line,
     # but in a real scenario, one might remove the print now.
+
+    request_id = f"req_{time.time_ns()}" # Eindeutige Request-ID
+    logger.info(f"[{request_id}] --- Start /api/analyze-billing ---")
     logger.info(
-        "Input: '%s...', ICDs: %s, GTINs: %s, useIcd: %s, Age: %s, Gender: %s",
+        "[{request_id}] Input: '%s...', ICDs: %s, GTINs: %s, useIcd: %s, Age: %s, Gender: %s",
         user_input[:100],
         icd_input,
         gtin_input,
@@ -1323,10 +1370,11 @@ def analyze_billing():
             try:
                 pauschale_pruef_ergebnis_dict = determine_applicable_pauschale_func(
                     user_input,
-                    [],
+                        [], # rule_checked_leistungen_list_param
                     pauschale_haupt_pruef_kontext,
                     pauschale_lp_data,
-                    pauschale_bedingungen_data,
+                        # pauschale_bedingungen_data, # Ersetzt durch pauschale_bedingungen_indexed
+                        pauschale_bedingungen_indexed, # NEU
                     pauschalen_dict,
                     leistungskatalog_dict,
                     tabellen_dict_by_table,
@@ -1639,11 +1687,15 @@ def analyze_billing():
                     "Anzahl": anzahl_fuer_pauschale_context
                 }
                 try:
-                    logger.info("Starte Pauschalen-Hauptprüfung (useIcd=%s)...", use_icd_flag)
+                    logger.info(f"[{request_id}] Starte Pauschalen-Hauptprüfung (useIcd=%s)...", use_icd_flag)
+                    time_before_determine_pauschale = time.time()
                     # KORREKTUR: Aufruf über die Funktionsvariable determine_applicable_pauschale_func
                     pauschale_pruef_ergebnis_dict = determine_applicable_pauschale_func(
                         user_input, rule_checked_leistungen_list, pauschale_haupt_pruef_kontext,
-                        pauschale_lp_data, pauschale_bedingungen_data, pauschalen_dict,
+                        pauschale_lp_data,
+                        # pauschale_bedingungen_data, # Ersetzt durch pauschale_bedingungen_indexed
+                        pauschale_bedingungen_indexed, # NEU
+                        pauschalen_dict,
                         leistungskatalog_dict, tabellen_dict_by_table, potential_pauschale_codes_set,
                         lang
                     )
