@@ -367,45 +367,6 @@ def evaluate_structured_conditions(
     debug: bool = False,
 ) -> bool:
     """Prüft die UND/ODER-Bedingungen einer Pauschale unter Berücksichtigung von AST VERBINDUNGSOPERATOR.
-
-    Parameters
-    ----------
-    pauschale_code : str
-        Code der zu prüfenden Pauschale.
-    context : dict
-        Laufzeitkontext (z.B. LKN, ICD, Patientendaten).
-    pauschale_bedingungen_data : list[dict]
-        Alle Bedingungsdefinitionen aller Pauschalen.
-    tabellen_dict_by_table : dict
-        Tabelleninhalte für Tabellen-Bedingungen.
-    group_operator : str, optional
-        Logischer Operator zwischen Gruppen (``"UND"`` oder ``"ODER"``).
-    debug : bool, optional
-        Gibt detaillierte Auswertungsinformationen auf ``stdout`` aus.
-
-    Returns
-    -------
-    bool
-        ``True`` wenn die Pauschale unter Berücksichtigung aller Gruppen gültig
-        ist, sonst ``False``.
-
-    Notes
-    -----
-    Die Funktion gruppiert zunächst alle Regeln nach dem ``"Gruppe"``-Feld und
-    erstellt pro Gruppe einen booleschen Ausdruck gemäß den Spalten ``"Ebene"``
-    und ``"Operator"``. Jeder Ausdruck wird anschließend mit
-    :func:`_evaluate_boolean_tokens` ausgewertet. Die Ergebnisse aller Gruppen
-    werden schließlich mit ``group_operator`` (``all`` oder ``any``) kombiniert.
-
-    Examples
-    --------
-    >>> evaluate_structured_conditions(
-    ...     "CAT",
-    ...     {"Seitigkeit": "beidseits", "LKN": ["OP"]},
-    ...     conditions,
-    ...     {},
-    ... )
-    True
     """
     PAUSCHALE_KEY = 'Pauschale'
     GRUPPE_KEY = 'Gruppe'
@@ -415,199 +376,166 @@ def evaluate_structured_conditions(
     BED_TYP_KEY = 'Bedingungstyp'
     AST_VERBINDUNGSOPERATOR_TYPE = "AST VERBINDUNGSOPERATOR"
 
-    # 1. Alle Bedingungen für die Pauschale holen und sortieren
-    all_conditions_for_pauschale = sorted(
-        [cond for cond in pauschale_bedingungen_data if cond.get(PAUSCHALE_KEY) == pauschale_code],
-        key=lambda c: (c.get(GRUPPE_KEY, 0), c.get(BED_ID_KEY, 0)) # Sort by Gruppe, then BedingungsID
-    )
-
-    if not all_conditions_for_pauschale:
-        return True  # Keine Bedingungen = immer erfüllt
-
-    # 2. AST-Operatoren und reguläre Bedingungen trennen
-    ast_operators: Dict[int, str] = {} # Key: Gruppe_ID that the AST operator precedes
-    regular_conditions_for_pauschale: List[Dict] = []
-    
-    # AST Operatoren sind typischerweise mit der Gruppe *davor* assoziiert
-    # oder haben Ebene 0 und stehen zwischen den Gruppen.
-    # Wir sammeln sie und merken uns den Operator für die *nächste* Verknüpfung.
-    # Ein AST Operator in Gruppe N mit Operator ODER bedeutet: (Ergebnis Gruppe N) ODER (Ergebnis Gruppe N+1)
-    
-    # Temporäre Struktur, um AST-Operatoren nach ihrer Gruppe zu speichern
-    # Ein AST-Operator in Gruppe X bestimmt die Verknüpfung von Gruppe X mit Gruppe X+1
-    # oder, falls Ebene 0, die Verknüpfung der vorherigen Hauptgruppe mit der nächsten.
-    # Die Dokumentation sagt: "Der Operator-Wert dieser AST VERBINDUNGSOPERATOR-Zeile (z.B. ODER) 
-    # bestimmt, wie Ergebnis_Gruppe_N mit dem Ergebnis_Gruppe_N+1 verknüpft wird."
-    # Und: "Nach der Verarbeitung einer Gruppe prüfen, ob die nächste Zeile ein AST VERBINDUNGSOPERATOR ist."
-    # Dies deutet darauf hin, dass der AST Operator *nach* einer Gruppe relevant ist.
-
-    # Wir gehen davon aus, dass ein AST-Operator, der in Gruppe N gefunden wird,
-    # die Verknüpfung zwischen dem Ergebnis von Gruppe N und dem Ergebnis von Gruppe N+1 steuert.
-    # AST-Operatoren mit Ebene 0 sind spezielle Marker.
-
-    potential_ast_ops_by_preceding_group: Dict[int, str] = {}
-
-    for cond in all_conditions_for_pauschale:
-        if str(cond.get(BED_TYP_KEY, "")).upper() == AST_VERBINDUNGSOPERATOR_TYPE:
-            # Der AST-Operator in Gruppe G steuert die Verknüpfung von G mit G+1
-            # Die Gruppe eines AST Operators ist die Gruppe, *nach* der er wirkt.
-            group_of_ast = cond.get(GRUPPE_KEY)
-            operator_val = str(cond.get(OPERATOR_KEY, DEFAULT_GROUP_OPERATOR)).upper()
-            if group_of_ast is not None and operator_val in ("UND", "ODER"):
-                 potential_ast_ops_by_preceding_group[group_of_ast] = operator_val
-        else:
-            regular_conditions_for_pauschale.append(cond)
-
-    if not regular_conditions_for_pauschale and not potential_ast_ops_by_preceding_group:
-         # Nur AST-Operatoren, keine regulären Bedingungen. Pauschale kann nicht erfüllt sein.
-         # Oder keine Bedingungen überhaupt (bereits oben abgefangen).
-         # Wenn nur AST-Operatoren da sind, ist es unklar, was zu tun ist. Sicher ist False.
-         return False 
-    elif not regular_conditions_for_pauschale and potential_ast_ops_by_preceding_group:
-        # Nur AST-Operatoren, aber keine Bedingungen zum Auswerten.
-        return False # Kann nicht logisch ausgewertet werden.
-
-
-    # 3. Reguläre Bedingungen nach 'Gruppe' gruppieren
-    # Sortierung für die innere Logik einer Gruppe: Gruppe, dann Ebene, dann ID
-    # Diese Sortierung ist für die `_evaluate_single_group_logic` Hilfsfunktion.
-    sorted_regular_conditions = sorted(
-        regular_conditions_for_pauschale,
-        key=lambda c: (c.get(GRUPPE_KEY, 1), c.get(EBENE_KEY, 1), c.get(BED_ID_KEY, 0))
-    )
-    
-    grouped_conditions: Dict[Any, List[Dict]] = {}
-    for cond in sorted_regular_conditions:
-        group_val = cond.get(GRUPPE_KEY, 1) 
-        if group_val not in grouped_conditions:
-            grouped_conditions[group_val] = []
-        grouped_conditions[group_val].append(cond)
-
-    if not grouped_conditions:
-        # Keine regulären Bedingungen vorhanden, nur AST-Operatoren (oder gar nichts)
-        # Dies sollte durch vorherige Checks abgedeckt sein.
-        return True if not potential_ast_ops_by_preceding_group else False
-
-
-    # Hilfsfunktion zur Auswertung der Logik *innerhalb* einer einzelnen Gruppe
-    def _evaluate_single_group_logic(
-        conditions_in_group: List[Dict],
-        current_group_id: Any # Für Debugging
+    # Hilfsfunktion zur Auswertung der Logik *innerhalb* eines einzelnen logischen Blocks
+    def _evaluate_intra_block_logic(
+        conditions_in_block: List[Dict],
+        block_debug_id: Any
         ) -> bool:
-        if not conditions_in_group:
-            # Gemäß der alten Logik: Eine Gruppe ohne Bedingungen ist per se erfüllt.
-            # Dies ist wichtig, wenn es die einzige Gruppe ist.
-            # Wenn mehrere Gruppen durch UND/ODER verbunden sind, muss dies im Kontext betrachtet werden.
-            # Für die reine Gruppenbewertung: True.
+        if not conditions_in_block:
+            if debug: logger.info("DEBUG Intra-Block %s: Leer, evaluiert zu True (Standard für leere Bedingungsliste)", block_debug_id)
             return True
 
-        baseline_level_group = 1 
-        first_level_group = conditions_in_group[0].get(EBENE_KEY, 1)
-        first_res_group = check_single_condition(
-            conditions_in_group[0], context, tabellen_dict_by_table
+        sorted_conditions_for_block = sorted(
+            conditions_in_block,
+            key=lambda c: (c.get(EBENE_KEY, 1), c.get(BED_ID_KEY, 0))
         )
-        tokens_group: List[Any] = ["("] * (first_level_group - baseline_level_group)
-        tokens_group.append(bool(first_res_group))
-        prev_level_group = first_level_group
-        prev_op_group = conditions_in_group[0].get(OPERATOR_KEY, "UND").upper()
 
-        for cond_grp in conditions_in_group[1:]:
-            cur_level_group = cond_grp.get(EBENE_KEY, baseline_level_group)
-            if cur_level_group < prev_level_group:
-                tokens_group.extend(")" for _ in range(prev_level_group - cur_level_group))
-            
-            # Der Operator der aktuellen Bedingung verknüpft sie mit dem Ergebnis der vorherigen.
-            # In der alten Logik war es prev_op_group. Die Dokumentation sagt:
-            # "Der Operator einer Bedingung X gibt an, wie X mit der vorherigen Bedingung X-1 ... verknüpft ist."
-            # Das bedeutet, der Operator der *aktuellen* Bedingung ist relevant für die Verknüpfung.
-            # Allerdings ist der Operator der *ersten* Bedingung einer (Unter-)Gruppe speziell,
-            # er bestimmt, wie diese Gruppe/dieser Block mit dem vorherigen Block auf gleicher Ebene verbunden wird.
-            # Die _evaluate_boolean_tokens Funktion erwartet aber, dass der Operator *zwischen* den Operanden steht.
-            # Die aktuelle Implementierung von `_evaluate_single_group_logic` verwendet den Operator der *vorherigen* Zeile.
-            # Lassen wir das vorerst so, da es die etablierte Logik für Intra-Gruppen ist.
-            # Der `Operator` einer Bedingung X bezieht sich auf ihre Verknüpfung zur Bedingung X-1.
-            # Also ist `prev_op_group` (der Operator von X-1) korrekt, um X-1 mit X zu verbinden.
-            tokens_group.append("AND" if prev_op_group == "UND" else "OR")
+        baseline_level_block = 1
+        first_level_block = sorted_conditions_for_block[0].get(EBENE_KEY, 1)
+        first_res_block = check_single_condition(
+            sorted_conditions_for_block[0], context, tabellen_dict_by_table
+        )
+        tokens_block: List[Any] = ["("] * (first_level_block - baseline_level_block)
+        tokens_block.append(bool(first_res_block))
+        prev_level_block = first_level_block
 
-            if cur_level_group > prev_level_group:
-                tokens_group.extend("(" for _ in range(cur_level_group - prev_level_group))
-            
-            cur_res_group = check_single_condition(cond_grp, context, tabellen_dict_by_table)
-            tokens_group.append(bool(cur_res_group))
-            prev_level_group = cur_level_group
-            prev_op_group = cond_grp.get(OPERATOR_KEY, "UND").upper()
+        for cond_idx in range(1, len(sorted_conditions_for_block)):
+            current_cond = sorted_conditions_for_block[cond_idx]
+            linking_op = sorted_conditions_for_block[cond_idx -1].get(OPERATOR_KEY, "UND").upper()
+            cur_level_block = current_cond.get(EBENE_KEY, baseline_level_block)
 
-        tokens_group.extend(")" for _ in range(prev_level_group - baseline_level_group))
-        expr_str_group = "".join(
+            if cur_level_block < prev_level_block:
+                tokens_block.extend(")" for _ in range(prev_level_block - cur_level_block))
+
+            tokens_block.append("AND" if linking_op == "UND" else "OR")
+
+            if cur_level_block > prev_level_block:
+                tokens_block.extend("(" for _ in range(cur_level_block - prev_level_block))
+
+            cur_res_block = check_single_condition(current_cond, context, tabellen_dict_by_table)
+            tokens_block.append(bool(cur_res_block))
+            prev_level_block = cur_level_block
+
+        tokens_block.extend(")" for _ in range(prev_level_block - baseline_level_block))
+
+        expr_str_block = "".join(
             str(t).lower() if isinstance(t, bool) else (" and " if t == "AND" else " or " if t == "OR" else t)
-            for t in tokens_group
+            for t in tokens_block
         )
         try:
-            group_result = _evaluate_boolean_tokens(tokens_group)
+            block_result = _evaluate_boolean_tokens(tokens_block)
             if debug:
-                logger.info("DEBUG Gruppe %s (intern): %s => %s", current_group_id, expr_str_group, group_result)
-            return group_result
-        except Exception as e_eval_single_group:
+                logger.info("DEBUG Intra-Block %s (Bedingungen: %s): '%s' => %s",
+                            block_debug_id,
+                            [c.get(BED_ID_KEY) for c in sorted_conditions_for_block],
+                            expr_str_block,
+                            block_result)
+            return block_result
+        except Exception as e_eval_intra_block:
             logger.error(
-                "FEHLER bei Einzelgruppen-Logik (Pauschale: %s, Gruppe: %s) '%s': %s",
-                pauschale_code, current_group_id, expr_str_group, e_eval_single_group,
+                "FEHLER bei Intra-Block-Logik (Pauschale: %s, Block beginnend mit Gruppe ca. %s) '%s': %s",
+                pauschale_code, block_debug_id, expr_str_block, e_eval_intra_block,
             )
             traceback.print_exc()
             return False
 
-    # 4. Gruppen auswerten und Ergebnisse sammeln
-    group_results_map: Dict[Any, bool] = {}
-    sorted_group_ids = sorted(grouped_conditions.keys())
+    all_conditions_for_pauschale = sorted(
+        [cond for cond in pauschale_bedingungen_data if cond.get(PAUSCHALE_KEY) == pauschale_code],
+        key=lambda c: (c.get(GRUPPE_KEY, 0), c.get(BED_ID_KEY, 0))
+    )
 
-    for group_id in sorted_group_ids:
-        conditions_in_this_group = grouped_conditions[group_id]
-        group_results_map[group_id] = _evaluate_single_group_logic(conditions_in_this_group, group_id)
+    if not all_conditions_for_pauschale:
+        return True
 
-    if not group_results_map: # Sollte nicht passieren, wenn grouped_conditions nicht leer war
-        return False # Keine Gruppenergebnisse, kann nicht als True bewertet werden.
+    evaluated_block_results: List[bool] = []
+    inter_block_operators: List[str] = []
+    current_block_sub_conditions: List[Dict] = []
+    current_block_first_gruppe_id_for_debug = None
 
-    # 5. Gruppenergebnisse gemäß AST-Operatoren (oder Default) verknüpfen
-    if not sorted_group_ids: # Sollte bereits oben abgefangen sein
-        return True # Keine Gruppen zu evaluieren
+    for i, condition in enumerate(all_conditions_for_pauschale):
+        cond_type = str(condition.get(BED_TYP_KEY, "")).upper()
 
-    final_result = group_results_map[sorted_group_ids[0]]
-    
+        if cond_type == AST_VERBINDUNGSOPERATOR_TYPE:
+            if current_block_sub_conditions:
+                block_res = _evaluate_intra_block_logic(current_block_sub_conditions, current_block_first_gruppe_id_for_debug)
+                evaluated_block_results.append(block_res)
+                current_block_sub_conditions = []
+                current_block_first_gruppe_id_for_debug = None
+
+            if evaluated_block_results:
+                op_value = str(condition.get(OPERATOR_KEY, DEFAULT_GROUP_OPERATOR)).upper()
+                inter_block_operators.append(op_value if op_value in ("UND", "ODER") else DEFAULT_GROUP_OPERATOR)
+                if debug:
+                    logger.info("DEBUG Pauschale %s: AST Operator '%s' (aus Gruppe %s, BedID %s) zur Verknüpfungsliste hinzugefügt.",
+                                pauschale_code, inter_block_operators[-1], condition.get(GRUPPE_KEY), condition.get(BED_ID_KEY))
+            elif debug:
+                 logger.info("DEBUG Pauschale %s: AST Operator '%s' (Gruppe %s, BedID %s) am Anfang ignoriert, da kein vorheriger Block existiert.",
+                             pauschale_code, condition.get(OPERATOR_KEY), condition.get(GRUPPE_KEY), condition.get(BED_ID_KEY))
+        else:
+            if not current_block_sub_conditions:
+                current_block_first_gruppe_id_for_debug = condition.get(GRUPPE_KEY)
+            current_block_sub_conditions.append(condition)
+
+    if current_block_sub_conditions:
+        block_res = _evaluate_intra_block_logic(current_block_sub_conditions, current_block_first_gruppe_id_for_debug)
+        evaluated_block_results.append(block_res)
+
+    if not evaluated_block_results:
+        if debug:
+            logger.info("DEBUG Pauschale %s: Keine auswertbaren Blöcke (reguläre Bedingungen) gefunden.", pauschale_code)
+        return False
+
+    final_pauschale_result = evaluated_block_results[0]
+
     if debug:
-        logger.info("DEBUG Pauschale %s: Ergebnis Gruppe %s = %s", pauschale_code, sorted_group_ids[0], final_result)
+         logger.info(
+             "DEBUG Pauschale %s: Start-Ergebnis (aus erstem Block) = %s. "
+             "Gesammelte Inter-Block-Operatoren: %s. Alle Block-Ergebnisse: %s",
+             pauschale_code,
+             final_pauschale_result,
+             inter_block_operators,
+             evaluated_block_results
+         )
 
-    for i in range(len(sorted_group_ids) - 1):
-        current_group_id = sorted_group_ids[i]
-        next_group_id = sorted_group_ids[i+1] # Nicht direkt für Lookup verwendet, nur für Iteration
-        
-        # Der AST-Operator, der die Verknüpfung von `current_group_id` mit `next_group_id` steuert,
-        # ist der AST-Operator, der mit `current_group_id` assoziiert ist.
-        inter_group_op_str = potential_ast_ops_by_preceding_group.get(current_group_id, DEFAULT_GROUP_OPERATOR)
-        
-        next_group_result = group_results_map[next_group_id]
+    expected_ops_count = len(evaluated_block_results) - 1 if len(evaluated_block_results) > 0 else 0
+
+    if len(inter_block_operators) != expected_ops_count:
+        logger.warning(
+            "WARNUNG Pauschale %s: Inkonsistenz bei der Verknüpfung von Blöcken. "
+            "Erwartet %s Inter-Block-Operatoren für %s Ergebnisblöcke, aber %s Operatoren gefunden. "
+            "Operatoren: %s, Ergebnisse: %s. Die Regeldefinition könnte fehlerhaft sein. "
+            "Die Pauschale wird als FALSCH bewertet.",
+            pauschale_code, expected_ops_count, len(evaluated_block_results),
+            len(inter_block_operators), inter_block_operators, evaluated_block_results
+        )
+        return False
+
+    for i in range(len(inter_block_operators)):
+        operator = inter_block_operators[i]
+        next_block_result = evaluated_block_results[i+1]
 
         if debug:
             logger.info(
-                "DEBUG Pauschale %s: Verknüpfe (Ergebnis bis Gruppe %s = %s) %s (Ergebnis Gruppe %s = %s)",
-                pauschale_code, current_group_id, final_result, inter_group_op_str, next_group_id, next_group_result
+                "DEBUG Pauschale %s: Verknüpfe (aktuelles Ergebnis = %s) mit Operator '%s' und (nächstes Block-Ergebnis = %s)",
+                pauschale_code, final_pauschale_result, operator, next_block_result
             )
 
-        if inter_group_op_str == "ODER":
-            final_result = final_result or next_group_result
-        else: # UND (Default)
-            final_result = final_result and next_group_result
-        
-        if debug:
-            logger.info("DEBUG Pauschale %s: Neues Zwischenergebnis = %s", pauschale_code, final_result)
+        if operator == "ODER":
+            final_pauschale_result = final_pauschale_result or next_block_result
+        else:
+            final_pauschale_result = final_pauschale_result and next_block_result
 
+        if debug:
+            logger.info("DEBUG Pauschale %s: Neues Zwischenergebnis = %s", pauschale_code, final_pauschale_result)
 
     if debug:
         logger.info(
             "DEBUG Finales Ergebnis Pauschale %s: %s",
             pauschale_code,
-            final_result,
+            final_pauschale_result,
         )
 
-    return final_result
+    return final_pauschale_result
 
 # === PRUEFUNG DER BEDINGUNGEN (STRUKTURIERTES RESULTAT) ===
 def check_pauschale_conditions(
@@ -710,25 +638,53 @@ def check_pauschale_conditions(
             table_links_parts = []
             if table_names_orig:
                 for table_name_o in table_names_orig:
-                    # TODO: Hier könnte man die Anzahl der Einträge und eine aufklappbare Liste einfügen,
-                    # ähnlich wie in generate_condition_detail_html.
-                    # Fürs Erste nur der Tabellenname.
-                    table_links_parts.append(f"<i>{escape(table_name_o)}</i>")
-                werte_display = ", ".join(table_links_parts)
+                    table_content_entries = get_table_content(table_name_o, "service_catalog", tabellen_dict_by_table, lang)
+                    entry_count = len(table_content_entries)
+                    details_content_html = ""
+                    if table_content_entries:
+                        details_content_html = "<ul class='table-content-list'>"
+                        for item in sorted(table_content_entries, key=lambda x: x.get('Code', '')):
+                            item_code = item.get('Code', 'N/A')
+                            item_text = get_beschreibung_fuer_lkn_im_backend(item_code, leistungskatalog_dict, lang)
+                            details_content_html += f"<li><b>{escape(item_code)}</b>: {escape(item_text)}</li>"
+                        details_content_html += "</ul>"
+
+                    table_links_parts.append(
+                        f"<details class='inline-table-details'>"
+                        f"<summary><i>{escape(table_name_o)}</i> ({entry_count} {translate('entries_label', lang)})</summary>{details_content_html}</details>"
+                    )
+                werte_display = "".join(table_links_parts) # Join without comma for multiple details/summary
             else:
                 werte_display = f"<i>{translate('no_table_name', lang)}</i>"
 
-        elif cond_type_upper in ["HAUPTDIAGNOSE IN TABELLE", "ICD IN TABELLE"]:
+        elif cond_type_upper in ["HAUPTDIAGNOSE IN TABELLE", "ICD IN TABELLE"]: # Unified ICD Table Handling
             table_names_icd = [t.strip() for t in original_werte.split(',') if t.strip()]
             table_links_icd_parts = []
             if table_names_icd:
                 for table_name_i in table_names_icd:
-                    table_links_icd_parts.append(f"<i>{escape(table_name_i)}</i>")
-                werte_display = ", ".join(table_links_icd_parts)
+                    # Hier 'icd' als table_type verwenden
+                    table_content_entries_icd = get_table_content(table_name_i, "icd", tabellen_dict_by_table, lang)
+                    entry_count_icd = len(table_content_entries_icd)
+                    details_content_html_icd = ""
+                    if table_content_entries_icd:
+                        details_content_html_icd = "<ul class='table-content-list'>"
+                        # ICDs haben typischerweise 'Code' und 'Code_Text'
+                        for item_icd in sorted(table_content_entries_icd, key=lambda x: x.get('Code', '')):
+                            item_code_icd = item_icd.get('Code', 'N/A')
+                            # Für ICDs ist die Beschreibung oft direkt im Eintrag als 'Code_Text'
+                            item_text_icd = item_icd.get('Code_Text', get_beschreibung_fuer_icd_im_backend(item_code_icd, tabellen_dict_by_table, spezifische_icd_tabelle=table_name_i, lang=lang))
+                            details_content_html_icd += f"<li><b>{escape(item_code_icd)}</b>: {escape(item_text_icd)}</li>"
+                        details_content_html_icd += "</ul>"
+
+                    table_links_icd_parts.append(
+                        f"<details class='inline-table-details'>"
+                        f"<summary><i>{escape(table_name_i)}</i> ({entry_count_icd} {translate('entries_label', lang)})</summary>{details_content_html_icd}</details>"
+                    )
+                werte_display = "".join(table_links_icd_parts) # Join without comma
             else:
                 werte_display = f"<i>{translate('no_table_name', lang)}</i>"
 
-        elif cond_type_upper in ["ICD", "HAUPTDIAGNOSE IN LISTE"]:
+        elif cond_type_upper in ["ICD", "HAUPTDIAGNOSE IN LISTE"]: # ICD in List (existing logic)
             icd_codes_list = [icd.strip().upper() for icd in original_werte.split(',') if icd.strip()]
             icd_details_parts = []
             if icd_codes_list:
@@ -795,11 +751,61 @@ def check_pauschale_conditions(
                 matching_icds = list(provided_icds_upper.intersection(required_icds_in_rule_list))
                 if matching_icds:
                     match_details.append(f"{translate('fulfilled_by_icd', lang)}: {', '.join(matching_icds)}")
-            # TODO: Ähnliche Logik für LKN, GTIN, etc. hinzufügen
+            # LKN in Liste
+            elif cond_type_upper in ["LKN", "LEISTUNGSPOSITIONEN IN LISTE"]:
+                provided_lkns_upper = {p_lkn.upper() for p_lkn in context.get("LKN", []) if p_lkn}
+                required_lkns_in_rule_list = {w.strip().upper() for w in str(cond_data.get(BED_WERTE_KEY, "")).split(',') if w.strip()}
+                matching_lkns = list(provided_lkns_upper.intersection(required_lkns_in_rule_list))
+                if matching_lkns:
+                    match_details.append(f"{translate('fulfilled_by_lkn', lang)}: {', '.join(matching_lkns)}")
+            # LKN in Tabelle
+            elif cond_type_upper in ["LEISTUNGSPOSITIONEN IN TABELLE", "TARIFPOSITIONEN IN TABELLE"]:
+                provided_lkns_upper = {p_lkn.upper() for p_lkn in context.get("LKN", []) if p_lkn}
+                table_ref = cond_data.get(BED_WERTE_KEY, "")
+                lkn_codes_in_rule_table = {entry['Code'].upper() for entry in get_table_content(table_ref, "service_catalog", tabellen_dict_by_table) if entry.get('Code')}
+                matching_lkns = list(provided_lkns_upper.intersection(lkn_codes_in_rule_table))
+                if matching_lkns:
+                    match_details.append(f"{translate('fulfilled_by_lkn_in_table', lang, table=escape(table_ref))}: {', '.join(matching_lkns)}")
+            # ICD in Tabelle
+            elif cond_type_upper == "HAUPTDIAGNOSE IN TABELLE": # ICD IN TABELLE
+                if context.get("useIcd", True):
+                    provided_icds_upper = {p_icd.upper() for p_icd in context.get("ICD", []) if p_icd}
+                    table_ref_icd = cond_data.get(BED_WERTE_KEY, "")
+                    icd_codes_in_rule_table = {entry['Code'].upper() for entry in get_table_content(table_ref_icd, "icd", tabellen_dict_by_table) if entry.get('Code')}
+                    matching_icds = list(provided_icds_upper.intersection(icd_codes_in_rule_table))
+                    if matching_icds:
+                        match_details.append(f"{translate('fulfilled_by_icd_in_table', lang, table=escape(table_ref_icd))}: {', '.join(matching_icds)}")
+                else:
+                    match_details.append(f"({translate('icd_check_disabled', lang)})")
+
+            # GTIN / Medikamente in Liste
+            elif cond_type_upper in ["GTIN", "MEDIKAMENTE IN LISTE"]:
+                provided_gtins = set(context.get("GTIN", []))
+                required_gtins_in_rule_list = {w.strip() for w in str(cond_data.get(BED_WERTE_KEY, "")).split(',') if w.strip()}
+                matching_gtins = list(provided_gtins.intersection(required_gtins_in_rule_list))
+                if matching_gtins:
+                    match_details.append(f"{translate('fulfilled_by_gtin', lang)}: {', '.join(matching_gtins)}")
+
+            # Einfache Wertvergleiche
+            elif cond_type_upper == "PATIENTENBEDINGUNG":
+                feld_ref = cond_data.get(BED_FELD_KEY)
+                if feld_ref == "Alter" and context.get("Alter") is not None:
+                     match_details.append(f"{translate('context_age', lang)}: {context.get('Alter')}")
+                elif feld_ref == "Geschlecht" and context.get("Geschlecht"):
+                     match_details.append(f"{translate('context_gender', lang)}: {context.get('Geschlecht')}")
+            elif cond_type_upper == "ALTER IN JAHREN BEI EINTRITT" and context.get("AlterBeiEintritt") is not None:
+                match_details.append(f"{translate('context_age_at_entry', lang)}: {context.get('AlterBeiEintritt')}")
+            elif cond_type_upper == "ANZAHL" and context.get("Anzahl") is not None:
+                 match_details.append(f"{translate('context_quantity', lang)}: {context.get('Anzahl')}")
+            elif cond_type_upper == "SEITIGKEIT" and context.get("Seitigkeit"):
+                 match_details.append(f"{translate('context_laterality', lang)}: {context.get('Seitigkeit')}")
+            elif cond_type_upper == "GESCHLECHT IN LISTE" and context.get("Geschlecht"):
+                 match_details.append(f"{translate('context_gender', lang)}: {context.get('Geschlecht')}")
+
 
             if match_details:
                 context_match_info_html = f"<span class=\"context-match-info fulfilled\">({'; '.join(match_details)})</span>"
-            else: # Generischer Text, wenn keine spezifischen Details gesammelt wurden
+            else: # Fallback, falls keine spezifischen Details gesammelt wurden, aber Bedingung erfüllt ist
                 context_match_info_html = f"<span class=\"context-match-info fulfilled\">({translate('condition_met_context_generic', lang)})</span>"
 
 
@@ -1143,7 +1149,7 @@ def determine_applicable_pauschale(
         pauschale_erklaerung_html = (
             f"<p>Sulla base del contesto (ad es. LKN: {escape(', '.join(lkns_fuer_erklaerung) or 'nessuna')}, "
             f"lateralità: {escape(str(context.get('Seitigkeit')))}, numero: {escape(str(context.get('Anzahl')))}, "
-            f"verifica ICD attiva: {context.get('useIcd', True)}) sono stati verificati i seguenti forfait:</p>"
+            f"verifica ICD activa: {context.get('useIcd', True)}) sono stati verificati i seguenti forfait:</p>"
         )
     else:
         pauschale_erklaerung_html = (
