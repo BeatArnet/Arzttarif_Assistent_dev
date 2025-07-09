@@ -1,7 +1,10 @@
 # utils.py
 import html
+import logging
 from typing import Dict, List, Any, Set
 import re
+
+logger = logging.getLogger(__name__)
 
 def escape(text: Any) -> str:
     """Escapes HTML special characters in a string."""
@@ -31,7 +34,11 @@ def get_table_content(table_ref: str, table_type: str, tabellen_dict_by_table: d
                     if code:
                         all_entries_for_type.append({"Code": code, "Code_Text": text or "N/A"})
         else:
-             print(f"WARNUNG (get_table_content): Normalisierter Schlüssel '{normalized_key}' (Original: '{name}') nicht in tabellen_dict_by_table gefunden.")
+            logger.warning(
+                "WARNUNG (get_table_content): Normalisierter Schlüssel '%s' (Original: '%s') nicht in tabellen_dict_by_table gefunden.",
+                normalized_key,
+                name,
+            )
 
     unique_content = {item['Code']: item for item in all_entries_for_type}.values()
     return sorted(unique_content, key=lambda x: x.get('Code', ''))
