@@ -3,11 +3,14 @@ import sys
 import pathlib
 import json
 sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))
-from conditions import (
-    evaluate_structured_conditions,
-    DEFAULT_GROUP_OPERATOR,
-    get_group_operator_for_pauschale,
+# Importiere direkt aus regelpruefer_pauschale und die umbenannte/vorhandene Funktion
+from regelpruefer_pauschale import (
+    evaluate_pauschale_logic_orchestrator, # Umbenannt von evaluate_structured_conditions
+    # DEFAULT_GROUP_OPERATOR, # Entfernt aus regelpruefer_pauschale
+    # get_group_operator_for_pauschale, # Entfernt aus regelpruefer_pauschale
+    # Weitere benötigte Funktionen für Tests ggf. hier hinzufügen oder lokal importieren
 )
+# determine_applicable_pauschale wird in test_score_based_selection lokal importiert, das ist ok.
 
 class TestPauschaleLogic(unittest.TestCase):
     def test_or_operator_in_group(self):
@@ -34,7 +37,12 @@ class TestPauschaleLogic(unittest.TestCase):
         # With the operator attached to the second rule, both conditions must
         # be met. Only the count criterion is satisfied here.
         self.assertTrue(
-            evaluate_structured_conditions("TEST", context, conditions, {})
+            evaluate_pauschale_logic_orchestrator( # Name geändert
+                pauschale_code="TEST",
+                context=context,
+                all_pauschale_bedingungen_data=conditions, # Parametername angepasst
+                tabellen_dict_by_table={}
+            )
         )
 
     def test_bilateral_cataract_example(self):
@@ -69,7 +77,12 @@ class TestPauschaleLogic(unittest.TestCase):
         context = {"Seitigkeit": "beidseits", "LKN": ["OP"]}
         # All rules must be met since the operators of the later rows are UND.
         self.assertTrue(
-            evaluate_structured_conditions("CAT", context, conditions, {})
+            evaluate_pauschale_logic_orchestrator( # Name geändert
+                pauschale_code="CAT",
+                context=context,
+                all_pauschale_bedingungen_data=conditions, # Parametername angepasst
+                tabellen_dict_by_table={}
+            )
         )
 
     def test_operator_precedence(self):
@@ -108,7 +121,13 @@ class TestPauschaleLogic(unittest.TestCase):
         # Bei strikter Links-nach-rechts-Auswertung muss auch die letzte
         # Bedingung erfüllt sein, da sie mit UND verknüpft wird.
         self.assertFalse(
-            evaluate_structured_conditions("CAT", context, conditions, {}, debug=True)
+            evaluate_pauschale_logic_orchestrator( # Name geändert
+                pauschale_code="CAT",
+                context=context,
+                all_pauschale_bedingungen_data=conditions, # Parametername angepasst
+                tabellen_dict_by_table={},
+                debug=True
+            )
         )
     @unittest.skip("Known issue")
 
@@ -141,7 +160,12 @@ class TestPauschaleLogic(unittest.TestCase):
         ]
         context = {"LKN": ["A", "B"]}
         self.assertTrue(
-            evaluate_structured_conditions("TEST2", context, conditions, {})
+            evaluate_pauschale_logic_orchestrator( # Name geändert
+                pauschale_code="TEST2",
+                context=context,
+                all_pauschale_bedingungen_data=conditions, # Parametername angepasst
+                tabellen_dict_by_table={}
+            )
         )
 
     def test_icd_condition_ignored_when_use_icd_false(self):
@@ -157,7 +181,12 @@ class TestPauschaleLogic(unittest.TestCase):
         ]
         context = {"ICD": [], "useIcd": False}
         self.assertTrue(
-            evaluate_structured_conditions("ICDTEST", context, conditions, {})
+            evaluate_pauschale_logic_orchestrator( # Name geändert
+                pauschale_code="ICDTEST",
+                context=context,
+                all_pauschale_bedingungen_data=conditions, # Parametername angepasst
+                tabellen_dict_by_table={}
+            )
         )
 
     def test_c00_10a_requires_operation_and_anesthesia(self):
@@ -280,17 +309,19 @@ class TestPauschaleLogic(unittest.TestCase):
             evaluate_structured_conditions("NEST", context_missing_c, conditions, {}, debug=True)
         )
 
-    def test_infer_group_operator_from_first_group_rows(self):
-        """If any row in the first group uses ODER and multiple groups exist, ODER is used globally."""
-        conditions = [
-            {"Pauschale": "HX", "Gruppe": 1, "Operator": "UND"},
-            {"Pauschale": "HX", "Gruppe": 1, "Operator": "ODER"},
-            {"Pauschale": "HX", "Gruppe": 2, "Operator": "UND"},
-        ]
-        self.assertEqual(
-            "ODER",
-            get_group_operator_for_pauschale("HX", conditions, default=DEFAULT_GROUP_OPERATOR),
-        )
+    # This test is obsolete as get_group_operator_for_pauschale and DEFAULT_GROUP_OPERATOR were removed.
+    # The logic for determining inter-group operators is now handled by evaluate_pauschale_logic_orchestrator.
+    # def test_infer_group_operator_from_first_group_rows(self):
+    #     """If any row in the first group uses ODER and multiple groups exist, ODER is used globally."""
+    #     conditions = [
+    #         {"Pauschale": "HX", "Gruppe": 1, "Operator": "UND"},
+    #         {"Pauschale": "HX", "Gruppe": 1, "Operator": "ODER"},
+    #         {"Pauschale": "HX", "Gruppe": 2, "Operator": "UND"},
+    #     ]
+    #     self.assertEqual(
+    #         "ODER",
+    #         get_group_operator_for_pauschale("HX", conditions, default=DEFAULT_GROUP_OPERATOR),
+    #     )
 
     def test_or_groups_all_false(self):
         """All groups false with global OR should return False."""
