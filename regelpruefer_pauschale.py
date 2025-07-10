@@ -699,10 +699,216 @@ def check_pauschale_conditions(
     context: dict,
     pauschale_bedingungen_data: list[dict],
     tabellen_dict_by_table: Dict[str, List[Dict]],
-    # leistungskatalog_dict für Beschreibungen hinzugefügt
     leistungskatalog_dict: Dict[str, Dict[str, Any]],
     lang: str = "de"
-) -> Dict[str, Any]: # Gibt jetzt Dict mit html, errors, trigger_lkn_condition_met zurück
+) -> Dict[str, Any]:
+    """
+    Prueft alle Bedingungen einer Pauschale und generiert strukturiertes HTML,
+    inklusive Inter- und Intra-Gruppen-Operatoren und korrekter Übersetzung für Gruppentitel.
+    """
+    PAUSCHALE_KEY = "Pauschale"
+    BED_TYP_KEY = "Bedingungstyp"
+    BED_ID_KEY = "BedingungsID"
+    GRUPPE_KEY = "Gruppe"
+    OPERATOR_KEY = "Operator"
+    BED_WERTE_KEY = "Werte"
+    BED_FELD_KEY = "Feld"
+    BED_MIN_KEY = "MinWert"
+    BED_MAX_KEY = "MaxWert"
+    BED_VERGLEICHSOP_KEY = "Vergleichsoperator"
+
+    all_conditions_for_pauschale_sorted_by_id = sorted(
+        [c for c in pauschale_bedingungen_data if c.get(PAUSCHALE_KEY) == pauschale_code],
+        key=lambda x: x.get(BED_ID_KEY, 0)
+    )
+
+    if not any(str(c.get(BED_TYP_KEY, "")).upper() != "AST VERBINDUNGSOPERATOR" for c in all_conditions_for_pauschale_sorted_by_id):
+        return {"html": f"<p><i>{translate('no_conditions_for_pauschale', lang)}</i></p>", "errors": [], "trigger_lkn_condition_met": False}
+
+    html_parts = []
+    current_display_group_id = None
+    last_processed_actual_condition = None
+    trigger_lkn_condition_overall_met = False
+
+    for idx, cond_data in enumerate(all_conditions_for_pauschale_sorted_by_id):
+        condition_type_upper = str(cond_data.get(BED_TYP_KEY, "")).upper()
+
+        if condition_type_upper == "AST VERBINDUNGSOPERATOR":
+            if current_display_group_id is not None:
+                html_parts.append("</div>")
+                current_display_group_id = None
+                last_processed_actual_condition = None
+
+            ast_operator_value = str(cond_data.get(BED_WERTE_KEY, "ODER")).upper()
+            translated_ast_op = ""
+            if ast_operator_value == "ODER":
+                translated_ast_op = translate('OR', lang)
+            elif ast_operator_value == "UND":
+                translated_ast_op = translate('AND', lang)
+
+            if translated_ast_op:
+                html_parts.append(f"<div class=\"condition-separator inter-group-operator\">{translated_ast_op}</div>")
+
+        else:
+            actual_cond_group_id = cond_data.get(GRUPPE_KEY)
+
+            if actual_cond_group_id != current_display_group_id:
+                if current_display_group_id is not None:
+                    html_parts.append("</div>")
+
+                current_display_group_id = actual_cond_group_id
+                group_title = f"{translate('condition_group', lang)} {escape(str(current_display_group_id))}"
+                html_parts.append(f"<div class=\"condition-group\"><div class=\"condition-group-title\">{group_title}</div>")
+                last_processed_actual_condition = None
+
+            elif last_processed_actual_condition and \
+                 last_processed_actual_condition.get(GRUPPE_KEY) == current_display_group_id:
+
+                linking_op_val = str(last_processed_actual_condition.get(OPERATOR_KEY, "UND")).upper()
+                translated_linking_op = ""
+                if linking_op_val == "ODER":
+                    translated_linking_op = translate('OR', lang)
+                elif linking_op_val == "UND":
+                    translated_linking_op = translate('AND', lang)
+
+                if translated_linking_op:
+                    html_parts.append(f"<div class=\"condition-separator intra-group-operator\">{translated_linking_op}</div>")
+
+            condition_met = check_single_condition(cond_data, context, tabellen_dict_by_table)
+
+            current_cond_data_type_upper = str(cond_data.get(BED_TYP_KEY, "")).upper()
+            if condition_met and current_cond_data_type_upper in [
+                "LEISTUNGSPOSITIONEN IN LISTE", "LKN",
+                "LEISTUNGSPOSITIONEN IN TABELLE", "TARIFPOSITIONEN IN TABELLE"
+            ]:
+                trigger_lkn_condition_overall_met = True
+
+            icon_svg_path = "#icon-check" if condition_met else "#icon-cross"
+            icon_class = "condition-icon-fulfilled" if condition_met else "condition-icon-not-fulfilled"
+            translated_cond_type_display = translate_condition_type(cond_data.get(BED_TYP_KEY, "N/A"), lang)
+
+            original_werte = str(cond_data.get(BED_WERTE_KEY, ""))
+            werte_display = ""
+
+            active_condition_type_for_display = current_cond_data_type_upper
+
+            if active_condition_type_for_display in ["LEISTUNGSPOSITIONEN IN LISTE", "LKN"]:
+                lkn_codes = [l.strip().upper() for l in original_werte.split(',') if l.strip()]
+                lkn_details_parts = []
+                if lkn_codes:
+                    for lkn_c in lkn_codes:
+                        desc = get_beschreibung_fuer_lkn_im_backend(lkn_c, leistungskatalog_dict, lang)
+                        lkn_details_parts.append(f"<b>{escape(lkn_c)}</b> ({escape(desc)})")
+                    werte_display = ", ".join(lkn_details_parts)
+                else:
+                    werte_display = f"<i>{translate('no_lkns_spec', lang)}</i>"
+            elif active_condition_type_for_display in ["LEISTUNGSPOSITIONEN IN TABELLE", "TARIFPOSITIONEN IN TABELLE"]:
+                table_names_orig = [t.strip() for t in original_werte.split(',') if t.strip()]
+                table_links_parts = []
+                if table_names_orig:
+                    for table_name_o in table_names_orig:
+                        table_links_parts.append(f"<i>{escape(table_name_o)}</i>")
+                    werte_display = ", ".join(table_links_parts)
+                else:
+                    werte_display = f"<i>{translate('no_table_name', lang)}</i>"
+            elif active_condition_type_for_display in ["HAUPTDIAGNOSE IN TABELLE", "ICD IN TABELLE"]:
+                table_names_icd = [t.strip() for t in original_werte.split(',') if t.strip()]
+                table_links_icd_parts = []
+                if table_names_icd:
+                    for table_name_i in table_names_icd:
+                        table_links_icd_parts.append(f"<i>{escape(table_name_i)}</i>")
+                    werte_display = ", ".join(table_links_icd_parts)
+                else:
+                    werte_display = f"<i>{translate('no_table_name', lang)}</i>"
+            elif active_condition_type_for_display in ["ICD", "HAUPTDIAGNOSE IN LISTE"]:
+                icd_codes_list = [icd.strip().upper() for icd in original_werte.split(',') if icd.strip()]
+                icd_details_parts = []
+                if icd_codes_list:
+                    for icd_c in icd_codes_list:
+                        desc_icd = get_beschreibung_fuer_icd_im_backend(icd_c, tabellen_dict_by_table, lang=lang)
+                        icd_details_parts.append(f"<b>{escape(icd_c)}</b> ({escape(desc_icd)})")
+                    werte_display = ", ".join(icd_details_parts)
+                else:
+                     werte_display = f"<i>{translate('no_icds_spec', lang)}</i>"
+            elif active_condition_type_for_display == "PATIENTENBEDINGUNG":
+                feld_name_pat = str(cond_data.get(BED_FELD_KEY, "")).capitalize()
+                min_w_pat = cond_data.get(BED_MIN_KEY)
+                max_w_pat = cond_data.get(BED_MAX_KEY)
+                expl_wert_pat = cond_data.get(BED_WERTE_KEY)
+                if feld_name_pat.lower() == "alter":
+                    if min_w_pat is not None or max_w_pat is not None:
+                        val_disp_parts = []
+                        if min_w_pat is not None: val_disp_parts.append(f"{translate('min', lang)} {escape(str(min_w_pat))}")
+                        if max_w_pat is not None: val_disp_parts.append(f"{translate('max', lang)} {escape(str(max_w_pat))}")
+                        werte_display = " ".join(val_disp_parts)
+                    elif expl_wert_pat is not None:
+                        werte_display = escape(str(expl_wert_pat))
+                    else:
+                        werte_display = translate('not_specified', lang)
+                else:
+                    werte_display = escape(str(expl_wert_pat if expl_wert_pat is not None else translate('not_specified', lang)))
+                translated_cond_type_display = translate('patient_condition_display', lang, field=escape(feld_name_pat))
+            elif active_condition_type_for_display == "ALTER IN JAHREN BEI EINTRITT":
+                op_val = cond_data.get(BED_VERGLEICHSOP_KEY, "=")
+                werte_display = f"{escape(op_val)} {escape(original_werte)}"
+            elif active_condition_type_for_display == "ANZAHL":
+                op_val_anz = cond_data.get(BED_VERGLEICHSOP_KEY, "=")
+                werte_display = f"{escape(op_val_anz)} {escape(original_werte)}"
+            elif active_condition_type_for_display == "SEITIGKEIT":
+                op_val_seit = cond_data.get(BED_VERGLEICHSOP_KEY, "=")
+                regel_wert_seit_norm_disp = original_werte.strip().replace("'", "").lower()
+                if regel_wert_seit_norm_disp == 'b': regel_wert_seit_norm_disp = translate('bilateral', lang)
+                elif regel_wert_seit_norm_disp == 'e': regel_wert_seit_norm_disp = translate('unilateral', lang)
+                elif regel_wert_seit_norm_disp == 'l': regel_wert_seit_norm_disp = translate('left', lang)
+                elif regel_wert_seit_norm_disp == 'r': regel_wert_seit_norm_disp = translate('right', lang)
+                werte_display = f"{escape(op_val_seit)} {escape(regel_wert_seit_norm_disp)}"
+            elif active_condition_type_for_display == "GESCHLECHT IN LISTE":
+                gender_list = [g.strip().lower() for g in original_werte.split(',') if g.strip()]
+                translated_genders = [translate(g, lang) for g in gender_list]
+                werte_display = escape(", ".join(translated_genders))
+            else:
+                werte_display = escape(original_werte)
+
+            context_match_info_html = ""
+            if condition_met:
+                match_details = []
+                if active_condition_type_for_display == "ICD" or active_condition_type_for_display == "HAUPTDIAGNOSE IN LISTE":
+                    provided_icds_upper = {p_icd.upper() for p_icd in context.get("ICD", []) if p_icd}
+                    required_icds_in_rule_list = {w.strip().upper() for w in str(cond_data.get(BED_WERTE_KEY, "")).split(',') if w.strip()}
+                    matching_icds = list(provided_icds_upper.intersection(required_icds_in_rule_list))
+                    if matching_icds:
+                        match_details.append(f"{translate('fulfilled_by_icd', lang)}: {', '.join(matching_icds)}")
+                elif active_condition_type_for_display in ["LEISTUNGSPOSITIONEN IN LISTE", "LKN"]:
+                    provided_lkns_upper = {p_lkn.upper() for p_lkn in context.get("LKN", []) if p_lkn}
+                    required_lkns_in_rule_list = {w.strip().upper() for w in str(cond_data.get(BED_WERTE_KEY, "")).split(',') if w.strip()}
+                    matching_lkns = list(provided_lkns_upper.intersection(required_lkns_in_rule_list))
+                    if matching_lkns:
+                        match_details.append(f"{translate('fulfilled_by_lkn', lang)}: {', '.join(matching_lkns)}")
+
+                if match_details:
+                    context_match_info_html = f"<span class=\"context-match-info fulfilled\">({'; '.join(match_details)})</span>"
+                else:
+                    context_match_info_html = f"<span class=\"context-match-info fulfilled\">({translate('condition_met_context_generic', lang)})</span>"
+
+            html_parts.append(f"""
+                <div class="condition-item-row">
+                    <span class="condition-status-icon {icon_class}">
+                        <svg viewBox="0 0 24 24"><use xlink:href="{icon_svg_path}"></use></svg>
+                    </span>
+                    <span class="condition-type-display">{escape(translated_cond_type_display)}:</span>
+                    <span class="condition-text-wrapper">{werte_display} {context_match_info_html}</span>
+                </div>
+            """)
+            last_processed_actual_condition = cond_data
+
+    if current_display_group_id is not None:
+        html_parts.append("</div>")
+
+    return {
+        "html": "".join(html_parts),
+        "errors": [],
+        "trigger_lkn_condition_met": trigger_lkn_condition_overall_met
+    }
     """
     Prueft alle Bedingungen einer Pauschale und generiert strukturiertes HTML.
     """
@@ -717,46 +923,85 @@ def check_pauschale_conditions(
     BED_MAX_KEY = "MaxWert"
     BED_VERGLEICHSOP_KEY = "Vergleichsoperator"
 
-
-    # Filter out AST VERBINDUNGSOPERATOR lines as they are not conditions to be displayed directly here
-    conditions_for_pauschale_display = [
-        c for c in pauschale_bedingungen_data
-        if c.get(PAUSCHALE_KEY) == pauschale_code
-        and str(c.get(BED_TYP_KEY, "")).upper() != "AST VERBINDUNGSOPERATOR"
-    ]
-
-    if not conditions_for_pauschale_display:
-        return {"html": f"<p><i>{translate('no_conditions_for_pauschale', lang)}</i></p>", "errors": [], "trigger_lkn_condition_met": False}
-
-    # Sort conditions for display: by Group, then by Ebene, then by BedingungsID
-    # This ensures correct visual grouping and ordering of conditions including their operators.
-    sorted_conditions = sorted(
-        conditions_for_pauschale_display, # Use the filtered list
-        key=lambda x: (x.get(GRUPPE_KEY, float("inf")), x.get('Ebene', 1), x.get(BED_ID_KEY, 0))
+    # Get ALL conditions for the pauschale, sorted by BedingungsID for sequential processing
+    all_conditions_for_pauschale_sorted = sorted(
+        [c for c in pauschale_bedingungen_data if c.get(PAUSCHALE_KEY) == pauschale_code],
+        key=lambda x: x.get(BED_ID_KEY, 0)
     )
 
+    if not any(str(c.get(BED_TYP_KEY, "")).upper() != "AST VERBINDUNGSOPERATOR" for c in all_conditions_for_pauschale_sorted):
+        return {"html": f"<p><i>{translate('no_conditions_for_pauschale', lang)}</i></p>", "errors": [], "trigger_lkn_condition_met": False}
+
     html_parts = []
-    current_group = None
+    current_group_id_for_display_logic = None # Tracks the current group being displayed
+    last_actual_condition_in_current_group = None # To get the operator for intra-group separator
     trigger_lkn_condition_overall_met = False # Für das Resultat der Funktion
 
-    for i, cond_data in enumerate(sorted_conditions):
-        group_val = cond_data.get(GRUPPE_KEY)
-        if group_val != current_group:
-            if current_group is not None: # Schließe vorherige Gruppe ab
-                html_parts.append("</div>") # condition-group
-            current_group = group_val
-            group_title = f"{translate('condition_group', lang)} {escape(str(current_group))}"
-            html_parts.append(f"<div class=\"condition-group\"><div class=\"condition-group-title\">{group_title}</div>")
+    # Need to re-sort for display purposes: by Group, then Ebene, then BedingungsID for non-AST items
+    # This is tricky because AST operators break this sorting.
+    # We will iterate through the BedingungsID sorted list and manage display groups manually.
 
-        # Intra-Gruppen Operator (ODER-Trenner)
-        # Ein ODER-Trenner wird angezeigt, wenn der Operator der *vorherigen* Bedingung in derselben Gruppe ODER war.
-        # Die erste Bedingung einer Gruppe hat nie einen Trenner davor.
-        if i > 0 and sorted_conditions[i-1].get(GRUPPE_KEY) == current_group:
-            prev_cond_operator = str(sorted_conditions[i-1].get(OPERATOR_KEY, "UND")).upper()
-            if prev_cond_operator == "ODER":
-                html_parts.append(f"<div class=\"condition-separator\">{translate('OR', lang)}</div>")
+    # Let's refine the iteration to handle group display and AST operators correctly.
+    # We'll iterate through the BedingungsID-sorted list, which reflects the defined logical order.
 
-        condition_met = check_single_condition(cond_data, context, tabellen_dict_by_table)
+    processed_groups_in_current_ast_block = set()
+
+    for i, cond_data in enumerate(all_conditions_for_pauschale_sorted):
+        condition_type_upper = str(cond_data.get(BED_TYP_KEY, "")).upper()
+
+        if condition_type_upper == "AST VERBINDUNGSOPERATOR":
+            if current_group_id_for_display_logic is not None: # Close the last open condition-group
+                html_parts.append("</div>")
+                current_group_id_for_display_logic = None
+                last_actual_condition_in_current_group = None
+                processed_groups_in_current_ast_block.clear()
+
+
+            ast_operator_value = str(cond_data.get(BED_WERTE_KEY, "ODER")).upper()
+            if ast_operator_value == "ODER":
+                html_parts.append(f"<div class=\"condition-separator group-operator\">{translate('OR', lang)}</div>")
+            elif ast_operator_value == "UND":
+                html_parts.append(f"<div class=\"condition-separator group-operator\">{translate('AND', lang)}</div>")
+            # else: don't display if it's not UND/ODER (should not happen with clean data)
+
+        else: # It's an actual condition line
+            group_val = cond_data.get(GRUPPE_KEY)
+
+            if group_val != current_group_id_for_display_logic:
+                if current_group_id_for_display_logic is not None: # Close previous group
+                    html_parts.append("</div>") # condition-group
+
+                # Check if this group is new within the current AST block or if an implicit operator is needed
+                if group_val in processed_groups_in_current_ast_block and last_actual_condition_in_current_group:
+                    # This means we are starting a new group, but there was a previous group in this same AST block.
+                    # The operator from the last condition of that *previous group* should apply.
+                    # This is complex as `last_actual_condition_in_current_group` refers to the previous line.
+                    # The logic for implicit inter-group operators (if not AST) is handled by orchestrator.
+                    # For display, if an AST operator wasn't just printed, and we are switching groups,
+                    # the orchestrator implies UND by default between groups in a sequence if no AST.
+                    # This display logic might not perfectly mirror the orchestrator's implicit UND between groups
+                    # without an explicit AST operator. The user asked for operators between groups.
+                    # AST operators are explicit. Implicit ones are harder to display here cleanly.
+                    # For now, we only display explicit AST operators.
+                    pass
+
+
+                current_group_id_for_display_logic = group_val
+                processed_groups_in_current_ast_block.add(group_val)
+                group_title = f"{translate('condition_group', lang)} {escape(str(current_group_id_for_display_logic))}"
+                html_parts.append(f"<div class=\"condition-group\"><div class=\"condition-group-title\">{group_title}</div>")
+                last_actual_condition_in_current_group = None # Reset for the new group
+
+            # Intra-Gruppen Operator (between conditions *within* the same group div)
+            if last_actual_condition_in_current_group and last_actual_condition_in_current_group.get(GRUPPE_KEY) == current_group_id_for_display_logic:
+                # Operator from the *previous actual condition line* within the same group
+                prev_cond_operator_intra = str(last_actual_condition_in_current_group.get(OPERATOR_KEY, "UND")).upper()
+                if prev_cond_operator_intra == "ODER":
+                    html_parts.append(f"<div class=\"condition-separator\">{translate('OR', lang)}</div>")
+                elif prev_cond_operator_intra == "UND":
+                    html_parts.append(f"<div class=\"condition-separator\">{translate('AND', lang)}</div>")
+
+            condition_met = check_single_condition(cond_data, context, tabellen_dict_by_table)
 
         # Überprüfen, ob eine LKN-basierte Bedingung erfüllt ist (für das Funktionsergebnis)
         cond_type_upper = str(cond_data.get(BED_TYP_KEY, "")).upper()
