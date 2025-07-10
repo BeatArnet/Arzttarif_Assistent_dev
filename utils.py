@@ -292,56 +292,195 @@ _TRANSLATIONS: Dict[str, Dict[str, str]] = {
         'de': 'Keine LKN vom LLM identifiziert/validiert.',
         'fr': 'Aucun NPL identifié/validé par le LLM.',
         'it': 'Nessun NPL identificato/validato dal LLM.'
+    },
+    'condition_met_context_generic': {
+        'de': 'Bedingung erfüllt', # More direct translation
+        'fr': 'Condition remplie',
+        'it': 'Condizione soddisfatta'
+    },
+    'fulfilled_by_lkn': {
+        'de': 'erfüllt durch LKN: {lkn_code_link}', # Placeholder for linked LKN
+        'fr': 'remplie par NPL : {lkn_code_link}',
+        'it': 'soddisfatta da NPL: {lkn_code_link}'
+    },
+    'fulfilled_by_icd': {
+        'de': 'erfüllt durch ICD: {icd_code_link}', # Placeholder for linked ICD
+        'fr': 'remplie par CIM : {icd_code_link}',
+        'it': 'soddisfatta da ICD: {icd_code_link}'
+    },
+    'condition_text_lkn_list': { # Used for the main display of LKNs in a list
+        'de': '{linked_codes}',
+        'fr': '{linked_codes}',
+        'it': '{linked_codes}'
+    },
+    'condition_text_icd_list': { # Used for the main display of ICDs in a list
+        'de': '{linked_codes}',
+        'fr': '{linked_codes}',
+        'it': '{linked_codes}'
+    },
+    'condition_text_lkn_table': {
+        'de': 'aus Tabelle(n): {table_names}',
+        'fr': 'de la/des table(s): {table_names}',
+        'it': 'da tabella/e: {table_names}'
+    },
+    'condition_text_icd_table': {
+        'de': 'aus Tabelle(n): {table_names}',
+        'fr': 'de la/des table(s): {table_names}',
+        'it': 'da tabella/e: {table_names}'
+    },
+    'condition_group': {
+        'de': 'Bedingungsgruppe',
+        'fr': 'Groupe de conditions',
+        'it': 'Gruppo di condizioni'
+    },
+    'AND': {
+        'de': 'UND',
+        'fr': 'ET',
+        'it': 'E'
+    },
+    'OR': {
+        'de': 'ODER',
+        'fr': 'OU',
+        'it': 'O'
+    },
+    'min': {
+        'de': 'min.',
+        'fr': 'min.',
+        'it': 'min.'
+    },
+    'max': {
+        'de': 'max.',
+        'fr': 'max.',
+        'it': 'max.'
+    },
+    'not_specified': {
+        'de': 'nicht spezifiziert',
+        'fr': 'non spécifié',
+        'it': 'non specificato'
+    },
+    'patient_condition_display': { # For "PATIENTENBEDINGUNG" type display
+        'de': 'Patient: {field}',
+        'fr': 'Patient : {field}',
+        'it': 'Paziente: {field}'
+    },
+    'bilateral': {
+        'de': 'beidseits',
+        'fr': 'bilatéral',
+        'it': 'bilaterale'
+    },
+    'unilateral': {
+        'de': 'einseitig',
+        'fr': 'unilatéral',
+        'it': 'unilaterale'
+    },
+    'left': {
+        'de': 'links',
+        'fr': 'gauche',
+        'it': 'sinistra'
+    },
+    'right': {
+        'de': 'rechts',
+        'fr': 'droite',
+        'it': 'destra'
+    },
+    'no_conditions_for_pauschale': {
+        'de': 'Keine Bedingungen für diese Pauschale definiert.',
+        'fr': 'Aucune condition définie pour ce forfait.',
+        'it': 'Nessuna condizione definita per questo forfait.'
     }
-
 }
 
 # Zusätzliche Übersetzungen für Bedingungstypen
 _COND_TYPE_TRANSLATIONS: Dict[str, Dict[str, str]] = {
-    'LEISTUNGSPOSITIONEN IN LISTE': {
-        'de': 'LEISTUNGSPOSITIONEN IN LISTE',
-        'fr': 'Positions de prestation dans une liste',
-        'it': 'Posizioni di prestazione in elenco'
-    },
-    'LEISTUNGSPOSITIONEN IN TABELLE': {
-        'de': 'LEISTUNGSPOSITIONEN IN TABELLE',
-        'fr': 'Positions de prestation dans une table',
-        'it': 'Posizioni di prestazione in tabella'
-    },
-    'TARIFPOSITIONEN IN TABELLE': {
-        'de': 'TARIFPOSITIONEN IN TABELLE',
-        'fr': 'Positions tarifaires dans une table',
-        'it': 'Posizioni tariffarie in tabella'
-    },
-    'LKN IN LISTE': {
-        'de': 'LKN IN LISTE',
-        'fr': 'NPL dans une liste',
+    'LEISTUNGSPOSITIONEN IN LISTE': { # Main type key
+        'de': 'LKN IN LISTE', # Display value in German
+        'fr': 'NPL en liste',
         'it': 'NPL in elenco'
     },
-    'LKN IN TABELLE': {
-        'de': 'LKN IN TABELLE',
-        'fr': 'NPL dans une table',
-        'it': 'NPL in tabella'
+    'LKN': { # Alias for LEISTUNGSPOSITIONEN IN LISTE
+        'de': 'LKN IN LISTE',
+        'fr': 'NPL en liste',
+        'it': 'NPL in elenco'
+    },
+    'LEISTUNGSPOSITIONEN IN TABELLE': {
+        'de': 'LKN AUS TABELLE',
+        'fr': 'NPL de table',
+        'it': 'NPL da tabella'
+    },
+    'TARIFPOSITIONEN IN TABELLE': { # Alias
+        'de': 'LKN AUS TABELLE',
+        'fr': 'NPL de table',
+        'it': 'NPL da tabella'
+    },
+    'LKN IN TABELLE': { # Alias
+        'de': 'LKN AUS TABELLE',
+        'fr': 'NPL de table',
+        'it': 'NPL da tabella'
     },
     'ICD IN LISTE': {
         'de': 'ICD IN LISTE',
-        'fr': 'ICD dans une liste',
+        'fr': 'CIM en liste', # CIM is ICD in French
+        'it': 'ICD in elenco'
+    },
+    'HAUPTDIAGNOSE IN LISTE': { # Alias for ICD IN LISTE
+        'de': 'ICD IN LISTE',
+        'fr': 'CIM en liste',
+        'it': 'ICD in elenco'
+    },
+    'ICD': { # Alias for ICD IN LISTE
+        'de': 'ICD IN LISTE',
+        'fr': 'CIM en liste',
         'it': 'ICD in elenco'
     },
     'ICD IN TABELLE': {
-        'de': 'ICD IN TABELLE',
-        'fr': 'ICD dans une table',
-        'it': 'ICD in tabella'
+        'de': 'ICD AUS TABELLE',
+        'fr': 'CIM de table',
+        'it': 'ICD da tabella'
     },
     'HAUPTDIAGNOSE IN TABELLE': {
-        'de': 'HAUPTDIAGNOSE IN TABELLE',
-        'fr': 'Diagnostic principal dans une table',
-        'it': 'Diagnosi principale in tabella'
+        'de': 'ICD AUS TABELLE', # Changed for consistency
+        'fr': 'CIM de table',
+        'it': 'ICD da tabella'
     },
     'MEDIKAMENTE IN LISTE': {
         'de': 'MEDIKAMENTE IN LISTE',
-        'fr': 'Médicaments dans une liste',
+        'fr': 'Médicaments en liste',
         'it': 'Farmaci in elenco'
+    },
+    'GTIN': { # Alias
+        'de': 'MEDIKAMENTE IN LISTE',
+        'fr': 'Médicaments en liste',
+        'it': 'Farmaci in elenco'
+    },
+    'GESCHLECHT IN LISTE': {
+        'de': 'GESCHLECHT IN LISTE',
+        'fr': 'Sexe dans la liste',
+        'it': 'Sesso in elenco'
+    },
+    'PATIENTENBEDINGUNG': { # This will be combined with the 'Feld' for display
+        'de': 'PATIENT', # Generic prefix, field will be added
+        'fr': 'PATIENT',
+        'it': 'PAZIENTE'
+    },
+    'ALTER IN JAHREN BEI EINTRITT': {
+        'de': 'ALTER BEI EINTRITT',
+        'fr': "ÂGE À L'ADMISSION",
+        'it': "ETÀ ALL'INGRESSO"
+    },
+    'ANZAHL': {
+        'de': 'ANZAHL',
+        'fr': 'QUANTITÉ',
+        'it': 'QUANTITÀ'
+    },
+    'SEITIGKEIT': {
+        'de': 'SEITIGKEIT',
+        'fr': 'LATÉRALITÉ',
+        'it': 'LATERALITÀ'
+    },
+    'AST VERBINDUNGSOPERATOR': { # Internal, not usually displayed directly as a condition type
+        'de': 'LOGIK-OPERATOR',
+        'fr': 'OPÉRATEUR LOGIQUE',
+        'it': 'OPERATORE LOGICO'
     },
     'GESCHLECHT IN LISTE': {
         'de': 'GESCHLECHT IN LISTE',
@@ -415,6 +554,14 @@ def translate_condition_type(cond_type: str, lang: str = 'de') -> str:
     lang = str(lang).lower()
     return translations.get(lang, translations.get('de', cond_type))
 
+def create_html_info_link(code: str, data_type: str, display_text: str) -> str:
+    """
+    Generates an HTML <a> tag for info links, used by the frontend.
+    display_text is already escaped and prepared by the caller.
+    """
+    escaped_code = escape(code)
+    # data_type does not need escaping as it's from a controlled set.
+    return f'<a href="#" class="info-link" data-type="{data_type}" data-code="{escaped_code}">{display_text}</a>'
 
 def expand_compound_words(text: str) -> str:
     """Expand common German compound words with directional prefixes.
