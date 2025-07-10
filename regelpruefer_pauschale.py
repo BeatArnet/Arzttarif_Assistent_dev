@@ -9,7 +9,6 @@ import re, html
 logger = logging.getLogger(__name__)
 
 __all__ = [
-    "evaluate_structured_conditions",
     "check_pauschale_conditions",
     "get_simplified_conditions",
     "render_condition_results_html",
@@ -17,9 +16,9 @@ __all__ = [
     "determine_applicable_pauschale",
 ]
 
-# Standardoperator zur Verknüpfung der Bedingungsgruppen. (Nicht mehr global verwendet)
+# Standardoperator zur Verknüpfung der Bedingungsgruppen. (Wird für Funktions-Defaults benötigt)
 # "UND" ist der konservative Default und kann zentral angepasst werden.
-# DEFAULT_GROUP_OPERATOR = "UND" # No longer needed globally with the new orchestrator logic
+DEFAULT_GROUP_OPERATOR = "UND"
 
 # === FUNKTION ZUR PRÜFUNG EINER EINZELNEN BEDINGUNG ===
 def check_single_condition(

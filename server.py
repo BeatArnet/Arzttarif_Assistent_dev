@@ -272,10 +272,10 @@ try:
     logger.info("DEBUG: Inhalt von rpp_module: %s", dir(rpp_module))
     logger.info("✓ Regelprüfer Pauschalen (regelpruefer_pauschale.py) Modul geladen.")
 
-    if rpp_module and hasattr(rpp_module, 'evaluate_structured_conditions'):
-        evaluate_structured_conditions = rpp_module.evaluate_structured_conditions
-    else:
-        logger.error("FEHLER: 'evaluate_structured_conditions' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv.")
+    # if rpp_module and hasattr(rpp_module, 'evaluate_structured_conditions'):
+    #    evaluate_structured_conditions = rpp_module.evaluate_structured_conditions
+    # else:
+    #    logger.error("FEHLER: 'evaluate_structured_conditions' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv.")
 
     if rpp_module and hasattr(rpp_module, 'check_pauschale_conditions'):
         check_pauschale_conditions = rpp_module.check_pauschale_conditions  # type: ignore[attr-defined]
