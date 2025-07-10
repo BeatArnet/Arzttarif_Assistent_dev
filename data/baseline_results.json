@@ -631,5 +631,36 @@
       "fr": "Fracture du doigt, enclouage avec anesthésie par anesthésiste",
       "it": "Frattura del dito, chiodaggio con anestesia eseguita dall'anestesista"
     }
+  },
+  "16": {
+    "baseline": {
+      "de": {
+        "pauschale": {
+          "code": "C01.05B",
+          "qty": 1
+        },
+        "einzelleistungen": []
+      },
+      "fr": {
+        "pauschale": {
+          "code": "C01.05B",
+          "qty": 1
+        },
+        "einzelleistungen": []
+      },
+      "it": {
+        "pauschale": {
+          "code": "C01.05B",
+          "qty": 1
+        },
+        "einzelleistungen": []
+      }
+    },
+    "current": {},
+    "query": {
+      "de": "Hypoglossusstimulator\nImplantation Hypoglossusstimulator",
+      "fr": "stimulateur du nerf hypoglosse\nImplantation stimulateur du nerf hypoglosse",
+      "it": "stimolatore del nervo ipoglosso\nImpianto stimolatore del nervo ipoglosso"
+    }
   }
 }

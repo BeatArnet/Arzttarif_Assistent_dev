@@ -143,5 +143,14 @@
     "extendedValue_FR": "Fracture du doigt, enclouage avec anesthésie",
     "value_IT": "Frattura del dito, chiodaggio  con anestesia",
     "extendedValue_IT": "Frattura del dito, chiodaggio  con anestesia"
+  },
+  {
+    "label": "Hypoglossusstimulator",
+    "value_DE": "Hypoglossusstimulator",
+    "extendedValue_DE": "Implantation Hypoglossusstimulator",
+    "value_FR": "stimulateur du nerf hypoglosse",
+    "extendedValue_FR": "Implantation stimulateur du nerf hypoglosse",
+    "value_IT": "stimolatore del nervo ipoglosso",
+    "extendedValue_IT": "Impianto stimolatore del nervo ipoglosso"
   }
 ]
