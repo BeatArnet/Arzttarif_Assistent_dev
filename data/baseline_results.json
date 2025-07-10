@@ -117,8 +117,8 @@
     "current": {},
     "query": {
       "de": "Konsultation 10 Minuten und Entfernung Warze mit scharfem Löffel 5 Minuten, mit Wechselzeit zu Dermatologie",
-      "fr": "Consultation médicale de 10 minutes et curetage d'une verrue (5 minutes), y compris temps de changement vers la dermatologie",
-      "it": "Consultazione medica di 10 minuti e rimozione di una verruca con cucchiaio tagliente (5 minuti), compreso tempo di cambio per dermatologia"
+      "fr": "Consultation médicale de 10 minutes et curetage d'une verrue (5 minutes), y compris temps de changement vers le traitement dermatologie",
+      "it": "Consulta médica de 10 minutos y rimozione di una verruca con cucchiaio tagliente, que tarda 5 minutos, compreso tempo di cambio per dermatologia"
     }
   },
   "3": {
@@ -349,7 +349,7 @@
     "current": {},
     "query": {
       "de": "Hausärztliche Konsultation 15 Min plus 10 Minuten Beratung Kind",
-      "fr": "Consultation du médecin de famille de 15 minutes et conseil pédiatrique de 10 minutes",
+      "fr": "Consultation du médecin de famille 15 min plus 10 min de consultation enfant",
       "it": "Consultazione del medico di famiglia di 15 minuti e 10 minuti consulenza bambino"
     }
   },
