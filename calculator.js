@@ -1192,7 +1192,8 @@ function displayPauschale(abrechnungsObjekt) {
     const pauschaleDetails = abrechnungsObjekt.details;
     const bedingungsHtml = abrechnungsObjekt.bedingungs_pruef_html || "";
     const bedingungsFehler = abrechnungsObjekt.bedingungs_fehler || [];
-    const conditions_met_structured = abrechnungsObjekt.conditions_met === true;
+    // MODIFIED: Check both conditions_met (for main object) and is_valid_structured (for items from evaluated_pauschalen list)
+    const conditions_met_structured = (abrechnungsObjekt.conditions_met === true) || (abrechnungsObjekt.is_valid_structured === true);
 
     const PAUSCHALE_KEY = 'Pauschale';
     const PAUSCHALE_TEXT_KEY = 'Pauschale_Text';

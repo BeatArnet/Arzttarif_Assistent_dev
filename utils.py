@@ -452,6 +452,41 @@ _COND_TYPE_TRANSLATIONS: Dict[str, Dict[str, str]] = {
         'fr': 'Médicaments en liste',
         'it': 'Farmaci in elenco'
     },
+    'GTIN': { # Alias
+        'de': 'MEDIKAMENTE IN LISTE',
+        'fr': 'Médicaments en liste',
+        'it': 'Farmaci in elenco'
+    },
+    'GESCHLECHT IN LISTE': {
+        'de': 'GESCHLECHT IN LISTE',
+        'fr': 'Sexe dans la liste',
+        'it': 'Sesso in elenco'
+    },
+    'PATIENTENBEDINGUNG': { # This will be combined with the 'Feld' for display
+        'de': 'PATIENT', # Generic prefix, field will be added
+        'fr': 'PATIENT',
+        'it': 'PAZIENTE'
+    },
+    'ALTER IN JAHREN BEI EINTRITT': {
+        'de': 'ALTER BEI EINTRITT',
+        'fr': "ÂGE À L'ADMISSION",
+        'it': "ETÀ ALL'INGRESSO"
+    },
+    'ANZAHL': {
+        'de': 'ANZAHL',
+        'fr': 'QUANTITÉ',
+        'it': 'QUANTITÀ'
+    },
+    'SEITIGKEIT': {
+        'de': 'SEITIGKEIT',
+        'fr': 'LATÉRALITÉ',
+        'it': 'LATERALITÀ'
+    },
+    'AST VERBINDUNGSOPERATOR': { # Internal, not usually displayed directly as a condition type
+        'de': 'LOGIK-OPERATOR',
+        'fr': 'OPÉRATEUR LOGIQUE',
+        'it': 'OPERATORE LOGICO'
+    },
     'GESCHLECHT IN LISTE': {
         'de': 'GESCHLECHT IN LISTE',
         'fr': 'Sexe dans la liste',
