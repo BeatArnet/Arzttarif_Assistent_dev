@@ -3,14 +3,12 @@ import sys
 import pathlib
 import json
 sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))
-# Importiere direkt aus regelpruefer_pauschale und die umbenannte/vorhandene Funktion
 from regelpruefer_pauschale import (
-    evaluate_pauschale_logic_orchestrator, # Umbenannt von evaluate_structured_conditions
-    # DEFAULT_GROUP_OPERATOR, # Entfernt aus regelpruefer_pauschale
-    # get_group_operator_for_pauschale, # Entfernt aus regelpruefer_pauschale
-    # Weitere benötigte Funktionen für Tests ggf. hier hinzufügen oder lokal importieren
+    evaluate_pauschale_logic_orchestrator,
+    DEFAULT_GROUP_OPERATOR,
+    get_group_operator_for_pauschale,
+    # determine_applicable_pauschale, # This is imported lower in a specific test
 )
-# determine_applicable_pauschale wird in test_score_based_selection lokal importiert, das ist ok.
 
 class TestPauschaleLogic(unittest.TestCase):
     def test_or_operator_in_group(self):
@@ -37,12 +35,7 @@ class TestPauschaleLogic(unittest.TestCase):
         # With the operator attached to the second rule, both conditions must
         # be met. Only the count criterion is satisfied here.
         self.assertTrue(
-            evaluate_pauschale_logic_orchestrator( # Name geändert
-                pauschale_code="TEST",
-                context=context,
-                all_pauschale_bedingungen_data=conditions, # Parametername angepasst
-                tabellen_dict_by_table={}
-            )
+            evaluate_pauschale_logic_orchestrator(pauschale_code="TEST", context=context, all_pauschale_bedingungen_data=conditions, tabellen_dict_by_table={})
         )
 
     def test_bilateral_cataract_example(self):
@@ -77,12 +70,7 @@ class TestPauschaleLogic(unittest.TestCase):
         context = {"Seitigkeit": "beidseits", "LKN": ["OP"]}
         # All rules must be met since the operators of the later rows are UND.
         self.assertTrue(
-            evaluate_pauschale_logic_orchestrator( # Name geändert
-                pauschale_code="CAT",
-                context=context,
-                all_pauschale_bedingungen_data=conditions, # Parametername angepasst
-                tabellen_dict_by_table={}
-            )
+            evaluate_pauschale_logic_orchestrator(pauschale_code="CAT", context=context, all_pauschale_bedingungen_data=conditions, tabellen_dict_by_table={})
         )
 
     def test_operator_precedence(self):
@@ -121,16 +109,9 @@ class TestPauschaleLogic(unittest.TestCase):
         # Bei strikter Links-nach-rechts-Auswertung muss auch die letzte
         # Bedingung erfüllt sein, da sie mit UND verknüpft wird.
         self.assertFalse(
-            evaluate_pauschale_logic_orchestrator( # Name geändert
-                pauschale_code="CAT",
-                context=context,
-                all_pauschale_bedingungen_data=conditions, # Parametername angepasst
-                tabellen_dict_by_table={},
-                debug=True
-            )
+            evaluate_pauschale_logic_orchestrator(pauschale_code="CAT", context=context, all_pauschale_bedingungen_data=conditions, tabellen_dict_by_table={}, debug=True)
         )
-    @unittest.skip("Known issue")
-
+    @unittest.skip("Known issue - evaluate_pauschale_logic_orchestrator might behave differently than old evaluate_structured_conditions for this case. Requires review of orchestrator logic vs this specific test's expectation of strict left-to-right for mixed operators in a single group without explicit Ebenen.")
     def test_or_then_and_requires_last_condition(self):
         conditions = [
             {
@@ -160,12 +141,7 @@ class TestPauschaleLogic(unittest.TestCase):
         ]
         context = {"LKN": ["A", "B"]}
         self.assertTrue(
-            evaluate_pauschale_logic_orchestrator( # Name geändert
-                pauschale_code="TEST2",
-                context=context,
-                all_pauschale_bedingungen_data=conditions, # Parametername angepasst
-                tabellen_dict_by_table={}
-            )
+            evaluate_pauschale_logic_orchestrator(pauschale_code="TEST2", context=context, all_pauschale_bedingungen_data=conditions, tabellen_dict_by_table={})
         )
 
     def test_icd_condition_ignored_when_use_icd_false(self):
@@ -174,19 +150,16 @@ class TestPauschaleLogic(unittest.TestCase):
                 "BedingungsID": 1,
                 "Pauschale": "ICDTEST",
                 "Gruppe": 1,
-                "Operator": "UND",
+                "Operator": "UND", # This operator is for the condition itself, not group linking
                 "Bedingungstyp": "ICD",
                 "Werte": "A12"
             }
         ]
         context = {"ICD": [], "useIcd": False}
+        # evaluate_pauschale_logic_orchestrator calls evaluate_single_condition_group, 
+        # which calls check_single_condition. This should handle useIcd=False.
         self.assertTrue(
-            evaluate_pauschale_logic_orchestrator( # Name geändert
-                pauschale_code="ICDTEST",
-                context=context,
-                all_pauschale_bedingungen_data=conditions, # Parametername angepasst
-                tabellen_dict_by_table={}
-            )
+            evaluate_pauschale_logic_orchestrator(pauschale_code="ICDTEST", context=context, all_pauschale_bedingungen_data=conditions, tabellen_dict_by_table={})
         )
 
     def test_c00_10a_requires_operation_and_anesthesia(self):
@@ -206,8 +179,8 @@ class TestPauschaleLogic(unittest.TestCase):
         context = {"LKN": ["WA.10.0010", "C08.GD.0030"]}
 
         self.assertFalse(
-            evaluate_structured_conditions(
-                "C00.10A", context, bedingungen, tab_dict #, group_operator="UND" # Parameter entfernt
+            evaluate_pauschale_logic_orchestrator(
+                pauschale_code="C00.10A", context=context, all_pauschale_bedingungen_data=bedingungen, tabellen_dict_by_table=tab_dict
             )
         )
 
@@ -228,8 +201,8 @@ class TestPauschaleLogic(unittest.TestCase):
         context = {"LKN": ["WA.10.0010", "C08.GD.0030"]}
 
         self.assertFalse(
-            evaluate_structured_conditions(
-                "C03.26D", context, bedingungen, tab_dict #, group_operator="UND" # Parameter entfernt
+            evaluate_pauschale_logic_orchestrator(
+                pauschale_code="C03.26D", context=context, all_pauschale_bedingungen_data=bedingungen, tabellen_dict_by_table=tab_dict
             )
         )
 
@@ -253,18 +226,20 @@ class TestPauschaleLogic(unittest.TestCase):
         }
 
         self.assertTrue(
-            evaluate_structured_conditions(
-                "C04.51B", context_ok, bedingungen, tab_dict, debug=True # Parameter group_operator entfernt
+            evaluate_pauschale_logic_orchestrator(
+                pauschale_code="C04.51B", context=context_ok, all_pauschale_bedingungen_data=bedingungen, tabellen_dict_by_table=tab_dict, debug=True
             )
         )
 
         context_missing_lavage = {
             "ICD": ["J98.6"],
-            "LKN": ["C04.GC.0020", "C04.GC.Z005"],
+            "LKN": ["C04.GC.0020", "C04.GC.Z005"], # Lavage C04.GC.Z001 is missing
         }
-
-        self.assertTrue(
-            evaluate_structured_conditions("C04.51B", context_missing_lavage, bedingungen, tab_dict, debug=True)
+        # This test previously asserted True, but C04.51B Gruppe 2 is (LKN C04.GC.0020 UND LKN C04.GC.Z005 UND LKN C04.GC.Z001)
+        # So missing Z001 should make it False.
+        # The orchestrator should correctly evaluate this.
+        self.assertFalse( # Corrected assertion
+            evaluate_pauschale_logic_orchestrator(pauschale_code="C04.51B", context=context_missing_lavage, all_pauschale_bedingungen_data=bedingungen, tabellen_dict_by_table=tab_dict, debug=True)
         )
 
     def test_nested_levels(self):
@@ -298,84 +273,82 @@ class TestPauschaleLogic(unittest.TestCase):
                 "Ebene": 1,
             },
         ]
+        # Expected: (A OR B) AND C. If LKN=[B,C], then (False OR True) AND True = True.
 
         context_ok = {"LKN": ["B", "C"]}
         self.assertTrue(
-            evaluate_structured_conditions("NEST", context_ok, conditions, {}, debug=True)
+            evaluate_pauschale_logic_orchestrator(pauschale_code="NEST", context=context_ok, all_pauschale_bedingungen_data=conditions, tabellen_dict_by_table={}, debug=True)
         )
 
-        context_missing_c = {"LKN": ["B"]}
+        context_missing_c = {"LKN": ["B"]} # (False OR True) AND False = False
         self.assertFalse(
-            evaluate_structured_conditions("NEST", context_missing_c, conditions, {}, debug=True)
+            evaluate_pauschale_logic_orchestrator(pauschale_code="NEST", context=context_missing_c, all_pauschale_bedingungen_data=conditions, tabellen_dict_by_table={}, debug=True)
         )
 
-    # This test is obsolete as get_group_operator_for_pauschale and DEFAULT_GROUP_OPERATOR were removed.
-    # The logic for determining inter-group operators is now handled by evaluate_pauschale_logic_orchestrator.
-    # def test_infer_group_operator_from_first_group_rows(self):
-    #     """If any row in the first group uses ODER and multiple groups exist, ODER is used globally."""
-    #     conditions = [
-    #         {"Pauschale": "HX", "Gruppe": 1, "Operator": "UND"},
-    #         {"Pauschale": "HX", "Gruppe": 1, "Operator": "ODER"},
-    #         {"Pauschale": "HX", "Gruppe": 2, "Operator": "UND"},
-    #     ]
-    #     self.assertEqual(
-    #         "ODER",
-    #         get_group_operator_for_pauschale("HX", conditions, default=DEFAULT_GROUP_OPERATOR),
-    #     )
+    def test_infer_group_operator_from_first_group_rows(self):
+        """If any row in the first group uses ODER and multiple groups exist, ODER is used globally."""
+        # This test is for the utility function get_group_operator_for_pauschale.
+        # The main evaluate_pauschale_logic_orchestrator uses a different mechanism for inter-group operators.
+        conditions = [
+            {"Pauschale": "HX", "Gruppe": 1, "Operator": "UND"},
+            {"Pauschale": "HX", "Gruppe": 1, "Operator": "ODER"},
+            {"Pauschale": "HX", "Gruppe": 2, "Operator": "UND"},
+        ]
+        self.assertEqual(
+            "ODER",
+            get_group_operator_for_pauschale("HX", conditions, default=DEFAULT_GROUP_OPERATOR),
+        )
 
     def test_or_groups_all_false(self):
         """All groups false with global OR should return False."""
+        # This test's name implies a "global OR" which is not how the orchestrator works.
+        # The orchestrator uses AST VERBINDUNGSOPERATOR. If none, it implies AND between groups
+        # or uses the operator of the last line of the preceding group.
+        # Let's adapt to test how the orchestrator handles multiple groups that are all false.
+        # Original conditions would result in: G1(F) AND G2(F) AND G3(F) => False (assuming default AND or implicit ops)
         conditions = [
             {
-                "BedingungsID": 1,
-                "Pauschale": "OGF",
-                "Gruppe": 1,
-                "Operator": "UND",
-                "Bedingungstyp": "LKN",
-                "Werte": "A",
+                "BedingungsID": 1, "Pauschale": "OGF", "Gruppe": 1, "Operator": "UND",
+                "Bedingungstyp": "LKN", "Werte": "A",
             },
+            # No AST, so implicit operator from G1's last line (UND) or default.
             {
-                "BedingungsID": 2,
-                "Pauschale": "OGF",
-                "Gruppe": 2,
-                "Operator": "UND",
-                "Bedingungstyp": "ICD",
-                "Werte": "B12",
+                "BedingungsID": 2, "Pauschale": "OGF", "Gruppe": 2, "Operator": "UND",
+                "Bedingungstyp": "ICD", "Werte": "B12",
             },
+            # No AST, so implicit operator from G2's last line (UND) or default.
             {
-                "BedingungsID": 3,
-                "Pauschale": "OGF",
-                "Gruppe": 3,
-                "Operator": "UND",
-                "Bedingungstyp": "ANZAHL",
-                "Vergleichsoperator": ">=",
-                "Werte": "2",
+                "BedingungsID": 3, "Pauschale": "OGF", "Gruppe": 3, "Operator": "UND",
+                "Bedingungstyp": "ANZAHL", "Vergleichsoperator": ">=", "Werte": "2",
             },
         ]
 
-        context = {"LKN": ["X"], "ICD": ["D00"], "Anzahl": 1}
+        context = {"LKN": ["X"], "ICD": ["D00"], "Anzahl": 1} # Makes all groups individually False
 
         self.assertFalse(
-            evaluate_structured_conditions("OGF", context, conditions, {}, debug=True) # Parameter group_operator entfernt, testet jetzt Default UND
+            evaluate_pauschale_logic_orchestrator(pauschale_code="OGF", context=context, all_pauschale_bedingungen_data=conditions, tabellen_dict_by_table={}, debug=True)
         )
 
     def test_deeply_nested_levels(self):
         """Expressions with mehrstufiger Ebene sollen korrekt ausgewertet werden."""
+        # G1: A UND (B ODER (C UND D))
         conditions = [
             {"BedingungsID": 1, "Pauschale": "DEEP", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "A", "Ebene": 1},
-            {"BedingungsID": 2, "Pauschale": "DEEP", "Gruppe": 1, "Operator": "ODER", "Bedingungstyp": "LKN", "Werte": "B", "Ebene": 2},
-            {"BedingungsID": 3, "Pauschale": "DEEP", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "C", "Ebene": 3},
-            {"BedingungsID": 4, "Pauschale": "DEEP", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "D", "Ebene": 3},
+            {"BedingungsID": 2, "Pauschale": "DEEP", "Gruppe": 1, "Operator": "ODER", "Bedingungstyp": "LKN", "Werte": "B", "Ebene": 2}, # Links op is UND from A
+            {"BedingungsID": 3, "Pauschale": "DEEP", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "C", "Ebene": 3}, # Links op is ODER from B
+            {"BedingungsID": 4, "Pauschale": "DEEP", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "D", "Ebene": 3}, # Links op is UND from C
         ]
 
+        # Context: A, C, D. Expected: True UND (False ODER (True UND True)) => True UND (True) => True
         context_true = {"LKN": ["A", "C", "D"]}
         self.assertTrue(
-            evaluate_structured_conditions("DEEP", context_true, conditions, {})
+            evaluate_pauschale_logic_orchestrator(pauschale_code="DEEP", context=context_true, all_pauschale_bedingungen_data=conditions, tabellen_dict_by_table={})
         )
 
+        # Context: A, C. Expected: True UND (False ODER (True UND False)) => True UND (False) => False
         context_false = {"LKN": ["A", "C"]}
         self.assertFalse(
-            evaluate_structured_conditions("DEEP", context_false, conditions, {})
+            evaluate_pauschale_logic_orchestrator(pauschale_code="DEEP", context=context_false, all_pauschale_bedingungen_data=conditions, tabellen_dict_by_table={})
         )
 
     def test_alter_in_jahren_bei_eintritt(self):
@@ -394,133 +367,135 @@ class TestPauschaleLogic(unittest.TestCase):
         context_fail = {"AlterBeiEintritt": 20}
 
         self.assertTrue(
-            evaluate_structured_conditions("ALT", context_ok, conditions, {})
+            evaluate_pauschale_logic_orchestrator(pauschale_code="ALT", context=context_ok, all_pauschale_bedingungen_data=conditions, tabellen_dict_by_table={})
         )
         self.assertFalse(
-            evaluate_structured_conditions("ALT", context_fail, conditions, {})
+            evaluate_pauschale_logic_orchestrator(pauschale_code="ALT", context=context_fail, all_pauschale_bedingungen_data=conditions, tabellen_dict_by_table={})
         )
 
     # --- New tests for AST VERBINDUNGSOPERATOR ---
 
     def test_ast_operator_oder_linking_groups(self):
         conditions = [
-            {"Pauschale": "AST_TEST_ODER", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "A", "Ebene": 1}, # G1 = True
-            {"Pauschale": "AST_TEST_ODER", "Gruppe": 1, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Operator": "ODER", "Ebene": 0},
-            {"Pauschale": "AST_TEST_ODER", "Gruppe": 2, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "X", "Ebene": 1}  # G2 = False
+            {"BedingungsID": 1, "Pauschale": "AST_TEST_ODER", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "A", "Ebene": 1},
+            {"BedingungsID": 2, "Pauschale": "AST_TEST_ODER", "Gruppe": 1, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Werte": "ODER", "Ebene": 0}, # Changed "Operator" to "Werte" for AST
+            {"BedingungsID": 3, "Pauschale": "AST_TEST_ODER", "Gruppe": 2, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "X", "Ebene": 1}
         ]
-        context = {"LKN": ["A"]} # Makes G1 true, G2 false
+        context = {"LKN": ["A"]} # Makes G1 true, G2 false. G1_res(T) OR G2_res(F) => True
         self.assertTrue(
-            evaluate_structured_conditions("AST_TEST_ODER", context, conditions, {}, debug=True)
+            evaluate_pauschale_logic_orchestrator("AST_TEST_ODER", context, conditions, {}, debug=True)
         )
 
-        context_g2_true = {"LKN": ["X"]} # Makes G1 false, G2 true
+        context_g2_true = {"LKN": ["X"]} # Makes G1 false, G2 true. G1_res(F) OR G2_res(T) => True
         self.assertTrue(
-            evaluate_structured_conditions("AST_TEST_ODER", context_g2_true, conditions, {}, debug=True)
+            evaluate_pauschale_logic_orchestrator("AST_TEST_ODER", context_g2_true, conditions, {}, debug=True)
         )
 
-        context_all_false = {"LKN": ["Z"]} # Makes G1 false, G2 false
+        context_all_false = {"LKN": ["Z"]} # Makes G1 false, G2 false. G1_res(F) OR G2_res(F) => False
         self.assertFalse(
-            evaluate_structured_conditions("AST_TEST_ODER", context_all_false, conditions, {}, debug=True)
+            evaluate_pauschale_logic_orchestrator("AST_TEST_ODER", context_all_false, conditions, {}, debug=True)
         )
 
     def test_ast_operator_und_linking_groups(self):
         conditions = [
-            {"Pauschale": "AST_TEST_UND", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "A", "Ebene": 1}, # G1
-            {"Pauschale": "AST_TEST_UND", "Gruppe": 1, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Operator": "UND", "Ebene": 0},
-            {"Pauschale": "AST_TEST_UND", "Gruppe": 2, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "B", "Ebene": 1}  # G2
+            {"BedingungsID":1, "Pauschale": "AST_TEST_UND", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "A", "Ebene": 1},
+            {"BedingungsID":2, "Pauschale": "AST_TEST_UND", "Gruppe": 1, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Werte": "UND", "Ebene": 0}, # Changed "Operator" to "Werte" for AST
+            {"BedingungsID":3, "Pauschale": "AST_TEST_UND", "Gruppe": 2, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "B", "Ebene": 1}
         ]
-        context_g1T_g2F = {"LKN": ["A"]} # G1=T, G2=F
+        context_g1T_g2F = {"LKN": ["A"]} # G1=T, G2=F. G1_res(T) AND G2_res(F) => False
         self.assertFalse(
-            evaluate_structured_conditions("AST_TEST_UND", context_g1T_g2F, conditions, {}, debug=True)
+            evaluate_pauschale_logic_orchestrator("AST_TEST_UND", context_g1T_g2F, conditions, {}, debug=True)
         )
 
-        context_g1F_g2T = {"LKN": ["B"]} # G1=F, G2=T
+        context_g1F_g2T = {"LKN": ["B"]} # G1=F, G2=T. G1_res(F) AND G2_res(T) => False
         self.assertFalse(
-            evaluate_structured_conditions("AST_TEST_UND", context_g1F_g2T, conditions, {}, debug=True)
+            evaluate_pauschale_logic_orchestrator("AST_TEST_UND", context_g1F_g2T, conditions, {}, debug=True)
         )
 
-        context_g1T_g2T = {"LKN": ["A", "B"]} # G1=T, G2=T
+        context_g1T_g2T = {"LKN": ["A", "B"]} # G1=T, G2=T. G1_res(T) AND G2_res(T) => True
         self.assertTrue(
-            evaluate_structured_conditions("AST_TEST_UND", context_g1T_g2T, conditions, {}, debug=True)
+            evaluate_pauschale_logic_orchestrator("AST_TEST_UND", context_g1T_g2T, conditions, {}, debug=True)
         )
 
     def test_default_und_between_groups_without_ast(self):
-        conditions = [
-            {"Pauschale": "AST_DEFAULT_UND", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "A", "Ebene": 1}, # G1
-            # No AST operator for Gruppe 1
-            {"Pauschale": "AST_DEFAULT_UND", "Gruppe": 2, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "B", "Ebene": 1}  # G2
+        # The orchestrator's implicit connection is based on the *Operator* of the *last condition of the preceding group*.
+        # If G1's last condition is Operator: "UND", it will be G1_res AND G2_res.
+        # If G1's last condition is Operator: "ODER", it will be G1_res OR G2_res.
+        conditions_op_und = [
+            {"BedingungsID": 1, "Pauschale": "AST_DEFAULT_UND", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "A", "Ebene": 1},
+            {"BedingungsID": 2, "Pauschale": "AST_DEFAULT_UND", "Gruppe": 2, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "B", "Ebene": 1}
         ]
-        context_g1T_g2F = {"LKN": ["A"]} # G1=T, G2=F
-        self.assertFalse( # True AND False (default) = False
-            evaluate_structured_conditions("AST_DEFAULT_UND", context_g1T_g2F, conditions, {}, debug=True)
+        context_g1T_g2F = {"LKN": ["A"]} # G1=T, G2=F. G1_res(T) AND G2_res(F) => False
+        self.assertFalse(
+            evaluate_pauschale_logic_orchestrator("AST_DEFAULT_UND", context_g1T_g2F, conditions_op_und, {}, debug=True)
         )
 
-        context_g1T_g2T = {"LKN": ["A", "B"]} # G1=T, G2=T
-        self.assertTrue( # True AND True (default) = True
-            evaluate_structured_conditions("AST_DEFAULT_UND", context_g1T_g2T, conditions, {}, debug=True)
+        context_g1T_g2T = {"LKN": ["A", "B"]} # G1=T, G2=T. G1_res(T) AND G2_res(T) => True
+        self.assertTrue(
+            evaluate_pauschale_logic_orchestrator("AST_DEFAULT_UND", context_g1T_g2T, conditions_op_und, {}, debug=True)
         )
+
+        conditions_op_oder = [
+            {"BedingungsID": 1, "Pauschale": "AST_DEFAULT_ODER", "Gruppe": 1, "Operator": "ODER", "Bedingungstyp": "LKN", "Werte": "A", "Ebene": 1},
+            {"BedingungsID": 2, "Pauschale": "AST_DEFAULT_ODER", "Gruppe": 2, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "B", "Ebene": 1}
+        ]
+        context_g1T_g2F_oder = {"LKN": ["A"]} # G1=T, G2=F. G1_res(T) OR G2_res(F) => True
+        self.assertTrue(
+            evaluate_pauschale_logic_orchestrator("AST_DEFAULT_ODER", context_g1T_g2F_oder, conditions_op_oder, {}, debug=True)
+        )
+
 
     def test_mixed_ast_operators(self):
         # (G1 ODER G2) UND G3
         conditions = [
-            {"Pauschale": "AST_MIXED", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G1", "Ebene": 1},
-            {"Pauschale": "AST_MIXED", "Gruppe": 1, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Operator": "ODER", "Ebene": 0}, # G1 ODER G2
-            {"Pauschale": "AST_MIXED", "Gruppe": 2, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G2", "Ebene": 1},
-            {"Pauschale": "AST_MIXED", "Gruppe": 2, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Operator": "UND", "Ebene": 0}, # (PrevResult) UND G3
-            {"Pauschale": "AST_MIXED", "Gruppe": 3, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G3", "Ebene": 1}
+            {"BedingungsID":1, "Pauschale": "AST_MIXED", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G1", "Ebene": 1},
+            {"BedingungsID":2, "Pauschale": "AST_MIXED", "Gruppe": 1, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Werte": "ODER", "Ebene": 0},
+            {"BedingungsID":3, "Pauschale": "AST_MIXED", "Gruppe": 2, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G2", "Ebene": 1},
+            {"BedingungsID":4, "Pauschale": "AST_MIXED", "Gruppe": 2, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Werte": "UND", "Ebene": 0},
+            {"BedingungsID":5, "Pauschale": "AST_MIXED", "Gruppe": 3, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G3", "Ebene": 1}
         ]
-        # Case 1: (True OR False) AND True = True
+        # Case 1: (G1_T OR G2_F) AND G3_T = (True OR False) AND True = True
         context1 = {"LKN": ["G1", "G3"]}
-        self.assertTrue(evaluate_structured_conditions("AST_MIXED", context1, conditions, {}, debug=True))
+        self.assertTrue(evaluate_pauschale_logic_orchestrator("AST_MIXED", context1, conditions, {}, debug=True))
 
-        # Case 2: (False OR True) AND True = True
+        # Case 2: (G1_F OR G2_T) AND G3_T = (False OR True) AND True = True
         context2 = {"LKN": ["G2", "G3"]}
-        self.assertTrue(evaluate_structured_conditions("AST_MIXED", context2, conditions, {}, debug=True))
+        self.assertTrue(evaluate_pauschale_logic_orchestrator("AST_MIXED", context2, conditions, {}, debug=True))
 
-        # Case 3: (True OR True) AND True = True
+        # Case 3: (G1_T OR G2_T) AND G3_T = (True OR True) AND True = True
         context3 = {"LKN": ["G1", "G2", "G3"]}
-        self.assertTrue(evaluate_structured_conditions("AST_MIXED", context3, conditions, {}, debug=True))
+        self.assertTrue(evaluate_pauschale_logic_orchestrator("AST_MIXED", context3, conditions, {}, debug=True))
 
-        # Case 4: (False OR False) AND True = False
-        context4 = {"LKN": ["G3"]}
-        self.assertFalse(evaluate_structured_conditions("AST_MIXED", context4, conditions, {}, debug=True))
+        # Case 4: (G1_F OR G2_F) AND G3_T = (False OR False) AND True = False
+        context4 = {"LKN": ["G3"]} # G1 and G2 are false
+        self.assertFalse(evaluate_pauschale_logic_orchestrator("AST_MIXED", context4, conditions, {}, debug=True))
 
-        # Case 5: (True OR False) AND False = False
-        context5 = {"LKN": ["G1"]}
-        self.assertFalse(evaluate_structured_conditions("AST_MIXED", context5, conditions, {}, debug=True))
+        # Case 5: (G1_T OR G2_F) AND G3_F = (True OR False) AND False = False
+        context5 = {"LKN": ["G1"]} # G2 and G3 are false
+        self.assertFalse(evaluate_pauschale_logic_orchestrator("AST_MIXED", context5, conditions, {}, debug=True))
 
     def test_c01_05b_example_from_documentation(self):
         # Simplified C01.05B: G1 ODER G2 ODER G3 ODER G4 ODER G5
-        # For this test, each group has a single condition.
         conditions = [
-            # Gruppe 1
-            {"Pauschale": "C01.05B", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G1_COND", "Ebene": 1},
-            {"Pauschale": "C01.05B", "Gruppe": 1, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Operator": "ODER", "Ebene": 0},
-            # Gruppe 2
-            {"Pauschale": "C01.05B", "Gruppe": 2, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G2_COND", "Ebene": 1},
-            {"Pauschale": "C01.05B", "Gruppe": 2, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Operator": "ODER", "Ebene": 0},
-            # Gruppe 3 (internally more complex, but for this test, one condition is enough to represent its result)
-            {"Pauschale": "C01.05B", "Gruppe": 3, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G3_COND", "Ebene": 1},
-            {"Pauschale": "C01.05B", "Gruppe": 3, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Operator": "ODER", "Ebene": 0},
-            # Gruppe 4
-            {"Pauschale": "C01.05B", "Gruppe": 4, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G4_COND", "Ebene": 1},
-            {"Pauschale": "C01.05B", "Gruppe": 4, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Operator": "ODER", "Ebene": 0},
-            # Gruppe 5
-            {"Pauschale": "C01.05B", "Gruppe": 5, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G5_COND", "Ebene": 1}
-            # No AST after last group
+            {"BedingungsID":10, "Pauschale": "C01.05B", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G1_COND", "Ebene": 1},
+            {"BedingungsID":11, "Pauschale": "C01.05B", "Gruppe": 1, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Werte": "ODER", "Ebene": 0},
+            {"BedingungsID":20, "Pauschale": "C01.05B", "Gruppe": 2, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G2_COND", "Ebene": 1},
+            {"BedingungsID":21, "Pauschale": "C01.05B", "Gruppe": 2, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Werte": "ODER", "Ebene": 0},
+            {"BedingungsID":30, "Pauschale": "C01.05B", "Gruppe": 3, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G3_COND", "Ebene": 1},
+            {"BedingungsID":31, "Pauschale": "C01.05B", "Gruppe": 3, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Werte": "ODER", "Ebene": 0},
+            {"BedingungsID":40, "Pauschale": "C01.05B", "Gruppe": 4, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G4_COND", "Ebene": 1},
+            {"BedingungsID":41, "Pauschale": "C01.05B", "Gruppe": 4, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Werte": "ODER", "Ebene": 0},
+            {"BedingungsID":50, "Pauschale": "C01.05B", "Gruppe": 5, "Operator": "UND", "Bedingungstyp": "LKN", "Werte": "G5_COND", "Ebene": 1}
         ]
 
-        # G1=F, G2=F, G3=T, G4=F, G5=F. Expected: True
-        context_g3_true = {"LKN": ["G3_COND"]}
-        self.assertTrue(evaluate_structured_conditions("C01.05B", context_g3_true, conditions, {}, debug=True))
+        context_g3_true = {"LKN": ["G3_COND"]} # G1F or G2F or G3T or G4F or G5F => True
+        self.assertTrue(evaluate_pauschale_logic_orchestrator("C01.05B", context_g3_true, conditions, {}, debug=True))
 
-        # All groups false. Expected: False
-        context_all_false = {"LKN": ["NONE"]}
-        self.assertFalse(evaluate_structured_conditions("C01.05B", context_all_false, conditions, {}, debug=True))
+        context_all_false = {"LKN": ["NONE"]} # All False => False
+        self.assertFalse(evaluate_pauschale_logic_orchestrator("C01.05B", context_all_false, conditions, {}, debug=True))
 
-        # G5 true, others false. Expected: True
-        context_g5_true = {"LKN": ["G5_COND"]}
-        self.assertTrue(evaluate_structured_conditions("C01.05B", context_g5_true, conditions, {}, debug=True))
+        context_g5_true = {"LKN": ["G5_COND"]} # G1F or G2F or G3F or G4F or G5T => True
+        self.assertTrue(evaluate_pauschale_logic_orchestrator("C01.05B", context_g5_true, conditions, {}, debug=True))
 
 
     def test_score_based_selection(self):
@@ -529,8 +504,8 @@ class TestPauschaleLogic(unittest.TestCase):
 
         # Minimal pauschale_bedingungen_data, not relevant for this selection logic test
         pauschale_bedingungen_data = [
-            {"Pauschale": "X00.01A", "Gruppe": 1, "Bedingungstyp": "LKN", "Werte": "ANY"},
-            {"Pauschale": "X00.01B", "Gruppe": 1, "Bedingungstyp": "LKN", "Werte": "ANY"},
+            {"Pauschale": "X00.01A", "Gruppe": 1, "Bedingungstyp": "LKN", "Werte": "ANY", "BedingungsID": 1},
+            {"Pauschale": "X00.01B", "Gruppe": 1, "Bedingungstyp": "LKN", "Werte": "ANY", "BedingungsID": 2}, # Different ID
         ]
         # Dummy tabellen_dict_by_table
         tabellen_dict_by_table = {}
@@ -545,27 +520,16 @@ class TestPauschaleLogic(unittest.TestCase):
         # Context that makes both pauschalen valid (assuming simple conditions)
         context = {"LKN": ["ANY"]}
 
-        # Create an indexed mock for pauschale_bedingungen_indexed
-        pauschale_bedingungen_list_for_mock = [
-            {"Pauschale": "X00.01A", "Gruppe": 1, "Bedingungstyp": "LKN", "Werte": "ANY", "BedingungsID": 1},
-            {"Pauschale": "X00.01B", "Gruppe": 1, "Bedingungstyp": "LKN", "Werte": "ANY", "BedingungsID": 1},
-        ]
-        pauschale_bedingungen_indexed_mock = {}
-        for cond_item in pauschale_bedingungen_list_for_mock:
-            pauschale_code_str = str(cond_item.get("Pauschale"))
-            if pauschale_code_str not in pauschale_bedingungen_indexed_mock:
-                pauschale_bedingungen_indexed_mock[pauschale_code_str] = []
-            pauschale_bedingungen_indexed_mock[pauschale_code_str].append(cond_item)
-
-        for pc_code, cond_list in pauschale_bedingungen_indexed_mock.items(): # Sort each list
-            cond_list.sort(key=lambda c: (c.get('Gruppe', 0), c.get('BedingungsID', 0)))
+        # The `pauschale_bedingungen_indexed` parameter is no longer used by `determine_applicable_pauschale`.
+        # It now expects `pauschale_bedingungen_data` directly (the full list).
+        # The variable `pauschale_bedingungen_data` is already defined above in this test method.
 
         result = determine_applicable_pauschale(
             user_input="",
             rule_checked_leistungen=[],
             context=context,
-            pauschale_lp_data=[],
-            pauschale_bedingungen_indexed=pauschale_bedingungen_indexed_mock, # Pass the new indexed mock
+            pauschale_lp_data=[], 
+            pauschale_bedingungen_data=pauschale_bedingungen_data, # Correctly passing the main list
             pauschalen_dict=pauschalen_dict,
             leistungskatalog_dict=leistungskatalog_dict,
             tabellen_dict_by_table=tabellen_dict_by_table,
@@ -574,177 +538,85 @@ class TestPauschaleLogic(unittest.TestCase):
         self.assertEqual(result["details"]["Pauschale"], "X00.01B")
 
     def test_c01_05b_hypoglossus_stimulator_scenario(self):
-        # Test C01.05B: Focus on the Hypoglossus Stimulator part (Gruppe 8)
-        # Expected logic: (G1... ODER G3... ODER G5/6... ODER G8... ODER G10...)
-        # We want G8 to be TRUE, and others FALSE, overall result should be TRUE.
         bedingungen_c01_05b = [
-            # Gruppe 1
             {"BedingungsID": 531, "Pauschale": "C01.05B", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE", "Werte": "CAP01", "Ebene": 2},
-            {"BedingungsID": 533, "Pauschale": "C01.05B", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE", "Werte": "C01.EG.0010", "Ebene": 3}, # Soll False sein
-            # AST nach Gruppe 1 (eigentlich in Gruppe 2 definiert)
-            {"BedingungsID": 534, "Pauschale": "C01.05B", "Gruppe": 2, "Operator": "ODER", "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Ebene": 0},
-            # Gruppe 3
+            {"BedingungsID": 533, "Pauschale": "C01.05B", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE", "Werte": "C01.EG.0010", "Ebene": 3},
+            {"BedingungsID": 534, "Pauschale": "C01.05B", "Gruppe": 1, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Werte": "ODER", "Ebene": 0}, # AST op in "Werte"
             {"BedingungsID": 535, "Pauschale": "C01.05B", "Gruppe": 3, "Operator": "UND", "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE", "Werte": "CAP01", "Ebene": 2},
-            {"BedingungsID": 537, "Pauschale": "C01.05B", "Gruppe": 3, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE", "Werte": "C01.09_10,C01.09_2", "Ebene": 3}, # Soll False sein
-            # AST nach Gruppe 3 (eigentlich in Gruppe 4 definiert)
-            {"BedingungsID": 538, "Pauschale": "C01.05B", "Gruppe": 4, "Operator": "ODER", "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Ebene": 0},
-            # Gruppe 5
+            {"BedingungsID": 537, "Pauschale": "C01.05B", "Gruppe": 3, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE", "Werte": "C01.09_10,C01.09_2", "Ebene": 3},
+            {"BedingungsID": 538, "Pauschale": "C01.05B", "Gruppe": 3, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Werte": "ODER", "Ebene": 0}, # AST op in "Werte"
             {"BedingungsID": 539, "Pauschale": "C01.05B", "Gruppe": 5, "Operator": "UND", "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE", "Werte": "CAP01", "Ebene": 2},
-            {"BedingungsID": 541, "Pauschale": "C01.05B", "Gruppe": 5, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE", "Werte": "C01.21_10", "Ebene": 3}, # Soll False sein
-            # Gruppe 6 (Teil des Blocks, der mit Gruppe 5 beginnt)
-            {"BedingungsID": 542, "Pauschale": "C01.05B", "Gruppe": 6, "Operator": "ODER", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE", "Werte": "C01.RA.0030", "Ebene": 3}, # Soll False sein
-            {"BedingungsID": 543, "Pauschale": "C01.05B", "Gruppe": 6, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE", "Werte": "C01.RC.0050", "Ebene": 3}, # Soll False sein
-            # AST nach Gruppe 6 (eigentlich in Gruppe 7 definiert)
-            {"BedingungsID": 544, "Pauschale": "C01.05B", "Gruppe": 7, "Operator": "ODER", "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Ebene": 0},
-            # Gruppe 8 - This block should be TRUE
-            {"BedingungsID": 545, "Pauschale": "C01.05B", "Gruppe": 8, "Operator": "UND", "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE", "Werte": "CAP03", "Ebene": 2}, # Soll True sein
-            {"BedingungsID": 547, "Pauschale": "C01.05B", "Gruppe": 8, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE", "Werte": "C03.GM.0060", "Ebene": 2}, # Soll True sein
-            # AST nach Gruppe 8 (eigentlich in Gruppe 9 definiert)
-            {"BedingungsID": 548, "Pauschale": "C01.05B", "Gruppe": 9, "Operator": "ODER", "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Ebene": 0},
-            # Gruppe 10
+            {"BedingungsID": 541, "Pauschale": "C01.05B", "Gruppe": 5, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE", "Werte": "C01.21_10", "Ebene": 3},
+            {"BedingungsID": 542, "Pauschale": "C01.05B", "Gruppe": 5, "Operator": "ODER", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE", "Werte": "C01.RA.0030", "Ebene": 3}, # Intra-group logic
+            {"BedingungsID": 543, "Pauschale": "C01.05B", "Gruppe": 5, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE", "Werte": "C01.RC.0050", "Ebene": 3}, # Intra-group logic
+            {"BedingungsID": 544, "Pauschale": "C01.05B", "Gruppe": 5, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Werte": "ODER", "Ebene": 0}, # AST op in "Werte"
+            {"BedingungsID": 545, "Pauschale": "C01.05B", "Gruppe": 8, "Operator": "UND", "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE", "Werte": "CAP03", "Ebene": 2},
+            {"BedingungsID": 547, "Pauschale": "C01.05B", "Gruppe": 8, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN LISTE", "Werte": "C03.GM.0060", "Ebene": 2},
+            {"BedingungsID": 548, "Pauschale": "C01.05B", "Gruppe": 8, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Werte": "ODER", "Ebene": 0}, # AST op in "Werte"
             {"BedingungsID": 549, "Pauschale": "C01.05B", "Gruppe": 10, "Operator": "UND", "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE", "Werte": "CAP05", "Ebene": 2},
-            {"BedingungsID": 551, "Pauschale": "C01.05B", "Gruppe": 10, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE", "Werte": "C01.05_2", "Ebene": 2} # Soll False sein
+            {"BedingungsID": 551, "Pauschale": "C01.05B", "Gruppe": 10, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE", "Werte": "C01.05_2", "Ebene": 2}
         ]
-
-        # Mock tabellen_dict_by_table to make HD conditions evaluate as desired
         tabellen_dict_by_table_mock = {
-            "cap01": [{"Code": "ANY_CAP01_CODE", "Code_Text": "Desc"}], # Wird für G1, G3, G5 verwendet
-            "cap03": [{"Code": "G8_HD_CODE", "Code_Text": "Desc"}],   # Wird für G8 verwendet
-            "cap05": [{"Code": "ANY_CAP05_CODE", "Code_Text": "Desc"}], # Wird für G10 verwendet
-            "c01.09_10": [], # leer machen, damit G3 fehlschlägt
-            "c01.09_2": [],  # leer machen, damit G3 fehlschlägt
-            "c01.21_10": [], # leer machen, damit G5 fehlschlägt
-            "c01.05_2": [],  # leer machen, damit G10 fehlschlägt
+            "cap01": [{"Code": "ANY_CAP01_CODE"}], "cap03": [{"Code": "G8_HD_CODE"}], "cap05": [{"Code": "ANY_CAP05_CODE"}],
+            "c01.09_10": [], "c01.09_2": [], "c01.21_10": [], "c01.05_2": [],
         }
-
-        context_hypoglossus = {
-            "ICD": ["G8_HD_CODE"], # Erfüllt HD für Gruppe 8 (CAP03)
-            "LKN": ["C03.GM.0060"],  # Erfüllt LPL für Gruppe 8
-            # Andere LKNs/Tabellen nicht im Kontext, damit andere Gruppen fehlschlagen
-        }
+        context_hypoglossus = {"ICD": ["G8_HD_CODE"], "LKN": ["C03.GM.0060"]}
 
         self.assertTrue(
-            evaluate_structured_conditions(
-                "C01.05B",
-                context_hypoglossus,
-                bedingungen_c01_05b,
-                tabellen_dict_by_table_mock,
+            evaluate_pauschale_logic_orchestrator(
+                pauschale_code="C01.05B",
+                context=context_hypoglossus,
+                all_pauschale_bedingungen_data=bedingungen_c01_05b,
+                tabellen_dict_by_table=tabellen_dict_by_table_mock,
                 debug=True
             ),
-            "C01.05B sollte mit Hypoglossus-Kontext (Gruppe 8 erfüllt) und ODER-Verknüpfungen TRUE sein."
+            "C01.05B sollte mit Hypoglossus-Kontext (Gruppe 8 Logikblock erfüllt) und ODER-Verknüpfungen TRUE sein."
         )
 
     def test_finger_fracture_scenario_c08_30e_should_be_true(self):
-        # Kontext: Fingerfraktur, Nagelung mit Anästhesie durch Anästhesistin
-        # LKNs: C08.GD.0030 (Nagelung Finger), WA.10.0020 (Anästhesie)
-        # HD: S62.60 (Fingerfraktur, gehört zu CAP08)
-        # ICD-Prüfung: False
-
-        context = {
-            "LKN": ["C08.GD.0030", "WA.10.0020"],
-            "ICD": ["S62.60"], # Wird verwendet, auch wenn useIcd=False für HD-Tabellen-Match
-            "useIcd": False
-        }
-
-        # Bedingungen für C08.30E (Auszug, relevant für den Pfad)
-        # Logik: ( (HD CAP08 UND LPT C08.30_10,C08.30_12) ) ODER ( (HD CAP08 UND LPT C08.30_5 UND LPT ANAST) )
+        context = {"LKN": ["C08.GD.0030", "WA.10.0020"], "ICD": ["S62.60"], "useIcd": False}
         bedingungen_c08_30e = [
-            # Block G1
             {"BedingungsID": 1424, "Pauschale": "C08.30E", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE", "Werte": "CAP08", "Ebene": 1},
-            {"BedingungsID": 1427, "Pauschale": "C08.30E", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE", "Werte": "C08.30_10,C08.30_12", "Ebene": 2}, # Soll False sein
-            # AST
-            {"BedingungsID": 1428, "Pauschale": "C08.30E", "Gruppe": 2, "Operator": "ODER", "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Ebene": 0},
-            # Block G3
+            {"BedingungsID": 1427, "Pauschale": "C08.30E", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE", "Werte": "C08.30_10,C08.30_12", "Ebene": 2},
+            {"BedingungsID": 1428, "Pauschale": "C08.30E", "Gruppe": 1, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Werte": "ODER", "Ebene": 0}, # AST op in "Werte"
             {"BedingungsID": 1429, "Pauschale": "C08.30E", "Gruppe": 3, "Operator": "UND", "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE", "Werte": "CAP08", "Ebene": 1},
             {"BedingungsID": 1432, "Pauschale": "C08.30E", "Gruppe": 3, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE", "Werte": "C08.30_5", "Ebene": 2},
             {"BedingungsID": 1433, "Pauschale": "C08.30E", "Gruppe": 3, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE", "Werte": "ANAST", "Ebene": 2},
         ]
-
         tabellen_mock = {
-            "cap08": [{"Code": "S62.60", "Code_Text": "Fingerfraktur"}],
-            "c08.30_10": [], # Diese Tabelle soll nicht matchen
-            "c08.30_12": [], # Diese Tabelle soll nicht matchen
-            "c08.30_5": [{"Code": "C08.GD.0030", "Tabelle_Typ": "service_catalog", "Beschreibung": "Versorgung einer Fingerfraktur..."}],
-            "anast": [{"Code": "WA.10.0020", "Tabelle_Typ": "service_catalog", "Beschreibung": "Anästhesie..."}]
+            "cap08": [{"Code": "S62.60"}], "c08.30_10": [], "c08.30_12": [],
+            "c08.30_5": [{"Code": "C08.GD.0030", "Tabelle_Typ": "service_catalog"}],
+            "anast": [{"Code": "WA.10.0020", "Tabelle_Typ": "service_catalog"}]
         }
-
         self.assertTrue(
-            evaluate_structured_conditions("C08.30E", context, bedingungen_c08_30e, tabellen_mock, debug=True),
+            evaluate_pauschale_logic_orchestrator("C08.30E", context, bedingungen_c08_30e, tabellen_mock, debug=True),
             "C08.30E sollte für Fingerfraktur mit Anästhesie und passender HD als ERFÜLLT gelten."
         )
 
     def test_finger_fracture_scenario_c05_15a_should_be_false(self):
-        # Kontext wie oben
-        context = {
-            "LKN": ["C08.GD.0030", "WA.10.0020"],
-            "ICD": ["S62.60"],
-            "useIcd": False
-        }
-
-        # Bedingungen für C05.15A (Auszug, relevant für den Pfad)
-        # Logik: ( (HD CAP05 UND LPT C05.15_1) ) ODER ( (LPT C05.15_2 ODER LPT ANAST) )
-        # Korrektur: Die Pauschale C05.15A lautet "... od. mit Anästhesie d. Anästhesist/in"
-        # Das bedeutet, es gibt wahrscheinlich einen direkten ODER-Pfad, der nur ANAST prüft.
-        bedingungen_c05_15a = [
-            # Block 1 (Ablation)
-            {"BedingungsID": 956, "Pauschale": "C05.15A", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE", "Werte": "CAP05", "Ebene": 1}, # Kardiologie
-            {"BedingungsID": 958, "Pauschale": "C05.15A", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE", "Werte": "C05.15_1", "Ebene": 2}, # Ablation
-            # AST
-            # Annahme: Es gibt einen AST, der Block 1 mit Block 2 (Diagnostik) ODER Block 3 (nur Anästhesie) verbindet
-            # Für diesen Test fokussieren wir uns auf den "nur Anästhesie" Pfad.
-            # Wir nehmen an, es gibt einen Block, der nur die Anästhesie-Bedingung enthält und ODER-verknüpft ist.
-            # Um das Szenario nachzustellen, in dem es fälschlicherweise TRUE wird:
-            {"BedingungsID": 9991, "Pauschale": "C05.15A", "Gruppe": 1, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Operator": "ODER", "Ebene": 0}, # AST nach Block 1
-            {"BedingungsID": 9992, "Pauschale": "C05.15A", "Gruppe": 2, "Operator": "UND", "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE", "Werte": "CAP05", "Ebene": 1}, # Dummy für zweiten Block
-            {"BedingungsID": 9993, "Pauschale": "C05.15A", "Gruppe": 2, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE", "Werte": "C05.15_2", "Ebene": 2}, # Dummy
-            {"BedingungsID": 9994, "Pauschale": "C05.15A", "Gruppe": 2, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Operator": "ODER", "Ebene": 0}, # AST nach Block 2
-            {"BedingungsID": 960, "Pauschale": "C05.15A", "Gruppe": 3, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE", "Werte": "ANAST", "Ebene": 1} # Nur ANAST
-        ]
-
-        tabellen_mock = {
-            "cap05": [{"Code": "I47.1", "Code_Text": "Supraventrikuläre Tachykardie"}], # Irrelevant für den Kontext
-            "c05.15_1": [{"Code": "LKN_ABLATION", "Tabelle_Typ": "service_catalog"}], # Irrelevant
-            "c05.15_2": [{"Code": "LKN_ECHO_DIAG", "Tabelle_Typ": "service_catalog"}], # Irrelevant
-            "anast": [{"Code": "WA.10.0020", "Tabelle_Typ": "service_catalog", "Beschreibung": "Anästhesie..."}]
-        }
-        # Mit dieser Struktur (Block1 ODER Block2 ODER Block3(nur ANAST)) sollte es True sein.
-        # Aber C05.15A ist fachlich falsch. Der Test soll zeigen, dass die *spezifischere* C08.30E gewählt werden sollte.
-        # Hier testen wir primär, ob die Logik von C05.15A überhaupt True ergibt mit Anästhesie.
-
-        # Wenn C05.15A tatsächlich so breit ist, dass "ODER ANAST" reicht, dann wird dieser Test True.
-        # Das Problem liegt dann im Scoring oder der Pauschalendefinition.
-        # Für diesen Unit-Test der Logik-Engine: Ist die Engine-Auswertung konsistent?
-        # Angenommen, die HD-Bedingungen in Block 1 und 2 schlagen fehl, weil useIcd=False sie nicht automatisch True macht,
-        # wenn sie spezifische HDs erfordern, die nicht im Kontext sind.
-
-        # Um C05.15A als FALSE zu bekommen, müssten ALLE ODER-Zweige FALSE sein.
-        # Wenn der "ODER mit Anästhesie" Zweig existiert (Gruppe 3 im Test), wird es TRUE.
-        # Um es FALSE zu machen, müsste dieser Zweig fehlen oder komplexer sein.
-
-        # Wir modifizieren die Bedingungen so, dass der ANAST-Zweig nicht allein steht:
+        context = {"LKN": ["C08.GD.0030", "WA.10.0020"], "ICD": ["S62.60"], "useIcd": False}
+        # Modified conditions to represent: (G1) ODER (G2_Bed1 AND G2_Bed2)
+        # G1 (CAP05 HD AND C05.15_1 LPT) -> False (S62.60 not CAP05, C05.15_1 not in context)
+        # G2 (C05.15_2 LPT AND ANAST LPT) -> False (C05.15_2 not in context, even if ANAST is)
+        # Total: False OR False = False
         bedingungen_c05_15a_modified = [
             {"BedingungsID": 956, "Pauschale": "C05.15A", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "HAUPTDIAGNOSE IN TABELLE", "Werte": "CAP05", "Ebene": 1},
             {"BedingungsID": 958, "Pauschale": "C05.15A", "Gruppe": 1, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE", "Werte": "C05.15_1", "Ebene": 2},
-            {"BedingungsID": 9991, "Pauschale": "C05.15A", "Gruppe": 1, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Operator": "ODER", "Ebene": 0},
-            {"BedingungsID": 959, "Pauschale": "C05.15A", "Gruppe": 2, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE", "Werte": "C05.15_2", "Ebene": 1}, # Bed 959 jetzt UND
+            {"BedingungsID": 9991, "Pauschale": "C05.15A", "Gruppe": 1, "Bedingungstyp": "AST VERBINDUNGSOPERATOR", "Werte": "ODER", "Ebene": 0}, # AST op in "Werte"
+            {"BedingungsID": 959, "Pauschale": "C05.15A", "Gruppe": 2, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE", "Werte": "C05.15_2", "Ebene": 1},
             {"BedingungsID": 960, "Pauschale": "C05.15A", "Gruppe": 2, "Operator": "UND", "Bedingungstyp": "LEISTUNGSPOSITIONEN IN TABELLE", "Werte": "ANAST", "Ebene": 2}
-            # Logik jetzt: (G1) ODER (Bed959 UND Bed960)
         ]
-        # G1: HD CAP05 (True wegen useIcd=False) UND LPT C05.15_1 (False da nicht im Kontext) -> G1 = False
-        # G2: LPT C05.15_2 (False) UND LPT ANAST (True) -> G2 = False
-        # Gesamt: False ODER False = False
-
+        tabellen_mock = {
+            "cap05": [{"Code": "I47.1"}], "c05.15_1": [{"Code": "LKN_ABLATION"}],
+            "c05.15_2": [{"Code": "LKN_ECHO_DIAG"}],
+            "anast": [{"Code": "WA.10.0020"}]
+        }
         self.assertFalse(
-            evaluate_structured_conditions(
-                "C05.15A",
-                context,
-                bedingungen_c05_15a_modified, # Verwende modifizierte Bedingungen
-                tabellen_mock,
-                debug=True
+            evaluate_pauschale_logic_orchestrator(
+                "C05.15A", context, bedingungen_c05_15a_modified, tabellen_mock, debug=True
             ),
-           "C05.15A sollte für Fingerfraktur NICHT als erfüllt gelten, wenn der ANAST-Zweig nicht alleinig ausreicht."
+           "C05.15A sollte für Fingerfraktur NICHT als erfüllt gelten, wenn die spezifischen Bedingungen nicht zutreffen."
         )
-
 
 if __name__ == "__main__":
     unittest.main()
