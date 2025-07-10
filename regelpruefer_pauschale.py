@@ -2,8 +2,8 @@
 import traceback
 import json
 import logging
-from typing import Dict, List, Any, Set  # <-- Set hier importieren
-from utils import escape, get_table_content, get_lang_field, translate, translate_condition_type
+from typing import Dict, List, Any, Set
+from utils import escape, get_table_content, get_lang_field, translate, translate_condition_type, create_html_info_link
 import re, html
 
 logger = logging.getLogger(__name__)
@@ -792,50 +792,62 @@ def check_pauschale_conditions(
 
             active_condition_type_for_display = current_cond_data_type_upper
 
-            if active_condition_type_for_display in ["LEISTUNGSPOSITIONEN IN LISTE", "LKN"]:
+            if active_condition_type_for_display in ["LEISTUNGSPOSITIONEN IN LISTE", "LKN", "LKN IN LISTE"]:
                 lkn_codes = [l.strip().upper() for l in original_werte.split(',') if l.strip()]
-                lkn_details_parts = []
                 if lkn_codes:
+                    linked_lkn_parts = []
                     for lkn_c in lkn_codes:
                         desc = get_beschreibung_fuer_lkn_im_backend(lkn_c, leistungskatalog_dict, lang)
-                        lkn_details_parts.append(f"<b>{escape(lkn_c)}</b> ({escape(desc)})")
-                    werte_display = ", ".join(lkn_details_parts)
+                        display_text = escape(f"{lkn_c} ({desc})")
+                        linked_lkn_parts.append(create_html_info_link(lkn_c, "lkn", display_text))
+                    werte_display = translate('condition_text_lkn_list', lang, linked_codes=", ".join(linked_lkn_parts))
                 else:
                     werte_display = f"<i>{translate('no_lkns_spec', lang)}</i>"
-            elif active_condition_type_for_display in ["LEISTUNGSPOSITIONEN IN TABELLE", "TARIFPOSITIONEN IN TABELLE"]:
+
+            elif active_condition_type_for_display in ["LEISTUNGSPOSITIONEN IN TABELLE", "TARIFPOSITIONEN IN TABELLE", "LKN IN TABELLE"]:
                 table_names_orig = [t.strip() for t in original_werte.split(',') if t.strip()]
-                table_links_parts = []
                 if table_names_orig:
-                    for table_name_o in table_names_orig:
-                        table_links_parts.append(f"<i>{escape(table_name_o)}</i>")
-                    werte_display = ", ".join(table_links_parts)
+                    linked_table_names = [
+                        create_html_info_link(tn, "lkn_table", escape(tn)) for tn in table_names_orig
+                    ]
+                    werte_display = translate('condition_text_lkn_table', lang, table_names=", ".join(linked_table_names))
                 else:
                     werte_display = f"<i>{translate('no_table_name', lang)}</i>"
+
             elif active_condition_type_for_display in ["HAUPTDIAGNOSE IN TABELLE", "ICD IN TABELLE"]:
                 table_names_icd = [t.strip() for t in original_werte.split(',') if t.strip()]
-                table_links_icd_parts = []
                 if table_names_icd:
-                    for table_name_i in table_names_icd:
-                        table_links_icd_parts.append(f"<i>{escape(table_name_i)}</i>")
-                    werte_display = ", ".join(table_links_icd_parts)
+                    linked_table_names_icd = [
+                        create_html_info_link(tn, "icd_table", escape(tn)) for tn in table_names_icd
+                    ]
+                    werte_display = translate('condition_text_icd_table', lang, table_names=", ".join(linked_table_names_icd))
                 else:
                     werte_display = f"<i>{translate('no_table_name', lang)}</i>"
-            elif active_condition_type_for_display in ["ICD", "HAUPTDIAGNOSE IN LISTE"]:
+
+            elif active_condition_type_for_display in ["ICD", "HAUPTDIAGNOSE IN LISTE", "ICD IN LISTE"]:
                 icd_codes_list = [icd.strip().upper() for icd in original_werte.split(',') if icd.strip()]
-                icd_details_parts = []
                 if icd_codes_list:
+                    linked_icd_parts = []
                     for icd_c in icd_codes_list:
                         desc_icd = get_beschreibung_fuer_icd_im_backend(icd_c, tabellen_dict_by_table, lang=lang)
-                        icd_details_parts.append(f"<b>{escape(icd_c)}</b> ({escape(desc_icd)})")
-                    werte_display = ", ".join(icd_details_parts)
+                        display_text = escape(f"{icd_c} ({desc_icd})")
+                        linked_icd_parts.append(create_html_info_link(icd_c, "diagnosis", display_text))
+                    werte_display = translate('condition_text_icd_list', lang, linked_codes=", ".join(linked_icd_parts))
                 else:
                      werte_display = f"<i>{translate('no_icds_spec', lang)}</i>"
+
             elif active_condition_type_for_display == "PATIENTENBEDINGUNG":
-                feld_name_pat = str(cond_data.get(BED_FELD_KEY, "")).capitalize()
+                feld_name_pat_orig = str(cond_data.get(BED_FELD_KEY, ""))
+                feld_name_pat_display = translate(feld_name_pat_orig.lower(), lang) if feld_name_pat_orig.lower() in ['alter', 'geschlecht'] else escape(feld_name_pat_orig.capitalize())
+
                 min_w_pat = cond_data.get(BED_MIN_KEY)
                 max_w_pat = cond_data.get(BED_MAX_KEY)
                 expl_wert_pat = cond_data.get(BED_WERTE_KEY)
-                if feld_name_pat.lower() == "alter":
+
+                # Update translated_cond_type_display for PATIENTENBEDINGUNG to include the field
+                translated_cond_type_display = translate('patient_condition_display', lang, field=feld_name_pat_display)
+
+                if feld_name_pat_orig.lower() == "alter":
                     if min_w_pat is not None or max_w_pat is not None:
                         val_disp_parts = []
                         if min_w_pat is not None: val_disp_parts.append(f"{translate('min', lang)} {escape(str(min_w_pat))}")
@@ -845,50 +857,99 @@ def check_pauschale_conditions(
                         werte_display = escape(str(expl_wert_pat))
                     else:
                         werte_display = translate('not_specified', lang)
-                else:
+                elif feld_name_pat_orig.lower() == "geschlecht":
+                     werte_display = translate(str(expl_wert_pat).lower(), lang) if expl_wert_pat else translate('not_specified', lang)
+                else: # Other patient conditions
                     werte_display = escape(str(expl_wert_pat if expl_wert_pat is not None else translate('not_specified', lang)))
-                translated_cond_type_display = translate('patient_condition_display', lang, field=escape(feld_name_pat))
+
             elif active_condition_type_for_display == "ALTER IN JAHREN BEI EINTRITT":
                 op_val = cond_data.get(BED_VERGLEICHSOP_KEY, "=")
                 werte_display = f"{escape(op_val)} {escape(original_werte)}"
+
             elif active_condition_type_for_display == "ANZAHL":
                 op_val_anz = cond_data.get(BED_VERGLEICHSOP_KEY, "=")
                 werte_display = f"{escape(op_val_anz)} {escape(original_werte)}"
+
             elif active_condition_type_for_display == "SEITIGKEIT":
                 op_val_seit = cond_data.get(BED_VERGLEICHSOP_KEY, "=")
                 regel_wert_seit_norm_disp = original_werte.strip().replace("'", "").lower()
+                # Translate the seitigkeit value for display
                 if regel_wert_seit_norm_disp == 'b': regel_wert_seit_norm_disp = translate('bilateral', lang)
                 elif regel_wert_seit_norm_disp == 'e': regel_wert_seit_norm_disp = translate('unilateral', lang)
                 elif regel_wert_seit_norm_disp == 'l': regel_wert_seit_norm_disp = translate('left', lang)
                 elif regel_wert_seit_norm_disp == 'r': regel_wert_seit_norm_disp = translate('right', lang)
-                werte_display = f"{escape(op_val_seit)} {escape(regel_wert_seit_norm_disp)}"
+                else: regel_wert_seit_norm_disp = escape(regel_wert_seit_norm_disp) # Escape if not a known key
+                werte_display = f"{escape(op_val_seit)} {regel_wert_seit_norm_disp}"
+
             elif active_condition_type_for_display == "GESCHLECHT IN LISTE":
-                gender_list = [g.strip().lower() for g in original_werte.split(',') if g.strip()]
-                translated_genders = [translate(g, lang) for g in gender_list]
+                gender_list_keys = [g.strip().lower() for g in original_werte.split(',') if g.strip()]
+                translated_genders = [translate(g_key, lang) for g_key in gender_list_keys]
                 werte_display = escape(", ".join(translated_genders))
-            else:
+
+            elif active_condition_type_for_display == "MEDIKAMENTE IN LISTE" or active_condition_type_for_display == "GTIN":
+                gtin_codes = [gtin.strip() for gtin in original_werte.split(',') if gtin.strip()]
+                if gtin_codes:
+                    # GTINs are not typically linked to detailed views in this context, just displayed.
+                    werte_display = escape(", ".join(gtin_codes))
+                else:
+                    werte_display = f"<i>{translate('no_gtins_spec', lang)}</i>"
+            else: # Fallback for any other types
                 werte_display = escape(original_werte)
 
+            # Context match information
             context_match_info_html = ""
             if condition_met:
-                match_details = []
-                if active_condition_type_for_display == "ICD" or active_condition_type_for_display == "HAUPTDIAGNOSE IN LISTE":
+                match_details_parts = []
+                # Check for ICD matches (List or Table)
+                if active_condition_type_for_display in ["ICD", "HAUPTDIAGNOSE IN LISTE", "ICD IN LISTE", "HAUPTDIAGNOSE IN TABELLE", "ICD IN TABELLE"]:
                     provided_icds_upper = {p_icd.upper() for p_icd in context.get("ICD", []) if p_icd}
-                    required_icds_in_rule_list = {w.strip().upper() for w in str(cond_data.get(BED_WERTE_KEY, "")).split(',') if w.strip()}
-                    matching_icds = list(provided_icds_upper.intersection(required_icds_in_rule_list))
-                    if matching_icds:
-                        match_details.append(f"{translate('fulfilled_by_icd', lang)}: {', '.join(matching_icds)}")
-                elif active_condition_type_for_display in ["LEISTUNGSPOSITIONEN IN LISTE", "LKN"]:
-                    provided_lkns_upper = {p_lkn.upper() for p_lkn in context.get("LKN", []) if p_lkn}
-                    required_lkns_in_rule_list = {w.strip().upper() for w in str(cond_data.get(BED_WERTE_KEY, "")).split(',') if w.strip()}
-                    matching_lkns = list(provided_lkns_upper.intersection(required_lkns_in_rule_list))
-                    if matching_lkns:
-                        match_details.append(f"{translate('fulfilled_by_lkn', lang)}: {', '.join(matching_lkns)}")
 
-                if match_details:
-                    context_match_info_html = f"<span class=\"context-match-info fulfilled\">({'; '.join(match_details)})</span>"
-                else:
-                    context_match_info_html = f"<span class=\"context-match-info fulfilled\">({translate('condition_met_context_generic', lang)})</span>"
+                    required_codes_in_rule = set()
+                    if "TABELLE" in active_condition_type_for_display:
+                        table_ref_icd = cond_data.get(BED_WERTE_KEY)
+                        for entry in get_table_content(table_ref_icd, "icd", tabellen_dict_by_table, lang): # lang for potential text in table
+                             if entry.get('Code'): required_codes_in_rule.add(entry['Code'].upper())
+                    else: # LIST type
+                        required_codes_in_rule = {w.strip().upper() for w in str(cond_data.get(BED_WERTE_KEY, "")).split(',') if w.strip()}
+
+                    matching_icds = list(provided_icds_upper.intersection(required_codes_in_rule))
+                    if matching_icds:
+                        linked_matching_icds = []
+                        for icd_c_match in sorted(matching_icds):
+                            desc_icd_match = get_beschreibung_fuer_icd_im_backend(icd_c_match, tabellen_dict_by_table, lang=lang)
+                            display_text_match = escape(f"{icd_c_match} ({desc_icd_match})")
+                            linked_matching_icds.append(create_html_info_link(icd_c_match, "diagnosis", display_text_match))
+                        if linked_matching_icds:
+                             match_details_parts.append(translate('fulfilled_by_icd', lang, icd_code_link=", ".join(linked_matching_icds)))
+
+                # Check for LKN matches (List or Table)
+                elif active_condition_type_for_display in ["LEISTUNGSPOSITIONEN IN LISTE", "LKN", "LKN IN LISTE", "LEISTUNGSPOSITIONEN IN TABELLE", "TARIFPOSITIONEN IN TABELLE", "LKN IN TABELLE"]:
+                    provided_lkns_upper = {p_lkn.upper() for p_lkn in context.get("LKN", []) if p_lkn}
+
+                    required_lkn_codes_in_rule = set()
+                    if "TABELLE" in active_condition_type_for_display:
+                        table_ref_lkn = cond_data.get(BED_WERTE_KEY)
+                        for entry in get_table_content(table_ref_lkn, "service_catalog", tabellen_dict_by_table, lang): # lang for potential text
+                            if entry.get('Code'): required_lkn_codes_in_rule.add(entry['Code'].upper())
+                    else: # LIST type
+                        required_lkn_codes_in_rule = {w.strip().upper() for w in str(cond_data.get(BED_WERTE_KEY, "")).split(',') if w.strip()}
+
+                    matching_lkns = list(provided_lkns_upper.intersection(required_lkn_codes_in_rule))
+                    if matching_lkns:
+                        linked_matching_lkns = []
+                        for lkn_c_match in sorted(matching_lkns):
+                            desc_lkn_match = get_beschreibung_fuer_lkn_im_backend(lkn_c_match, leistungskatalog_dict, lang)
+                            display_text_match = escape(f"{lkn_c_match} ({desc_lkn_match})")
+                            linked_matching_lkns.append(create_html_info_link(lkn_c_match, "lkn", display_text_match))
+                        if linked_matching_lkns:
+                            match_details_parts.append(translate('fulfilled_by_lkn', lang, lkn_code_link=", ".join(linked_matching_lkns)))
+
+                # Fallback generic message if no specific details were generated but condition is met
+                if not match_details_parts:
+                    match_details_parts.append(translate('condition_met_context_generic', lang))
+
+                context_match_info_html = f"<span class=\"context-match-info fulfilled\">({'; '.join(match_details_parts)})</span>"
+
 
             html_parts.append(f"""
                 <div class="condition-item-row">
