@@ -403,19 +403,19 @@ _COND_TYPE_TRANSLATIONS: Dict[str, Dict[str, str]] = {
         'it': 'NPL in elenco'
     },
     'LEISTUNGSPOSITIONEN IN TABELLE': {
-        'de': 'LKN AUS TABELLE',
-        'fr': 'NPL de table',
-        'it': 'NPL da tabella'
+        'de': 'LKN', # Geändert von 'LKN AUS TABELLE'
+        'fr': 'NPL', # Geändert von 'NPL de table'
+        'it': 'NPL'  # Geändert von 'NPL da tabella'
     },
     'TARIFPOSITIONEN IN TABELLE': { # Alias
-        'de': 'LKN AUS TABELLE',
-        'fr': 'NPL de table',
-        'it': 'NPL da tabella'
+        'de': 'LKN', # Geändert von 'LKN AUS TABELLE'
+        'fr': 'NPL', # Geändert von 'NPL de table'
+        'it': 'NPL'  # Geändert von 'NPL da tabella'
     },
     'LKN IN TABELLE': { # Alias
-        'de': 'LKN AUS TABELLE',
-        'fr': 'NPL de table',
-        'it': 'NPL da tabella'
+        'de': 'LKN', # Geändert von 'LKN AUS TABELLE'
+        'fr': 'NPL', # Geändert von 'NPL de table'
+        'it': 'NPL'  # Geändert von 'NPL da tabella'
     },
     'ICD IN LISTE': {
         'de': 'ICD IN LISTE',
@@ -443,6 +443,11 @@ _COND_TYPE_TRANSLATIONS: Dict[str, Dict[str, str]] = {
         'it': 'ICD da tabella'
     },
     'MEDIKAMENTE IN LISTE': {
+        'de': 'MEDIKAMENTE IN LISTE',
+        'fr': 'Médicaments en liste',
+        'it': 'Farmaci in elenco'
+    },
+    'GTIN': { # Alias
         'de': 'MEDIKAMENTE IN LISTE',
         'fr': 'Médicaments en liste',
         'it': 'Farmaci in elenco'
@@ -487,27 +492,35 @@ _COND_TYPE_TRANSLATIONS: Dict[str, Dict[str, str]] = {
         'fr': 'Sexe dans la liste',
         'it': 'Sesso in elenco'
     },
+    'PATIENTENBEDINGUNG': { # This will be combined with the 'Feld' for display
+        'de': 'PATIENT', # Generic prefix, field will be added
+        'fr': 'PATIENT',
+        'it': 'PAZIENTE'
+    },
     'ALTER IN JAHREN BEI EINTRITT': {
-        'de': 'ALTER IN JAHREN BEI EINTRITT',
-        'fr': "Âge en années à l'admission",
-        'it': "Età in anni all'ingresso"
+        'de': 'ALTER BEI EINTRITT',
+        'fr': "ÂGE À L'ADMISSION",
+        'it': "ETÀ ALL'INGRESSO"
     },
     'ANZAHL': {
         'de': 'ANZAHL',
-        'fr': 'Quantité',
-        'it': 'Quantità'
+        'fr': 'QUANTITÉ',
+        'it': 'QUANTITÀ'
     },
     'SEITIGKEIT': {
         'de': 'SEITIGKEIT',
-        'fr': 'Latéralité',
-        'it': 'Lateralità'
+        'fr': 'LATÉRALITÉ',
+        'it': 'LATERALITÀ'
     },
-    'AST VERBINDUNGSOPERATOR': {
-        'de': 'AST VERBINDUNGSOPERATOR',
-        'fr': 'opérateur de liaison AST',
-        'it': 'operatore di collegamento AST'
+    'AST VERBINDUNGSOPERATOR': { # Internal, not usually displayed directly as a condition type
+        'de': 'LOGIK-OPERATOR',
+        'fr': 'OPÉRATEUR LOGIQUE',
+        'it': 'OPERATORE LOGICO'
     }
 }
+
+# Entferne die erste, fehlerhafte Definition von translate und _COND_TYPE_TRANSLATIONS
+# Die korrekte Definition beginnt weiter unten.
 
 def translate(key: str, lang: str = 'de', **kwargs) -> str:
     """Einfache Übersetzung bestimmter Texte mit Platzhaltern."""

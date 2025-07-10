@@ -297,17 +297,117 @@ function createInfoLink(code, type) {
     return `<a href="#" class="info-link" data-type="${type}" data-code="${escapeHtml(code)}">${escapeHtml(code)}</a>`;
 }
 
-function showInfoModal(html) {
-    const modal = $('infoModal');
-    const content = $('infoModalContent');
-    if (!modal || !content) return;
-    content.innerHTML = html;
-    modal.style.display = 'flex';
+function showModal(modalOverlayId, htmlContent) {
+    const modalOverlay = $(modalOverlayId);
+    if (!modalOverlay) {
+        console.error(`Modal overlay with ID ${modalOverlayId} not found.`);
+        return;
+    }
+    const contentDiv = modalOverlay.querySelector('.info-modal > div[id$="Content"]'); // e.g., infoModalMainContent or infoModalDetailContent
+    if (!contentDiv) {
+        console.error(`Content div not found within ${modalOverlayId}.`);
+        return;
+    }
+    contentDiv.innerHTML = htmlContent;
+    modalOverlay.style.display = 'flex'; // Use flex to allow centering if desired, or adjust as needed
+    // Make the actual modal draggable (the child of the overlay)
+    const modalDialog = modalOverlay.querySelector('.info-modal');
+    if (modalDialog && !modalDialog.classList.contains('draggable-initialized')) {
+        makeModalDraggable(modalDialog);
+        modalDialog.classList.add('draggable-initialized');
+    }
 }
 
-function hideInfoModal() {
-    const modal = $('infoModal');
-    if (modal) modal.style.display = 'none';
+function hideModal(modalOverlayId) {
+    const modalOverlay = $(modalOverlayId);
+    if (modalOverlay) {
+        modalOverlay.style.display = 'none';
+    }
+}
+
+function makeModalDraggable(modalElement) {
+    let offsetX, offsetY, isDragging = false;
+
+    modalElement.addEventListener('mousedown', (e) => {
+        // Only drag if the mousedown is directly on the modal or its non-interactive children,
+        // not on buttons, links, or inputs within the modal.
+        if (e.target.closest('button, a, input, select, textarea, details, summary')) {
+            return;
+        }
+        isDragging = true;
+        // Calculate offset from the top-left of the modal element
+        const rect = modalElement.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+
+        modalElement.style.cursor = 'grabbing';
+        // Ensure the modal is positioned absolutely or fixed to allow dragging
+        if (getComputedStyle(modalElement).position === 'static') {
+            modalElement.style.position = 'relative'; // Or 'absolute' if it makes more sense in context
+        }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        // Set position based on mouse coordinates minus the offset
+        modalElement.style.left = (e.clientX - offsetX) + 'px';
+        modalElement.style.top = (e.clientY - offsetY) + 'px';
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            modalElement.style.cursor = 'grab';
+        }
+    });
+
+    // Initial cursor style
+    modalElement.style.cursor = 'grab';
+}
+
+function buildDiagnosisInfoHtmlFromCode(code) {
+    const normCode = String(code || '').trim().toUpperCase();
+    let description = '';
+    let found = false;
+
+    // Attempt to find description in data_tabellen (assuming some tables might be ICD catalogs)
+    // This is a simplified search. A dedicated ICD data structure would be better.
+    if (Array.isArray(data_tabellen)) {
+        for (const tableName in data_tabellen) { // data_tabellen is an object with table names as keys
+            if (Object.hasOwnProperty.call(data_tabellen, tableName)) {
+                const tableEntries = data_tabellen[tableName];
+                if (Array.isArray(tableEntries)) {
+                    const entry = tableEntries.find(item => item && typeof item.Code === 'string' && item.Code.toUpperCase() === normCode && item.Tabelle_Typ === 'icd');
+                    if (entry) {
+                        description = getLangField(entry, 'Code_Text') || getLangField(entry, 'Beschreibung'); // Check common fields
+                        if (description) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (!found) {
+        // Fallback: try to find in data_leistungskatalog if it happens to have ICDs (less likely structured this way)
+        // This part is less likely to yield results for pure ICD codes but included for broader search
+        const catEntry = findCatalogEntry(normCode); // findCatalogEntry searches data_leistungskatalog
+        if (catEntry && (catEntry.KapitelNummer === normCode || catEntry.LKN === normCode)) { // Heuristic: check if it's a chapter or LKN that might be an ICD
+            description = getLangField(catEntry, 'Beschreibung');
+             if (description) found = true;
+        }
+    }
+
+    let html = `<h3>${tDyn('thIcdCode')}: ${escapeHtml(normCode)}</h3>`;
+    if (description) {
+        html += `<p><b>${tDyn('description')}</b>: ${escapeHtml(description)}</p>`;
+    } else {
+        html += `<p><i>${tDyn('descriptionNotFound')}</i></p>`;
+    }
+    // Potential further details: "Part of table X", "Related LKNs", etc. - requires more complex data linking.
+    return html;
 }
 
 function getLangSuffix() {
@@ -713,11 +813,18 @@ document.addEventListener("DOMContentLoaded", () => {
     loadIcdCheckboxState();
     loadData();
 
-    const modalClose = $('infoModalClose');
-    const modalOverlay = $('infoModal');
-    if (modalClose) modalClose.addEventListener('click', hideInfoModal);
-    if (modalOverlay) modalOverlay.addEventListener('click', (e) => {
-        if (e.target === modalOverlay) hideInfoModal();
+    const modalMainClose = $('infoModalMainClose');
+    const modalMainOverlay = $('infoModalMainOverlay');
+    if (modalMainClose) modalMainClose.addEventListener('click', () => hideModal('infoModalMainOverlay'));
+    if (modalMainOverlay) modalMainOverlay.addEventListener('click', (e) => {
+        if (e.target === modalMainOverlay) hideModal('infoModalMainOverlay');
+    });
+
+    const modalDetailClose = $('infoModalDetailClose');
+    const modalDetailOverlay = $('infoModalDetailOverlay');
+    if (modalDetailClose) modalDetailClose.addEventListener('click', () => hideModal('infoModalDetailOverlay'));
+    if (modalDetailOverlay) modalDetailOverlay.addEventListener('click', (e) => {
+        if (e.target === modalDetailOverlay) hideModal('infoModalDetailOverlay');
     });
 
     document.addEventListener('click', (e) => {
@@ -730,14 +837,38 @@ document.addEventListener("DOMContentLoaded", () => {
             if (type === 'lkn') html = buildLknInfoHtmlFromCode(code);
             else if (type === 'chapter') html = buildChapterInfoHtml(code);
             else if (type === 'group') html = buildGroupInfoHtml(code);
-            showInfoModal(html);
+            else if (type === 'diagnosis') html = buildDiagnosisInfoHtmlFromCode(code);
+            else if (type === 'lkn_table' || type === 'icd_table') {
+                // For table links, we might want a specific function or just display a placeholder
+                // For now, let's assume buildLknInfoHtmlFromCode or a new function handles table views.
+                // This part needs to be thought out: what should clicking a table link show?
+                // For now, a simple placeholder:
+                html = `<h3>${type === 'lkn_table' ? 'LKN Tabelle' : 'ICD Tabelle'}: ${escapeHtml(code)}</h3><p>Details zur Tabelle '${escapeHtml(code)}' werden hier angezeigt.</p><p><i>(Logik zur Tabellenansicht noch zu implementieren)</i></p>`;
+            } else {
+                console.warn(`Unknown info-link type: ${type} for code: ${code}`);
+                html = `<p>Information für Code ${escapeHtml(code)} (Typ: ${escapeHtml(type)}) nicht verfügbar.</p>`;
+            }
+            showModal('infoModalMainOverlay', html); // Generic info links still use the main modal
         }
 
         const pLink = e.target.closest('a.pauschale-exp-link');
         if (pLink) {
             e.preventDefault();
             const code = (pLink.dataset.code || '').trim();
-            showPauschaleInfoByCode(code);
+            // Find the pauschale in evaluatedPauschalenList and show its bedingungs_pruef_html in the detail modal
+            const pauschaleEntry = evaluatedPauschalenList.find(p => String(p.code).toUpperCase() === code.toUpperCase() || String(p.details?.Pauschale).toUpperCase() === code.toUpperCase());
+            if (pauschaleEntry && pauschaleEntry.bedingungs_pruef_html) {
+                let headerHtml = `<h2>${tDyn('condDetails')} (${escapeHtml(code)})</h2>`;
+                // Add overall logic status to the header of the detail modal
+                const logicStatusKey = pauschaleEntry.is_valid_structured ? 'logicOk' : 'logicNotOk';
+                const logicStatusText = tDyn(logicStatusKey);
+                const logicStatusColor = pauschaleEntry.is_valid_structured ? 'var(--accent)' : 'var(--danger)';
+                headerHtml += `<p style="font-weight:bold; color:${logicStatusColor}; margin-top:-10px; margin-bottom:15px;">${escapeHtml(logicStatusText)}</p>`;
+
+                showModal('infoModalDetailOverlay', headerHtml + pauschaleEntry.bedingungs_pruef_html);
+            } else {
+                showModal('infoModalDetailOverlay', `<p>Details für Pauschale ${escapeHtml(code)} nicht gefunden oder keine Bedingungs-HTML vorhanden.</p>`);
+            }
         }
     });
 });

@@ -807,15 +807,20 @@ def check_pauschale_conditions(
             elif active_condition_type_for_display in ["LEISTUNGSPOSITIONEN IN TABELLE", "TARIFPOSITIONEN IN TABELLE", "LKN IN TABELLE"]:
                 table_names_orig = [t.strip() for t in original_werte.split(',') if t.strip()]
                 if table_names_orig:
-                    # For now, table names are not linked, just displayed. Linking individual items in tables is complex here.
-                    werte_display = translate('condition_text_lkn_table', lang, table_names=", ".join(map(escape, table_names_orig)))
+                    linked_table_names = [
+                        create_html_info_link(tn, "lkn_table", escape(tn)) for tn in table_names_orig
+                    ]
+                    werte_display = translate('condition_text_lkn_table', lang, table_names=", ".join(linked_table_names))
                 else:
                     werte_display = f"<i>{translate('no_table_name', lang)}</i>"
 
             elif active_condition_type_for_display in ["HAUPTDIAGNOSE IN TABELLE", "ICD IN TABELLE"]:
                 table_names_icd = [t.strip() for t in original_werte.split(',') if t.strip()]
                 if table_names_icd:
-                    werte_display = translate('condition_text_icd_table', lang, table_names=", ".join(map(escape, table_names_icd)))
+                    linked_table_names_icd = [
+                        create_html_info_link(tn, "icd_table", escape(tn)) for tn in table_names_icd
+                    ]
+                    werte_display = translate('condition_text_icd_table', lang, table_names=", ".join(linked_table_names_icd))
                 else:
                     werte_display = f"<i>{translate('no_table_name', lang)}</i>"
 
@@ -834,7 +839,6 @@ def check_pauschale_conditions(
             elif active_condition_type_for_display == "PATIENTENBEDINGUNG":
                 feld_name_pat_orig = str(cond_data.get(BED_FELD_KEY, ""))
                 feld_name_pat_display = translate(feld_name_pat_orig.lower(), lang) if feld_name_pat_orig.lower() in ['alter', 'geschlecht'] else escape(feld_name_pat_orig.capitalize())
-                
                 min_w_pat = cond_data.get(BED_MIN_KEY)
                 max_w_pat = cond_data.get(BED_MAX_KEY)
                 expl_wert_pat = cond_data.get(BED_WERTE_KEY)
@@ -880,7 +884,6 @@ def check_pauschale_conditions(
                 gender_list_keys = [g.strip().lower() for g in original_werte.split(',') if g.strip()]
                 translated_genders = [translate(g_key, lang) for g_key in gender_list_keys]
                 werte_display = escape(", ".join(translated_genders))
-            
             elif active_condition_type_for_display == "MEDIKAMENTE IN LISTE" or active_condition_type_for_display == "GTIN":
                 gtin_codes = [gtin.strip() for gtin in original_werte.split(',') if gtin.strip()]
                 if gtin_codes:
@@ -898,16 +901,13 @@ def check_pauschale_conditions(
                 # Check for ICD matches (List or Table)
                 if active_condition_type_for_display in ["ICD", "HAUPTDIAGNOSE IN LISTE", "ICD IN LISTE", "HAUPTDIAGNOSE IN TABELLE", "ICD IN TABELLE"]:
                     provided_icds_upper = {p_icd.upper() for p_icd in context.get("ICD", []) if p_icd}
-                    
                     required_codes_in_rule = set()
                     if "TABELLE" in active_condition_type_for_display:
                         table_ref_icd = cond_data.get(BED_WERTE_KEY)
-                        if table_ref_icd is not None:
-                            for entry in get_table_content(table_ref_icd, "icd", tabellen_dict_by_table, lang): # lang for potential text in table
-                                if entry.get('Code'): required_codes_in_rule.add(entry['Code'].upper())
+                        for entry in get_table_content(table_ref_icd, "icd", tabellen_dict_by_table, lang): # lang for potential text in table
+                             if entry.get('Code'): required_codes_in_rule.add(entry['Code'].upper())
                     else: # LIST type
                         required_codes_in_rule = {w.strip().upper() for w in str(cond_data.get(BED_WERTE_KEY, "")).split(',') if w.strip()}
-                    
                     matching_icds = list(provided_icds_upper.intersection(required_codes_in_rule))
                     if matching_icds:
                         linked_matching_icds = []
@@ -921,13 +921,11 @@ def check_pauschale_conditions(
                 # Check for LKN matches (List or Table)
                 elif active_condition_type_for_display in ["LEISTUNGSPOSITIONEN IN LISTE", "LKN", "LKN IN LISTE", "LEISTUNGSPOSITIONEN IN TABELLE", "TARIFPOSITIONEN IN TABELLE", "LKN IN TABELLE"]:
                     provided_lkns_upper = {p_lkn.upper() for p_lkn in context.get("LKN", []) if p_lkn}
-                    
                     required_lkn_codes_in_rule = set()
                     if "TABELLE" in active_condition_type_for_display:
                         table_ref_lkn = cond_data.get(BED_WERTE_KEY)
-                        if table_ref_lkn is not None:
-                            for entry in get_table_content(table_ref_lkn, "service_catalog", tabellen_dict_by_table, lang): # lang for potential text
-                                if entry.get('Code'): required_lkn_codes_in_rule.add(entry['Code'].upper())
+                        for entry in get_table_content(table_ref_lkn, "service_catalog", tabellen_dict_by_table, lang): # lang for potential text
+                            if entry.get('Code'): required_lkn_codes_in_rule.add(entry['Code'].upper())
                     else: # LIST type
                         required_lkn_codes_in_rule = {w.strip().upper() for w in str(cond_data.get(BED_WERTE_KEY, "")).split(',') if w.strip()}
 
@@ -940,11 +938,11 @@ def check_pauschale_conditions(
                             linked_matching_lkns.append(create_html_info_link(lkn_c_match, "lkn", display_text_match))
                         if linked_matching_lkns:
                             match_details_parts.append(translate('fulfilled_by_lkn', lang, lkn_code_link=", ".join(linked_matching_lkns)))
-                
+
                 # Fallback generic message if no specific details were generated but condition is met
                 if not match_details_parts:
                     match_details_parts.append(translate('condition_met_context_generic', lang))
-                
+
                 context_match_info_html = f"<span class=\"context-match-info fulfilled\">({'; '.join(match_details_parts)})</span>"
 
 
