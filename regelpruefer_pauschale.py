@@ -17,9 +17,9 @@ __all__ = [
     "determine_applicable_pauschale",
 ]
 
-# Standardoperator zur Verknüpfung der Bedingungsgruppen.
+# Standardoperator zur Verknüpfung der Bedingungsgruppen. (Nicht mehr global verwendet)
 # "UND" ist der konservative Default und kann zentral angepasst werden.
-DEFAULT_GROUP_OPERATOR = "UND"
+# DEFAULT_GROUP_OPERATOR = "UND" # No longer needed globally with the new orchestrator logic
 
 # === FUNKTION ZUR PRÜFUNG EINER EINZELNEN BEDINGUNG ===
 def check_single_condition(
@@ -226,6 +226,41 @@ def get_beschreibung_fuer_lkn_im_backend(lkn_code: str, leistungskatalog_dict: D
         return lkn_code
     return get_lang_field(details, 'Beschreibung', lang) or lkn_code
 
+# This function is no longer needed with the new orchestrator logic
+# def get_group_operator_for_pauschale(
+#     pauschale_code: str, bedingungen_data: List[Dict], default: str = DEFAULT_GROUP_OPERATOR
+# ) -> str:
+#     """Liefert den Gruppenoperator (UND/ODER) fuer eine Pauschale."""
+#     for cond in bedingungen_data:
+#         if cond.get("Pauschale") == pauschale_code and "GruppenOperator" in cond:
+#             op = str(cond.get("GruppenOperator", "")).strip().upper()
+#             if op in ("UND", "ODER"):
+#                 return op
+#
+#     # Heuristik: Wenn keine explizite Angabe vorhanden ist, aber mehrere Gruppen
+#     # existieren und in der ersten Gruppe mindestens eine Zeile mit "ODER"
+#     # verknüpft ist, werten wir dies als globalen Gruppenoperator "ODER".
+#     first_group_id = None
+#     groups_seen: List[Any] = []
+#     first_group_has_oder = False
+#     for cond in bedingungen_data:
+#         if cond.get("Pauschale") != pauschale_code:
+#             continue
+#         grp = cond.get("Gruppe")
+#         if first_group_id is None:
+#             first_group_id = grp
+#         if grp not in groups_seen:
+#             groups_seen.append(grp)
+#         if grp == first_group_id:
+#             if str(cond.get("Operator", "")).strip().upper() == "ODER":
+#                 first_group_has_oder = True
+#
+#     if len(groups_seen) > 1 and first_group_has_oder:
+#         return "ODER"
+#
+#     return default
+
+
 def get_beschreibung_fuer_icd_im_backend(
     icd_code: str,
     tabellen_dict_by_table: Dict,
@@ -357,199 +392,238 @@ def _evaluate_boolean_tokens(tokens: List[Any]) -> bool:
         raise ValueError("Invalid boolean expression")
     return stack[0]
 
-# === FUNKTION ZUR AUSWERTUNG DER STRUKTURIERTEN LOGIK (UND/ODER) ===
-def evaluate_structured_conditions(
-    pauschale_code: str,
+
+# === FUNKTION ZUR AUSWERTUNG EINER EINZELNEN BEDINGUNGSGRUPPE ===
+def evaluate_single_condition_group(
+    conditions_in_group: List[Dict],
     context: Dict,
-    pauschale_bedingungen_data: List[Dict],
     tabellen_dict_by_table: Dict[str, List[Dict]],
-    group_operator: str = DEFAULT_GROUP_OPERATOR,  # Dieser Operator gilt ZWISCHEN den Gruppen
-    debug: bool = False,
+    pauschale_code_for_debug: str = "N/A_PAUSCHALE", # For logging
+    group_id_for_debug: Any = "N/A_GRUPPE",      # For logging
+    debug: bool = False
 ) -> bool:
-    """Prüft die UND/ODER-Bedingungen einer Pauschale.
-
-    Parameters
-    ----------
-    pauschale_code : str
-        Code der zu prüfenden Pauschale.
-    context : dict
-        Laufzeitkontext (z.B. LKN, ICD, Patientendaten).
-    pauschale_bedingungen_data : list[dict]
-        Alle Bedingungsdefinitionen aller Pauschalen.
-    tabellen_dict_by_table : dict
-        Tabelleninhalte für Tabellen-Bedingungen.
-    group_operator : str, optional
-        Logischer Operator zwischen Gruppen (``"UND"`` oder ``"ODER"``).
-    debug : bool, optional
-        Gibt detaillierte Auswertungsinformationen auf ``stdout`` aus.
-
-    Returns
-    -------
-    bool
-        ``True`` wenn die Pauschale unter Berücksichtigung aller Gruppen gültig
-        ist, sonst ``False``.
-
-    Notes
-    -----
-    Die Funktion gruppiert zunächst alle Regeln nach dem ``"Gruppe"``-Feld und
-    erstellt pro Gruppe einen booleschen Ausdruck gemäß den Spalten ``"Ebene"``
-    und ``"Operator"``. Jeder Ausdruck wird anschließend mit
-    :func:`_evaluate_boolean_tokens` ausgewertet. Die Ergebnisse aller Gruppen
-    werden schließlich mit ``group_operator`` (``all`` oder ``any``) kombiniert.
-
-    Examples
-    --------
-    >>> evaluate_structured_conditions(
-    ...     "CAT",
-    ...     {"Seitigkeit": "beidseits", "LKN": ["OP"]},
-    ...     conditions,
-    ...     {},
-    ... )
-    True
     """
-    PAUSCHALE_KEY = 'Pauschale'
-    GRUPPE_KEY = 'Gruppe'
-    OPERATOR_KEY = 'Operator'
-    EBENE_KEY = 'Ebene'
-    BED_ID_KEY = 'BedingungsID'
-    BED_TYP_KEY = 'Bedingungstyp'
-
-    conditions_for_this_pauschale = [
-        cond
-        for cond in pauschale_bedingungen_data
-        if cond.get(PAUSCHALE_KEY) == pauschale_code
-        and str(cond.get(BED_TYP_KEY, "")).upper() != "AST VERBINDUNGSOPERATOR"
-    ]
-
-    if not conditions_for_this_pauschale:
-        return True  # Keine Bedingungen = immer erfüllt
-
-    # Bedingungen nach 'Gruppe' gruppieren
-    grouped_conditions: Dict[Any, List[Dict]] = {}
-    # Sortierung nach Gruppe, dann Ebene, dann ID ist wichtig für die korrekte Verarbeitung
-    # innerhalb von `evaluate_single_group_logic`
-    sorted_conditions_overall = sorted(
-        conditions_for_this_pauschale,
-        key=lambda c: (c.get(GRUPPE_KEY, 1), c.get(EBENE_KEY, 1), c.get(BED_ID_KEY, 0))
-    )
-
-    for cond in sorted_conditions_overall:
-        group_val = cond.get(GRUPPE_KEY, 1) # Default-Gruppe 1, falls nicht spezifiziert
-        if group_val not in grouped_conditions:
-            grouped_conditions[group_val] = []
-        grouped_conditions[group_val].append(cond)
-
-    if not grouped_conditions: # Sollte nicht passieren, wenn conditions_for_this_pauschale nicht leer ist
+    Evaluates the conditions for a single, isolated condition group.
+    The logic is based on 'Ebene' and 'Operator' within the group.
+    """
+    if not conditions_in_group:
+        if debug: # Ensure logger is accessible or pass it
+            logging.info( # Assuming logger is imported as logging
+                "DEBUG Pauschale %s, Gruppe %s: Empty group, result: True",
+                pauschale_code_for_debug,
+                group_id_for_debug
+            )
         return True
 
-    group_results_bool: List[bool] = []
+    baseline_level_group = 1
+    first_level_group = conditions_in_group[0].get('Ebene', 1)
+    if first_level_group < baseline_level_group:
+        first_level_group = baseline_level_group
 
-    # Jede Gruppe separat auswerten
-    # Die Gruppen-IDs werden sortiert, um eine konsistente Auswertungsreihenfolge sicherzustellen.
-    for group_id in sorted(grouped_conditions.keys()):
-        conditions_in_group = grouped_conditions[group_id]
+    first_res_group = check_single_condition(
+        conditions_in_group[0], context, tabellen_dict_by_table
+    )
 
-        # Logik zur Auswertung einer einzelnen Gruppe (basierend auf Ebene und Operator)
-        # Diese Logik ist im Wesentlichen die vorherige Implementierung von evaluate_structured_conditions,
-        # aber jetzt auf eine einzelne Gruppe angewendet.
-        if not conditions_in_group: # Leere Gruppe
-            # Je nach Definition: Leere Gruppe kann als True oder False gewertet werden.
-            # Wenn Gruppen mit ODER verknüpft sind, ist eine leere (wahre) Gruppe problematisch.
-            # Wenn mit UND, ist eine leere (wahre) Gruppe ok.
-            # Wir nehmen an, eine explizit definierte, aber leere Gruppe ist nicht erfüllt,
-            # es sei denn, der group_operator ist ODER und eine andere Gruppe ist erfüllt.
-            # Sicherer ist, eine leere Gruppe als nicht erfüllt zu werten, wenn sie Teil einer Logik ist.
-            # Für den Moment: Wenn eine Gruppe keine Bedingungen hat, ist sie "erfüllt",
-            # was für UND-Logik zwischen Gruppen unproblematisch ist. Für ODER-Logik
-            # würde eine leere, "erfüllte" Gruppe die Pauschale gültig machen.
-            # Das Standardverhalten "Keine Bedingungen = immer erfüllt" sollte hier gelten.
-            group_results_bool.append(True) # Eine Gruppe ohne Bedingungen ist per se erfüllt
-            continue
+    tokens_group: List[Any] = ["("] * (first_level_group - baseline_level_group)
+    tokens_group.append(bool(first_res_group))
 
-        # Sortierung innerhalb der Gruppe nach Ebene, dann BedingungsID ist bereits durch
-        # `sorted_conditions_overall` und die anschließende Gruppierung erfolgt.
-        # conditions_in_group = sorted(conditions_in_group, key=lambda c: (c.get(EBENE_KEY, 1), c.get(BED_ID_KEY, 0)))
+    prev_level_group = first_level_group
 
-        baseline_level_group = 1  # Basislevel für die Ebenenberechnung
-        first_level_group = conditions_in_group[0].get(EBENE_KEY, 1)
+    for i in range(1, len(conditions_in_group)):
+        cond_grp = conditions_in_group[i]
+        cur_level_group = cond_grp.get('Ebene', baseline_level_group)
+        if cur_level_group < baseline_level_group:
+            cur_level_group = baseline_level_group
 
-        first_res_group = check_single_condition(
-            conditions_in_group[0], context, tabellen_dict_by_table
-        )
+        linking_operator = str(conditions_in_group[i-1].get('Operator', "UND")).strip().upper()
+        if linking_operator not in ["AND", "OR"]: # Ensure valid operator, default to AND
+            linking_operator = "AND"
 
-        # Token-Liste für den booleschen Ausdruck der Gruppe
-        tokens_group: List[Any] = ["("] * (first_level_group - baseline_level_group)
-        tokens_group.append(bool(first_res_group))
+        if cur_level_group < prev_level_group:
+            tokens_group.extend([")"] * (prev_level_group - cur_level_group))
 
-        prev_level_group = first_level_group
-        prev_op_group = conditions_in_group[0].get(OPERATOR_KEY, "UND").upper()
+        tokens_group.append(linking_operator)
 
-        for cond_grp in conditions_in_group[1:]:
-            cur_level_group = cond_grp.get(EBENE_KEY, baseline_level_group)
+        if cur_level_group > prev_level_group:
+            tokens_group.extend(["("] * (cur_level_group - prev_level_group))
 
-            if cur_level_group < prev_level_group:
-                tokens_group.extend(")" for _ in range(prev_level_group - cur_level_group))
+        cur_res_group = check_single_condition(cond_grp, context, tabellen_dict_by_table)
+        tokens_group.append(bool(cur_res_group))
 
-            tokens_group.append("AND" if prev_op_group == "UND" else "OR")
+        prev_level_group = cur_level_group
 
-            if cur_level_group > prev_level_group:
-                tokens_group.extend("(" for _ in range(cur_level_group - prev_level_group))
+    tokens_group.extend([")"] * (prev_level_group - baseline_level_group))
 
-            cur_res_group = check_single_condition(cond_grp, context, tabellen_dict_by_table)
-            tokens_group.append(bool(cur_res_group))
-
-            prev_level_group = cur_level_group
-            prev_op_group = cond_grp.get(OPERATOR_KEY, "UND").upper()
-
-        tokens_group.extend(")" for _ in range(prev_level_group - baseline_level_group))
-
-        expr_str_group = "".join(
-            str(t).lower() if isinstance(t, bool) else (" and " if t == "AND" else " or " if t == "OR" else t)
-            for t in tokens_group
-        )
-
-        try:
-            group_result_this_group = _evaluate_boolean_tokens(tokens_group)
-            group_results_bool.append(group_result_this_group)
-            if debug:
-                logger.info(
-                    "DEBUG Gruppe %s: %s => %s",
-                    group_id,
-                    expr_str_group,
-                    group_result_this_group,
-                )
-        except Exception as e_eval_group:
-            logger.error(
-                "FEHLER bei Gruppenlogik-Ausdruck (Pauschale: %s, Gruppe: %s) '%s': %s",
-                pauschale_code,
-                group_id,
-                expr_str_group,
-                e_eval_group,
+    if not any(isinstance(tok, bool) for tok in tokens_group):
+        if debug:
+             logging.warning( # Assuming logger is imported as logging
+                "DEBUG Pauschale %s, Gruppe %s: Token list for group evaluation has no boolean values. Tokens: %s. Defaulting to True.",
+                pauschale_code_for_debug, group_id_for_debug, tokens_group
             )
-            traceback.print_exc()
-            group_results_bool.append(False)
+        return True
 
-    if not group_results_bool:
-        # Dies sollte nur passieren, wenn grouped_conditions leer war, was oben abgefangen wird.
-        # Wenn es hier auftritt, bedeutet es, dass es Gruppen gab, aber keine Ergebnisse (Fehler).
-        # Im Zweifel als nicht erfüllt werten.
-        return False
+    final_group_result = False
+    try:
+        final_group_result = _evaluate_boolean_tokens(tokens_group)
+        if debug:
+            expr_str_group = "".join(
+                str(t).lower() if isinstance(t, bool) else (" AND " if t == "AND" else " OR " if t == "OR" else t)
+                for t in tokens_group
+            )
+            logging.info( # Assuming logger is imported as logging
+                "DEBUG Pauschale %s, Gruppe %s: Eval tokens: %s (Expression: %s) => %s",
+                pauschale_code_for_debug,
+                group_id_for_debug,
+                tokens_group,
+                expr_str_group,
+                final_group_result,
+            )
+    except Exception as e_eval_group:
+        logging.error( # Assuming logger is imported as logging
+            "FEHLER bei Gruppenlogik-Ausdruck (Pauschale: %s, Gruppe: %s) Tokens: '%s': %s",
+            pauschale_code_for_debug,
+            group_id_for_debug,
+            str(tokens_group), # Convert tokens_group to string for logging
+            e_eval_group,
+        )
+        traceback.print_exc()
+        final_group_result = False
 
-    # Verknüpfe die Ergebnisse der einzelnen Gruppen mit dem globalen group_operator
-    if group_operator.upper() == "ODER":
-        final_result = any(group_results_bool)
-    else:  # "UND"
-        final_result = all(group_results_bool)
+    return final_group_result
+
+
+# === FUNKTION ZUR AUSWERTUNG DER STRUKTURIERTEN LOGIK (UND/ODER) ===
+# This function is now the new orchestrator for pauschale logic evaluation.
+def evaluate_pauschale_logic_orchestrator(
+    pauschale_code: str,
+    context: Dict,
+    all_pauschale_bedingungen_data: List[Dict], # All conditions for all pauschalen
+    tabellen_dict_by_table: Dict[str, List[Dict]],
+    debug: bool = False
+) -> bool:
+    """
+    Orchestrates the evaluation of a pauschale's logic.
+    It processes conditions sequentially, identifying "macro-blocks" of actual condition groups.
+    These macro-blocks are separated by 'AST VERBINDUNGSOPERATOR' lines, which define
+    the primary logical connection (e.g., ODER) between the results of these macro-blocks.
+    Within a macro-block, if multiple actual condition groups follow each other without
+    an AST operator, they are connected based on the 'Operator' field of the last
+    condition of the preceding group (UND if 'UND', otherwise ODER).
+    """
+    # Filter conditions for the current pauschale and sort them by BedingungsID
+    # This sorting is crucial for correct sequential processing of defined logic.
+    conditions_for_pauschale = sorted(
+        [cond for cond in all_pauschale_bedingungen_data if cond.get("Pauschale") == pauschale_code],
+        key=lambda x: x.get("BedingungsID", 0)
+    )
+
+    if not conditions_for_pauschale:
+        if debug:
+            logger.info(f"DEBUG Orchestrator Pauschale {pauschale_code}: No conditions defined. Result: True")
+        return True
+
+    block_results: List[bool] = []
+    connecting_operators: List[str] = []
+
+    temp_group_results_for_macro_block: List[bool] = []
+    temp_group_connecting_operators_for_macro_block: List[str] = []
+    last_processed_real_group_conditions: List[Dict] = []
+
+    for i, cond_data in enumerate(conditions_for_pauschale):
+        bedingungstyp = str(cond_data.get("Bedingungstyp", "")).upper()
+
+        if bedingungstyp == "AST VERBINDUNGSOPERATOR":
+            if last_processed_real_group_conditions:
+                group_res = evaluate_single_condition_group(
+                    last_processed_real_group_conditions, context, tabellen_dict_by_table,
+                    pauschale_code, last_processed_real_group_conditions[0].get("Gruppe", "N/A_AST_PREV_GROUP"), debug
+                )
+                temp_group_results_for_macro_block.append(group_res)
+                last_processed_real_group_conditions = []
+
+            if temp_group_results_for_macro_block:
+                current_macro_block_result = temp_group_results_for_macro_block[0]
+                for op_idx in range(len(temp_group_connecting_operators_for_macro_block)):
+                    op = temp_group_connecting_operators_for_macro_block[op_idx]
+                    next_val = temp_group_results_for_macro_block[op_idx + 1]
+                    if op == "AND":
+                        current_macro_block_result = current_macro_block_result and next_val
+                    elif op == "OR":
+                        current_macro_block_result = current_macro_block_result or next_val
+                block_results.append(current_macro_block_result)
+
+                temp_group_results_for_macro_block = []
+                temp_group_connecting_operators_for_macro_block = []
+
+            ast_op_value = str(cond_data.get("Werte", "ODER")).strip().upper()
+            if ast_op_value not in ["AND", "OR"]: ast_op_value = "ODER"
+            connecting_operators.append(ast_op_value)
+
+        else:
+            if last_processed_real_group_conditions and \
+               cond_data.get("Gruppe") != last_processed_real_group_conditions[0].get("Gruppe"):
+
+                group_res = evaluate_single_condition_group(
+                    last_processed_real_group_conditions, context, tabellen_dict_by_table,
+                    pauschale_code, last_processed_real_group_conditions[0].get("Gruppe", "N/A_GROUP"), debug
+                )
+                temp_group_results_for_macro_block.append(group_res)
+
+                implicit_op = str(last_processed_real_group_conditions[-1].get("Operator", "ODER")).strip().upper()
+                if implicit_op not in ["AND", "OR"]: implicit_op = "ODER"
+                temp_group_connecting_operators_for_macro_block.append(implicit_op)
+
+                last_processed_real_group_conditions = [cond_data]
+            else:
+                last_processed_real_group_conditions.append(cond_data)
+
+    if last_processed_real_group_conditions:
+        group_res = evaluate_single_condition_group(
+            last_processed_real_group_conditions, context, tabellen_dict_by_table,
+            pauschale_code, last_processed_real_group_conditions[0].get("Gruppe","N/A_FINAL_GROUP"), debug
+        )
+        temp_group_results_for_macro_block.append(group_res)
+
+    if temp_group_results_for_macro_block:
+        current_macro_block_result = temp_group_results_for_macro_block[0]
+        for op_idx in range(len(temp_group_connecting_operators_for_macro_block)):
+            op = temp_group_connecting_operators_for_macro_block[op_idx]
+            next_val = temp_group_results_for_macro_block[op_idx + 1]
+            if op == "AND":
+                current_macro_block_result = current_macro_block_result and next_val
+            elif op == "OR":
+                current_macro_block_result = current_macro_block_result or next_val
+        block_results.append(current_macro_block_result)
+
+    if not block_results:
+        if debug:
+            logger.info(f"DEBUG Orchestrator Pauschale {pauschale_code}: No valid blocks evaluated. Result: {'True' if not conditions_for_pauschale else 'False'}")
+        return True if not conditions_for_pauschale else False
+
+    final_result = block_results[0]
+    if debug:
+        logger.info(f"DEBUG Orchestrator Pauschale {pauschale_code}: Initial block result: {final_result}")
+        logger.info(f"DEBUG Orchestrator Pauschale {pauschale_code}: All block results: {block_results}")
+        logger.info(f"DEBUG Orchestrator Pauschale {pauschale_code}: Connecting operators for blocks: {connecting_operators}")
+
+    for i, operator in enumerate(connecting_operators):
+        if (i + 1) < len(block_results):
+            next_block_result = block_results[i+1]
+            if debug:
+                logger.info(f"DEBUG Orchestrator Pauschale {pauschale_code}: Applying {operator} with {next_block_result} to current result {final_result}")
+            if operator == "AND":
+                final_result = final_result and next_block_result
+            elif operator == "OR":
+                final_result = final_result or next_block_result
+        else:
+            if debug:
+                logger.warning(f"DEBUG Orchestrator Pauschale {pauschale_code}: Mismatch between operators and block results. Operator '{operator}' at index {i} has no corresponding next block.")
 
     if debug:
-        logger.info(
-            "DEBUG Ergebnis Pauschale %s: %s -> %s",
-            pauschale_code,
-            group_results_bool,
-            final_result,
-        )
+         logger.info(f"DEBUG Orchestrator Pauschale {pauschale_code}: Final evaluation result: {final_result}")
 
     return final_result
+
 # === PRUEFUNG DER BEDINGUNGEN (STRUKTURIERTES RESULTAT) ===
 def check_pauschale_conditions(
     pauschale_code: str,
@@ -575,19 +649,21 @@ def check_pauschale_conditions(
     BED_VERGLEICHSOP_KEY = "Vergleichsoperator"
 
 
-    conditions_for_pauschale = [
+    # Filter out AST VERBINDUNGSOPERATOR lines as they are not conditions to be displayed directly here
+    conditions_for_pauschale_display = [
         c for c in pauschale_bedingungen_data
         if c.get(PAUSCHALE_KEY) == pauschale_code
         and str(c.get(BED_TYP_KEY, "")).upper() != "AST VERBINDUNGSOPERATOR"
     ]
 
-    if not conditions_for_pauschale:
+    if not conditions_for_pauschale_display:
         return {"html": f"<p><i>{translate('no_conditions_for_pauschale', lang)}</i></p>", "errors": [], "trigger_lkn_condition_met": False}
 
-    # Bedingungen nach Gruppe sortieren und dann nach BedingungsID
+    # Sort conditions for display: by Group, then by Ebene, then by BedingungsID
+    # This ensures correct visual grouping and ordering of conditions including their operators.
     sorted_conditions = sorted(
-        conditions_for_pauschale,
-        key=lambda x: (x.get(GRUPPE_KEY, float("inf")), x.get(BED_ID_KEY, 0))
+        conditions_for_pauschale_display, # Use the filtered list
+        key=lambda x: (x.get(GRUPPE_KEY, float("inf")), x.get('Ebene', 1), x.get(BED_ID_KEY, 0))
     )
 
     html_parts = []
@@ -936,9 +1012,14 @@ def determine_applicable_pauschale(
         is_pauschale_valid_structured = False
         bedingungs_html = ""
         try:
-            grp_op = get_group_operator_for_pauschale(code, pauschale_bedingungen_data, default=DEFAULT_GROUP_OPERATOR)
-            is_pauschale_valid_structured = evaluate_structured_conditions(
-                code, context, pauschale_bedingungen_data, tabellen_dict_by_table, grp_op
+            # grp_op = get_group_operator_for_pauschale(code, pauschale_bedingungen_data, default=DEFAULT_GROUP_OPERATOR) # Removed
+            # evaluate_structured_conditions is now the orchestrator and handles group logic internally
+            is_pauschale_valid_structured = evaluate_pauschale_logic_orchestrator( # Renamed for clarity, was evaluate_structured_conditions
+                pauschale_code=code,
+                context=context,
+                all_pauschale_bedingungen_data=pauschale_bedingungen_data,
+                tabellen_dict_by_table=tabellen_dict_by_table,
+                debug=logger.isEnabledFor(logging.DEBUG) # Pass appropriate debug flag
             )
             check_res = check_pauschale_conditions(
                 code,
