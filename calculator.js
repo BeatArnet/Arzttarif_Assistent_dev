@@ -329,12 +329,14 @@ function hideModal(modalOverlayId) {
     }
 }
 
+// Globale Variable zur Verfolgung des Resize-Zustands
+let isResizing = false;
+
 function makeModalDraggable(modalElement) {
     let isDragging = false;
     let startX, startY;
     let x = 0, y = 0; // To store the current translation
 
-    // Function to parse the current transform values
     function getCurrentTransform() {
         const style = window.getComputedStyle(modalElement);
         const matrix = new DOMMatrix(style.transform);
@@ -343,48 +345,51 @@ function makeModalDraggable(modalElement) {
     }
 
     modalElement.addEventListener('mousedown', (e) => {
-        // Only drag if the mousedown is on the modal header or a non-interactive part.
-        // The resize handle is usually in the corner, so this prevents dragging while resizing.
-        if (e.target.closest('button, a, input, select, textarea, details, summary, .info-modal-body')) {
-             // Also prevent dragging from the body to allow text selection etc.
+        const rect = modalElement.getBoundingClientRect();
+        const resizeHandleSize = 20;
+        
+        // Prüfen, ob der Klick im Resize-Bereich (unten rechts) ist
+        if (e.clientX > rect.right - resizeHandleSize && e.clientY > rect.bottom - resizeHandleSize) {
+            isResizing = true;
+            // Verhindern, dass das Dragging startet
             return;
         }
-        // Check if the click is on the resize handle area (bottom-right corner)
-        const rect = modalElement.getBoundingClientRect();
-        const resizeHandleSize = 20; // Approximate size of the handle area
-        if (e.clientX > rect.right - resizeHandleSize && e.clientY > rect.bottom - resizeHandleSize) {
-            return; // Don't start dragging if it's a resize action
+
+        // Interaktive Elemente oder Modal-Body sollen kein Dragging auslösen
+        if (e.target.closest('button, a, input, select, textarea, details, summary, .info-modal-body')) {
+            return;
         }
 
-
         isDragging = true;
-        getCurrentTransform(); // Get the current translation before starting
+        getCurrentTransform();
         startX = e.clientX;
         startY = e.clientY;
         modalElement.style.cursor = 'grabbing';
-        // No need to change position property, it's absolute from CSS
     });
 
     document.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-        e.preventDefault(); // Prevent text selection while dragging
-
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-
-        modalElement.style.transform = `translate(${x + dx}px, ${y + dy}px)`;
+        if (isDragging) {
+            e.preventDefault();
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            modalElement.style.transform = `translate(${x + dx}px, ${y + dy}px)`;
+        }
     });
 
     document.addEventListener('mouseup', () => {
         if (isDragging) {
             isDragging = false;
             modalElement.style.cursor = 'grab';
-            // The final position is already set by the transform, no need to do anything else.
-            // The next mousedown will re-read the current transform.
+        }
+        // WICHTIG: Setze isResizing nach einer kurzen Verzögerung zurück,
+        // damit der Click-Handler des Overlays es zuerst prüfen kann.
+        if (isResizing) {
+            setTimeout(() => {
+                isResizing = false;
+            }, 0);
         }
     });
 
-    // Initial cursor style
     modalElement.style.cursor = 'grab';
 }
 
@@ -874,7 +879,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const overlay = $(modal.overlayId);
         if (closeButton) closeButton.addEventListener('click', () => hideModal(modal.overlayId));
         if (overlay) overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) hideModal(modal.overlayId);
+            // Verhindere das Schliessen, wenn gerade die Grösse geändert wurde.
+            if (e.target === overlay && !isResizing) {
+                hideModal(modal.overlayId);
+            }
         });
     });
 
