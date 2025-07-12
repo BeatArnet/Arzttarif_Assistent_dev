@@ -1887,9 +1887,9 @@ def index_route(): # Umbenannt, um Konflikt mit Modul 'index' zu vermeiden, fall
 def favicon_ico():
     return send_from_directory(".", "favicon.ico", mimetype='image/vnd.microsoft.icon')
 
-@app.route("/favicon.svg")
-def favicon_svg():
-    return send_from_directory(".", "favicon.svg", mimetype='image/svg+xml')
+@app.route("/favicon-32.png")
+def favicon_png():
+    return send_from_directory(".", "favicon-32.png", mimetype='image/png')
 
 @app.route("/<path:filename>")
 def serve_static(filename: str): # Typ hinzugefügt
