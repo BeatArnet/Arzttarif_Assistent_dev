@@ -534,12 +534,13 @@ class TestPauschaleLogic(unittest.TestCase):
             user_input="",
             rule_checked_leistungen=[],
             context=context,
-            pauschale_lp_data=[], 
-            pauschale_bedingungen_data=pauschale_bedingungen_data, # Correctly passing the main list
+            pauschale_lp_data=[],
+            pauschale_bedingungen_data=pauschale_bedingungen_data,
             pauschalen_dict=pauschalen_dict,
             leistungskatalog_dict=leistungskatalog_dict,
             tabellen_dict_by_table=tabellen_dict_by_table,
-            potential_pauschale_codes_input={"X00.01A", "X00.01B"}
+            potential_pauschale_codes_input={"X00.01A", "X00.01B"},
+            lang='de'
         )
         self.assertEqual(result["details"]["Pauschale"], "X00.01B")
 
