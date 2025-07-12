@@ -16,53 +16,10 @@ logger = logging.getLogger(__name__)
 REGEL_MENGE = "Mengenbeschränkung"
 REGEL_ZUSCHLAG_ZU = "Nur als Zuschlag zu"
 REGEL_NICHT_KUMULIERBAR = "Nicht kumulierbar mit"
-REGEL_PAT_GESCHLECHT = "Patientenbedingung: Geschlecht" # Veraltet, nutze Patientenbedingung
-REGEL_PAT_ALTER = "Patientenbedingung: Alter"       # Veraltet, nutze Patientenbedingung
 REGEL_PAT_BEDINGUNG = "Patientenbedingung" # Neuer, generischer Typ
 REGEL_DIAGNOSE = "Diagnosepflicht"
 REGEL_PAUSCHAL_AUSSCHLUSS = "Pauschalenausschluss"
 # Fügen Sie hier weitere Typen hinzu, falls Ihr Regelmodell sie enthält
-
-# --- Ladefunktion für das Regelwerk ---
-def lade_regelwerk(path: str) -> dict:
-    """
-    Lädt das Regelwerk aus einer JSON-Datei und gibt ein Mapping von LKN zu Regeln zurück.
-
-    Args:
-        path: Pfad zur JSON-Datei mit strukturierten Regeln.
-    Returns:
-        Dict[str, list]: Schlüssel sind LKN-Codes, Werte sind Listen von Regel-Definitionsdicts.
-    """
-    try:
-        with open(path, encoding="utf-8") as f:
-            data = json.load(f)
-        mapping: dict = {}
-        # Annahme: data ist eine Liste von Objekten, jedes mit "LKN" und "Regeln"
-        for entry in data:
-            lkn = entry.get("LKN")
-            if not lkn:
-                logger.warning("WARNUNG: Regelobjekt ohne LKN gefunden: %s", entry)
-                continue
-            rules = entry.get("Regeln") or []
-            mapping[lkn] = rules
-        return mapping
-    except FileNotFoundError:
-        logger.error("FEHLER: Regelwerk-Datei nicht gefunden: %s", path)
-        return {}
-    except json.JSONDecodeError as e:
-        logger.error(
-            "FEHLER: Fehler beim Parsen der Regelwerk-JSON-Datei '%s': %s",
-            path,
-            e,
-        )
-        return {}
-    except Exception as e:
-        logger.error(
-            "FEHLER: Unerwarteter Fehler beim Laden des Regelwerks '%s': %s",
-            path,
-            e,
-        )
-        return {}
 
 # --- Hauptfunktion zur Regelprüfung für LKNs ---
 def pruefe_abrechnungsfaehigkeit(fall: dict, regelwerk: dict) -> dict:
@@ -82,8 +39,6 @@ def pruefe_abrechnungsfaehigkeit(fall: dict, regelwerk: dict) -> dict:
     menge = fall.get("Menge", 0) or 0
     begleit = fall.get("Begleit_LKNs") or []
     # Kontextdaten
-    alter = fall.get("Alter")
-    geschlecht = fall.get("Geschlecht")
     gtins = fall.get("GTIN") or [] # Stelle sicher, dass GTIN hier ankommt
     if isinstance(gtins, str): gtins = [gtins] # Mache zur Liste, falls String
 

@@ -1225,32 +1225,11 @@ def check_pauschale_conditions(
     }
 
 # === RENDERER FUER CONDITION-ERGEBNISSE (WIRD NICHT MEHR DIREKT VERWENDET, LOGIK IST IN check_pauschale_conditions) ===
-def render_condition_results_html(
-    results: List[Dict[str, Any]], # results ist hier das Ergebnis von der alten check_pauschale_conditions
-    lang: str = "de"
-) -> str:
-    """Wandelt die von der *alten* `check_pauschale_conditions` gelieferten Ergebnisse in HTML um.
-       Diese Funktion wird für die neue HTML-Struktur nicht mehr direkt benötigt.
-       Die Logik zur HTML-Erstellung ist jetzt in der neuen `check_pauschale_conditions`.
-    """
-    # Diese Funktion ist jetzt veraltet für die neue Anforderung der strukturierten HTML-Ausgabe.
-    # Sie könnte für Debugging-Zwecke oder eine sehr einfache Darstellung beibehalten werden.
-    # Für die Aufgabe hier, die CSS-Klassen zu implementieren, wird sie nicht verwendet.
-    logger.warning("render_condition_results_html wird aufgerufen, ist aber für die neue HTML-Struktur veraltet.")
-    html_parts = ["<ul class='legacy-condition-list'>"] # Hinweis auf veraltete Liste
-    for item in results: # 'results' hier ist die Liste von Dictionaries mit 'erfuellt', 'Bedingungstyp', 'Werte'
-        icon_text = "&#10003;" if item.get("erfuellt") else "&#10007;"
-        typ_text = escape(str(item.get("Bedingungstyp", "")))
-        wert_text = escape(str(item.get("Werte", "")))
-        html_parts.append(f"<li>{icon_text} {typ_text}: {wert_text}</li>")
-    html_parts.append("</ul>")
-    return "".join(html_parts)
 
 
 # --- Ausgelagerte Pauschalen-Ermittlung ---
 def determine_applicable_pauschale(
     user_input: str, # Bleibt für potenzielles LLM-Ranking, aktuell nicht primär genutzt
-    rule_checked_leistungen: list[dict], # Für die initiale Findung potenzieller Pauschalen
     context: dict, # Enthält LKN, ICD, Alter, Geschlecht, Seitigkeit, Anzahl, useIcd
     pauschale_lp_data: List[Dict],
     pauschale_bedingungen_data: List[Dict],
@@ -1317,7 +1296,6 @@ def determine_applicable_pauschale(
     """
     logger.info("INFO: Starte Pauschalenermittlung mit strukturierter Bedingungsprüfung...")
     PAUSCHALE_ERKLAERUNG_KEY = 'pauschale_erklaerung_html'; POTENTIAL_ICDS_KEY = 'potential_icds'
-    LKN_KEY_IN_RULE_CHECKED = 'lkn'; PAUSCHALE_KEY_IN_PAUSCHALEN = 'Pauschale' # In PAUSCHALEN_Pauschalen
     PAUSCHALE_TEXT_KEY_IN_PAUSCHALEN = 'Pauschale_Text'
     LP_LKN_KEY = 'Leistungsposition'; LP_PAUSCHALE_KEY = 'Pauschale' # In PAUSCHALEN_Leistungspositionen
     BED_PAUSCHALE_KEY = 'Pauschale'; BED_TYP_KEY = 'Bedingungstyp' # In PAUSCHALEN_Bedingungen

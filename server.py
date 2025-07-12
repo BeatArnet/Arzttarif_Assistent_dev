@@ -182,10 +182,21 @@ GenerateConditionDetailHtmlType = Callable[
     str,
 ]
 DetermineApplicablePauschaleType = Callable[
-    [str, List[Dict[str, Any]], Dict[str, Any], List[Dict[str, Any]], List[Dict[str, Any]], Dict[str, Any], Dict[str, Any], Dict[str, List[Dict[str, Any]]], Set[str], str],
+    [str, Dict[str, Any], List[Dict[str, Any]], List[Dict[str, Any]], Dict[str, Any], Dict[str, Any], Dict[str, List[Dict[str, Any]]], Set[str], str],
     Dict[str, Any]
 ]
 PrepareTardocAbrechnungType = Callable[[List[Dict[Any,Any]], Dict[str, Dict[Any,Any]], str], Dict[str,Any]]
+
+
+# --- Standard-Fallbacks für Funktionen aus regelpruefer_pauschale ---
+def default_evaluate_fallback( # Matches: evaluate_structured_conditions(pauschale_code: str, context: Dict, pauschale_bedingungen_data: List[Dict], tabellen_dict_by_table: Dict[str, List[Dict]]) -> bool
+    pauschale_code: str,
+    context: Dict[Any, Any],
+    pauschale_bedingungen_data: List[Dict[Any, Any]],
+    tabellen_dict_by_table: Dict[str, List[Dict[Any, Any]]]
+) -> bool:
+    logger.warning("Fallback für 'evaluate_structured_conditions' aktiv.")
+    return False
 
 # --- Standard-Fallbacks für Funktionen aus regelpruefer_pauschale ---
 def default_evaluate_fallback( # Matches: evaluate_structured_conditions(pauschale_code: str, context: Dict, pauschale_bedingungen_data: List[Dict], tabellen_dict_by_table: Dict[str, List[Dict]]) -> bool
@@ -223,7 +234,7 @@ def default_generate_condition_detail_html_fallback(
     return "<li>Detail-Generierung fehlgeschlagen (Fallback)</li>"
 
 def default_determine_applicable_pauschale_fallback(
-    user_input_param: str, rule_checked_leistungen_list_param: List[Dict[str, Any]],
+    user_input_param: str,
     pauschale_haupt_pruef_kontext_param: Dict[str, Any],
     pauschale_lp_data_param: List[Dict[str, Any]],
     pauschale_bedingungen_data_param: List[Dict[str, Any]],
@@ -236,88 +247,14 @@ def default_determine_applicable_pauschale_fallback(
     logger.warning("Fallback für 'determine_applicable_pauschale' aktiv.")
     return {"type": "Error", "message": "Pauschalen-Hauptprüfung nicht verfügbar (Fallback)"}
 
-# --- Initialisiere Funktionsvariablen mit Fallbacks ---
-evaluate_structured_conditions: EvaluateStructuredConditionsType = default_evaluate_fallback
-check_pauschale_conditions: CheckPauschaleConditionsType = default_check_html_fallback
-get_simplified_conditions: GetSimplifiedConditionsType = default_get_simplified_conditions_fallback
-generate_condition_detail_html: GenerateConditionDetailHtmlType = default_generate_condition_detail_html_fallback
-determine_applicable_pauschale_func: DetermineApplicablePauschaleType = default_determine_applicable_pauschale_fallback
-prepare_tardoc_abrechnung_func: PrepareTardocAbrechnungType # Wird unten zugewiesen
-
 # --- Importiere Regelprüfer-Module und überschreibe Fallbacks bei Erfolg ---
-try:
-    # Für regelpruefer.py (LKN-Regeln)
-    rp_lkn_module = None
-    import regelpruefer as rp_lkn_module
-    logger.info("✓ Regelprüfer LKN (regelpruefer.py) Modul geladen.")
-    if hasattr(rp_lkn_module, 'prepare_tardoc_abrechnung'):
-        prepare_tardoc_abrechnung_func = rp_lkn_module.prepare_tardoc_abrechnung
-        logger.info("DEBUG: 'prepare_tardoc_abrechnung' aus regelpruefer.py zugewiesen.")
-    else:
-        logger.error("FEHLER: 'prepare_tardoc_abrechnung' NICHT in regelpruefer.py gefunden! Verwende Fallback.")
-        def prepare_tardoc_lkn_fb(r: List[Dict[Any,Any]], l: Dict[str, Dict[Any,Any]], lang_param: str = 'de') -> Dict[str,Any]:
-            return {"type":"Error", "message":"TARDOC Prep Fallback (LKN Funktion fehlt)"}
-        prepare_tardoc_abrechnung_func = prepare_tardoc_lkn_fb
-except ImportError:
-    logger.error("FEHLER: regelpruefer.py nicht gefunden! Verwende Fallbacks für LKN-Regelprüfung.")
-    def prepare_tardoc_lkn_import_fb(r: List[Dict[Any,Any]], l: Dict[str, Dict[Any,Any]], lang_param: str = 'de') -> Dict[str,Any]:
-        return {"type":"Error", "message":"TARDOC Prep Fallback (LKN Modulimportfehler)"}
-    prepare_tardoc_abrechnung_func = prepare_tardoc_lkn_import_fb
-
-try:
-    # Für regelpruefer_pauschale.py
-    logger.info("INFO: Versuche, regelpruefer_pauschale.py zu importieren...")
-    import regelpruefer_pauschale as rpp_module
-    logger.info("DEBUG: Importversuch abgeschlossen. rpp_module ist: %s", rpp_module)
-    logger.info("DEBUG: Inhalt von rpp_module: %s", dir(rpp_module))
-    logger.info("✓ Regelprüfer Pauschalen (regelpruefer_pauschale.py) Modul geladen.")
-
-    # if rpp_module and hasattr(rpp_module, 'evaluate_structured_conditions'):
-    #    evaluate_structured_conditions = rpp_module.evaluate_structured_conditions
-    # else:
-    #    logger.error("FEHLER: 'evaluate_structured_conditions' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv.")
-
-    if rpp_module and hasattr(rpp_module, 'check_pauschale_conditions'):
-        check_pauschale_conditions = rpp_module.check_pauschale_conditions  # type: ignore[attr-defined]
-    else:
-        logger.error(
-            "FEHLER: 'check_pauschale_conditions' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv."
-        )
-
-    if rpp_module and hasattr(rpp_module, 'get_simplified_conditions'):
-        get_simplified_conditions = rpp_module.get_simplified_conditions  # type: ignore[attr-defined]
-    else:
-        logger.error(
-            "FEHLER: 'get_simplified_conditions' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv."
-        )
-
-    if rpp_module and hasattr(rpp_module, 'generate_condition_detail_html'):
-        generate_condition_detail_html = rpp_module.generate_condition_detail_html  # type: ignore[attr-defined]
-    else:
-        logger.error(
-            "FEHLER: 'generate_condition_detail_html' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv."
-        )
-
-    if rpp_module and hasattr(rpp_module, 'determine_applicable_pauschale'):
-        determine_applicable_pauschale_func = rpp_module.determine_applicable_pauschale  # type: ignore[attr-defined]
-        logger.info("DEBUG: 'determine_applicable_pauschale' aus regelpruefer_pauschale.py zugewiesen.")
-    else:
-        logger.error(
-            "FEHLER: 'determine_applicable_pauschale' nicht in regelpruefer_pauschale.py (oder Modul nicht geladen)! Fallback aktiv."
-        )
-
-except ImportError as e_imp:
-    logger.error(
-        "FEHLER (ImportError): regelpruefer_pauschale.py konnte nicht importiert werden: %s! Standard-Fallbacks bleiben aktiv.",
-        e_imp,
-    )
-    traceback.print_exc()
-except Exception as e_gen: # Fängt auch andere Fehler während des Imports
-    logger.error(
-        "FEHLER (Allgemein beim Import): Ein Fehler trat beim Laden von regelpruefer_pauschale.py auf: %s! Standard-Fallbacks bleiben aktiv.",
-        e_gen,
-    )
-    traceback.print_exc()
+from regelpruefer_pauschale import (
+    check_pauschale_conditions,
+    determine_applicable_pauschale,
+    generate_condition_detail_html,
+    get_simplified_conditions,
+)
+from regelpruefer import prepare_tardoc_abrechnung
 
 # --- Globale Datencontainer ---
 leistungskatalog_data: list[dict] = []
@@ -1159,7 +1096,7 @@ def rank_leistungskatalog_entries(tokens: Set[str], limit: int = 200) -> List[st
 
 # --- API Endpunkt ---
 @app.route('/api/analyze-billing', methods=['POST'])
-def analyze_billing():
+def analyze_billing_endpoint():
     # Basic request data for logging before full parsing
     data_for_log = request.get_json(silent=True) or {}
     user_input_log = data_for_log.get('inputText', '')[:100]
@@ -1370,7 +1307,6 @@ def analyze_billing():
             try:
                 pauschale_pruef_ergebnis_dict = determine_applicable_pauschale_func(
                     user_input,
-                        [], # rule_checked_leistungen_list_param
                     pauschale_haupt_pruef_kontext,
                     pauschale_lp_data,
                         # pauschale_bedingungen_data, # Ersetzt durch pauschale_bedingungen_indexed
@@ -1688,10 +1624,9 @@ def analyze_billing():
                 }
                 try:
                     logger.info(f"[{request_id}] Starte Pauschalen-Hauptprüfung (useIcd=%s)...", use_icd_flag)
-                    time_before_determine_pauschale = time.time()
                     # KORREKTUR: Aufruf über die Funktionsvariable determine_applicable_pauschale_func
                     pauschale_pruef_ergebnis_dict = determine_applicable_pauschale_func(
-                        user_input, rule_checked_leistungen_list, pauschale_haupt_pruef_kontext,
+                        user_input, pauschale_haupt_pruef_kontext,
                         pauschale_lp_data,
                         # pauschale_bedingungen_data, # Ersetzt durch pauschale_bedingungen_indexed
                         pauschale_bedingungen_data, # KORREKTUR: Liste statt Dict
@@ -1743,173 +1678,9 @@ def analyze_billing():
     return jsonify(final_response_payload)
 
 
-def perform_analysis(text: str,
-                     icd: list[str] | None = None,
-                     gtin: list[str] | None = None,
-                     use_icd: bool = True,
-                     age: int | None = None,
-                     gender: str | None = None,
-                     lang: str = 'de') -> dict:
-    """Hilfsfunktion für Tests: ruft die analyze-billing-Logik mit gegebenen Parametern auf."""
-    if icd is None:
-        icd = []
-    if gtin is None:
-        gtin = []
-
-    with app.test_client() as client:
-        payload = {
-            'inputText': text,
-            'icd': icd,
-            'gtin': gtin,
-            'useIcd': use_icd,
-            'age': age,
-            'gender': gender,
-            'lang': lang,
-        }
-        resp = client.post('/api/analyze-billing', json=payload)
-        if resp.status_code != 200:
-            raise RuntimeError(f"analyze-billing failed: {resp.status_code} {resp.get_data(as_text=True)}")
-        return resp.get_json()
-
-@app.route('/api/quality', methods=['POST'])
-def quality_endpoint():
-    """Simple quality check endpoint returning baseline comparison."""
-    if not request.is_json:
-        return jsonify({"error": "Request must be JSON"}), 400
-    data = request.get_json() or {}
-    baseline = data.get("baseline")
-    # For now, echo baseline as result
-    result = baseline
-    match = result == baseline
-    return jsonify({"result": result, "baseline": baseline, "match": match})
-
-@app.route('/api/test-example', methods=['POST'])
-def test_example():
-    """Vergleicht das Ergebnis einer Beispielanalyse mit dem Baseline-Resultat."""
-    data = request.get_json() or {}
-    example_id = str(data.get('id'))
-    lang = data.get('lang', 'de')
-    if not daten_geladen:
-        logger.error("Daten nicht geladen im /api/test-example Endpunkt. Dies sollte nicht passieren, da create_app() die Daten laden sollte.")
-        return jsonify({'error': 'Server data not loaded. Please try again later or contact an administrator.'}), 503
-    baseline_entry = baseline_results.get(example_id)
-    if not baseline_entry:
-        return jsonify({'error': 'Baseline not found'}), 404
-
-    baseline = baseline_entry.get('baseline', {}).get(lang)
-    if baseline is None:
-        return jsonify({'error': 'Baseline missing for language'}), 404
-
-    query_text = baseline_entry.get('query', {}).get(lang)
-    if not query_text:
-        return jsonify({'error': 'Query text missing for baseline'}), 404
-
-    try:
-        # Heuristik für useIcd und icd_codes in Tests:
-        # Wenn eine Pauschale erwartet wird, versuchen wir es erstmal ohne strikte ICD-Prüfung,
-        # da die baseline_results.json keine ICDs pro Testfall spezifiziert.
-        # Langfristig sollten Testfälle spezifische ICDs und useIcd-Flags haben können.
-        expected_pauschale = baseline_entry.get('baseline', {}).get(lang, {}).get('pauschale')
-        test_use_icd = True
-        test_icd_codes = [] # Standardmäßig keine ICDs für Tests, es sei denn, sie wären in baseline_results definiert
-
-        if expected_pauschale is not None:
-            # Wenn eine spezifische Pauschale (nicht C90.xx) erwartet wird,
-            # und diese Pauschale möglicherweise ICD-Bedingungen hat, die ohne Test-ICDs fehlschlagen würden.
-            # Hier könnte man noch verfeinern, z.B. nur wenn die erwartete Pauschale KEINE C90 ist.
-            # Fürs Erste: Wenn Pauschale erwartet, sei weniger streng mit ICDs, da keine Test-ICDs gegeben.
-            logger.info(f"TEST_EXAMPLE: Pauschale {expected_pauschale.get('code')} erwartet. Setze useIcd=False für diesen Testlauf.")
-            test_use_icd = False
-
-        # Hier könnten in Zukunft ICDs aus baseline_entry gelesen werden, falls vorhanden
-        # z.B. test_icd_codes = baseline_entry.get('icd_context', [])
-        # z.B. test_use_icd = baseline_entry.get('use_icd_context', test_use_icd)
-
-        analysis_full = perform_analysis(query_text, test_icd_codes, [], test_use_icd, None, None, lang)
-    except Exception as e:
-        logger.error(f"Error in test_example for ID {example_id}, lang {lang}: {e}", exc_info=True)
-        return jsonify({'error': f'Analysis failed: {e}'}), 500
-
-    def simplify(result_dict: dict) -> dict:
-        """Mappe die komplexe Analyseantwort auf das einfache Baseline-Schema."""
-        abrechnung = result_dict.get('abrechnung', {})
-        if abrechnung.get('type') == 'Pauschale':
-            pc = abrechnung.get('details', {}).get('Pauschale')
-            pauschale = {'code': pc, 'qty': 1} if pc else None
-            return {'pauschale': pauschale, 'einzelleistungen': []}
-        elif abrechnung.get('type') == 'TARDOC':
-            eins = [
-                {'code': l.get('lkn'), 'qty': l.get('menge', 1)}
-                for l in abrechnung.get('leistungen', [])
-                if l.get('lkn')
-            ]
-            return {'pauschale': None, 'einzelleistungen': eins}
-        return {'pauschale': None, 'einzelleistungen': []}
-
-    result = simplify(analysis_full)
-
-    baseline_entry.setdefault('current', {})[lang] = result
-
-    def diff_results(expected: dict, actual: dict) -> str:
-        parts = []
-        if expected.get('pauschale') != actual.get('pauschale'):
-            parts.append(f"pauschale {expected.get('pauschale')} != {actual.get('pauschale')}")
-        exp_map = {i['code']: i.get('qty', 1) for i in expected.get('einzelleistungen', [])}
-        act_map = {i['code']: i.get('qty', 1) for i in actual.get('einzelleistungen', [])}
-        for code, qty in exp_map.items():
-            if code not in act_map:
-                parts.append(f"missing {code}")
-            elif act_map[code] != qty:
-                parts.append(f"qty {code}: {qty} != {act_map[code]}")
-        for code, qty in act_map.items():
-            if code not in exp_map:
-                parts.append(f"unexpected {code}")
-        return '; '.join(parts)
-
-    diff = diff_results(baseline, result)
-    passed = diff == ''
-
-    return jsonify({
-        'id': example_id,
-        'lang': lang,
-        'passed': passed,
-        'baseline': baseline,
-        'result': result,
-        'diff': diff
-    })
-
-# --- Static‑Routes & Start ---
 @app.route("/")
-def index_route(): # Umbenannt, um Konflikt mit Modul 'index' zu vermeiden, falls es existiert
+def index():
     return send_from_directory(".", "index.html")
-
-@app.route("/favicon.ico")
-def favicon_ico():
-    return send_from_directory(".", "favicon.ico", mimetype='image/vnd.microsoft.icon')
-
-@app.route("/favicon-32.png")
-def favicon_png():
-    return send_from_directory(".", "favicon-32.png", mimetype='image/png')
-
-@app.route("/<path:filename>")
-def serve_static(filename: str): # Typ hinzugefügt
-    allowed_files = {'calculator.js', 'quality.js', 'quality.html'}
-    allowed_dirs = {'data'} # Erlaube Zugriff auf data-Ordner
-    file_path = Path(filename)
-
-    # Verhindere Zugriff auf Python-Dateien, .env, versteckte Dateien/Ordner
-    if (file_path.suffix in ['.py', '.txt', '.env'] or \
-        any(part.startswith('.') for part in file_path.parts)):
-         logger.warning("Zugriff verweigert (sensible Datei): %s", filename)
-         abort(404)
-
-    # Erlaube JS-Datei oder Dateien im data-Verzeichnis (und Unterverzeichnisse)
-    if filename in allowed_files or (file_path.parts and file_path.parts[0] in allowed_dirs):
-         # print(f"INFO: Sende statische Datei: {filename}")
-         return send_from_directory('.', filename)
-    else:
-         logger.warning("Zugriff verweigert (nicht erlaubt): %s", filename)
-         abort(404)
 
 def _run_local() -> None:
     """Lokaler Debug-Server (wird von Render **nicht** aufgerufen)."""
