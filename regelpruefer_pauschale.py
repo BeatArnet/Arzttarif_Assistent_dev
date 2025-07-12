@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)
 __all__ = [
     "check_pauschale_conditions",
     "get_simplified_conditions",
-    "render_condition_results_html",
     "generate_condition_detail_html",
     "determine_applicable_pauschale",
     "evaluate_pauschale_logic_orchestrator", # Added
@@ -1223,29 +1222,6 @@ def check_pauschale_conditions(
         "errors": [], # Vorerst keine Fehlerbehandlung hier, kann erweitert werden
         "trigger_lkn_condition_met": trigger_lkn_condition_overall_met
     }
-
-# === RENDERER FUER CONDITION-ERGEBNISSE (WIRD NICHT MEHR DIREKT VERWENDET, LOGIK IST IN check_pauschale_conditions) ===
-def render_condition_results_html(
-    results: List[Dict[str, Any]], # results ist hier das Ergebnis von der alten check_pauschale_conditions
-    lang: str = "de"
-) -> str:
-    """Wandelt die von der *alten* `check_pauschale_conditions` gelieferten Ergebnisse in HTML um.
-       Diese Funktion wird für die neue HTML-Struktur nicht mehr direkt benötigt.
-       Die Logik zur HTML-Erstellung ist jetzt in der neuen `check_pauschale_conditions`.
-    """
-    # Diese Funktion ist jetzt veraltet für die neue Anforderung der strukturierten HTML-Ausgabe.
-    # Sie könnte für Debugging-Zwecke oder eine sehr einfache Darstellung beibehalten werden.
-    # Für die Aufgabe hier, die CSS-Klassen zu implementieren, wird sie nicht verwendet.
-    logger.warning("render_condition_results_html wird aufgerufen, ist aber für die neue HTML-Struktur veraltet.")
-    html_parts = ["<ul class='legacy-condition-list'>"] # Hinweis auf veraltete Liste
-    for item in results: # 'results' hier ist die Liste von Dictionaries mit 'erfuellt', 'Bedingungstyp', 'Werte'
-        icon_text = "&#10003;" if item.get("erfuellt") else "&#10007;"
-        typ_text = escape(str(item.get("Bedingungstyp", "")))
-        wert_text = escape(str(item.get("Werte", "")))
-        html_parts.append(f"<li>{icon_text} {typ_text}: {wert_text}</li>")
-    html_parts.append("</ul>")
-    return "".join(html_parts)
-
 
 # --- Ausgelagerte Pauschalen-Ermittlung ---
 def determine_applicable_pauschale(

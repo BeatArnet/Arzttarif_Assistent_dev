@@ -997,42 +997,6 @@ def call_gemini_stage2_ranking(user_input: str, potential_pauschalen_text: str, 
 # prepare_tardoc_abrechnung wird jetzt über prepare_tardoc_abrechnung_func aufgerufen,
 # die entweder die echte Funktion aus regelpruefer.py oder einen Fallback enthält.
 
-def get_relevant_p_pz_condition_lkns( # Beibehalten, falls spezifisch nur P/PZ benötigt wird
-    potential_pauschale_codes: Set[str],
-    pauschale_bedingungen_data_list: List[Dict[str, Any]], # Umbenannt zur Klarheit
-    tabellen_dict: Dict[str, List[Dict[str, Any]]], # Umbenannt zur Klarheit
-    leistungskatalog: Dict[str, Dict[str, Any]] # Umbenannt zur Klarheit
-) -> Dict[str, str]:
-    relevant_lkn_codes: Set[str] = set()
-    BED_PAUSCHALE_KEY = 'Pauschale'; BED_TYP_KEY = 'Bedingungstyp'; BED_WERTE_KEY = 'Werte'
-
-    relevant_conditions = [
-        cond for cond in pauschale_bedingungen_data_list # Verwende umbenannten Parameter
-        if cond.get(BED_PAUSCHALE_KEY) in potential_pauschale_codes
-    ]
-    for cond in relevant_conditions:
-        typ = cond.get(BED_TYP_KEY, "").upper(); wert = cond.get(BED_WERTE_KEY, "")
-        if not wert: continue
-        if typ in ["LEISTUNGSPOSITIONEN IN LISTE", "LKN"]:
-            lkns = [lkn.strip().upper() for lkn in str(wert).split(',') if lkn.strip()] # str(wert) für Sicherheit
-            relevant_lkn_codes.update(lkns)
-        elif typ in ["LEISTUNGSPOSITIONEN IN TABELLE", "TARIFPOSITIONEN IN TABELLE"]:
-            table_names = [t.strip() for t in str(wert).split(',') if t.strip()] # str(wert) für Sicherheit
-            for table_name in table_names:
-                # Nutze die globale Variable tabellen_dict_by_table oder den übergebenen Parameter
-                content = get_table_content(table_name, "service_catalog", tabellen_dict) # Verwende umbenannten Parameter
-                for item in content:
-                    code_val = item.get('Code')
-                    if code_val: relevant_lkn_codes.add(str(code_val).upper()) # str(code_val)
-
-    valid_p_pz_candidates: Dict[str, str] = {}
-    for lkn in relevant_lkn_codes:
-        lkn_details = leistungskatalog.get(lkn) # Verwende umbenannten Parameter
-        if lkn_details and lkn_details.get('Typ') in ['P', 'PZ']:
-            valid_p_pz_candidates[lkn] = lkn_details.get('Beschreibung', 'N/A')
-    # print(f"DEBUG (get_relevant_p_pz): {len(valid_p_pz_candidates)} P/PZ Bedingungs-LKNs gefunden.")
-    return valid_p_pz_candidates
-
 def get_LKNs_from_pauschalen_conditions(
     potential_pauschale_codes: Set[str],
     pauschale_bedingungen_data_list: List[Dict[str, Any]], # Umbenannt
@@ -1087,11 +1051,6 @@ def get_LKNs_from_pauschalen_conditions(
     # print(f"  DEBUG (get_LKNs_from_pauschalen): {len(condition_lkns_with_desc)} einzigartige Bedingungs-LKNs gefunden.")
     return condition_lkns_with_desc
 
-# get_pauschale_lkn_candidates: Diese Funktion war sehr ähnlich zu get_relevant_p_pz_condition_lkns.
-# Ich habe sie entfernt, da get_LKNs_from_pauschalen_conditions alle LKNs holt und
-# get_relevant_p_pz_condition_lkns spezifisch P/PZ filtert.
-# Falls sie eine andere Logik hatte (z.B. alle Pauschalen durchsucht, nicht nur die potenziellen),
-# müsste sie wiederhergestellt und angepasst werden.
 
 def search_pauschalen(keyword: str) -> List[Dict[str, Any]]:
     """Suche in den Pauschalen nach dem Stichwort und liefere Code + LKNs."""
