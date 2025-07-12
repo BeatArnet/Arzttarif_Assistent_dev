@@ -316,23 +316,33 @@
         .info-modal-overlay {
             position: fixed; top:0; left:0; right:0; bottom:0;
             background: rgba(0,0,0,0.5); display:none;
-            /* justify-content: center; align-items: center; entfernt für Linksbündigkeit */
             z-index: 10000;
-            padding-top: 5vh; /* Etwas Abstand von oben */
+            padding: 0; /* Entfernt, um die Positionierung des Modals nicht zu stören */
         }
+        #infoModalDetailOverlay { z-index: 10010; }
+        #infoModalNestedOverlay { z-index: 10020; }
         .info-modal {
             background: var(--background-color);
             padding: 25px;
             width: 70vw;
-            max-width: 1000px; /* Erhöhte maximale Breite */
+            max-width: 1000px;
             min-width: 300px;
-            margin-left: 5vw; /* Linksbündig mit etwas Abstand */
-            max-height: 85vh;
-            overflow-y: auto;
+            height: 85vh; /* Höhe statt max-height für bessere Größenänderung */
+            overflow: auto;
+            resize: both;
             border-radius: 6px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.35);
             border: 1px solid var(--primary);
-            position: relative;
+            position: absolute; /* Geändert von relative auf absolute */
+            top: 5vh; /* Startposition */
+            left: 5vw; /* Startposition */
+        }
+        .info-modal-nested {
+            width: 60vw; /* Etwas kleiner */
+            max-width: 800px;
+            height: 75vh;
+            top: 8vh; /* Leicht versetzt */
+            left: 8vw; /* Leicht versetzt */
         }
         .info-modal h2, .info-modal h3 {
             color: var(--primary);
@@ -427,6 +437,14 @@
         <div id="infoModalDetail" class="info-modal info-modal-detail"> <!-- Added info-modal-detail for potential specific styling -->
             <button id="infoModalDetailClose" class="modal-close">&times;</button>
             <div id="infoModalDetailContent"></div>
+        </div>
+    </div>
+
+    <!-- Nested (second level) Detail Info Modal -->
+    <div id="infoModalNestedOverlay" class="info-modal-overlay" style="display:none;">
+        <div id="infoModalNested" class="info-modal info-modal-nested">
+            <button id="infoModalNestedClose" class="modal-close">&times;</button>
+            <div id="infoModalNestedContent"></div>
         </div>
     </div>
 
