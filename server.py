@@ -320,16 +320,13 @@ except Exception as e_gen: # Fängt auch andere Fehler während des Imports
     traceback.print_exc()
 
 # --- Globale Datencontainer ---
-leistungskatalog_data: list[dict] = []
 leistungskatalog_dict: dict[str, dict] = {}
 regelwerk_dict: dict[str, list] = {} # Annahme: lade_regelwerk gibt List[RegelDict] pro LKN
 tardoc_tarif_dict: dict[str, dict] = {}
 tardoc_interp_dict: dict[str, dict] = {}
 pauschale_lp_data: list[dict] = []
-pauschalen_data: list[dict] = []
 pauschalen_dict: dict[str, dict] = {}
 pauschale_bedingungen_data: list[dict] = []
-tabellen_data: list[dict] = []
 tabellen_dict_by_table: dict[str, list[dict]] = {}
 # NEU: Indexierte und vorsortierte Pauschalenbedingungen
 pauschale_bedingungen_indexed: Dict[str, List[Dict[str, Any]]] = {}
@@ -379,26 +376,26 @@ def create_app() -> FlaskType:
 
 # --- Daten laden Funktion ---
 def load_data() -> bool:
-    global leistungskatalog_data, leistungskatalog_dict, regelwerk_dict, tardoc_tarif_dict, tardoc_interp_dict
-    global pauschale_lp_data, pauschalen_data, pauschalen_dict, pauschale_bedingungen_data, pauschale_bedingungen_indexed, tabellen_data
+    global leistungskatalog_dict, regelwerk_dict, tardoc_tarif_dict, tardoc_interp_dict
+    global pauschale_lp_data, pauschalen_dict, pauschale_bedingungen_data, pauschale_bedingungen_indexed
     global tabellen_dict_by_table, daten_geladen
 
     all_loaded_successfully = True
     logger.info("--- Lade Daten ---")
     # Reset all data containers
-    leistungskatalog_data.clear(); leistungskatalog_dict.clear(); regelwerk_dict.clear(); tardoc_tarif_dict.clear(); tardoc_interp_dict.clear()
-    pauschale_lp_data.clear(); pauschalen_data.clear(); pauschalen_dict.clear(); pauschale_bedingungen_data.clear(); pauschale_bedingungen_indexed.clear(); tabellen_data.clear()
+    leistungskatalog_dict.clear(); regelwerk_dict.clear(); tardoc_tarif_dict.clear(); tardoc_interp_dict.clear()
+    pauschale_lp_data.clear(); pauschalen_dict.clear(); pauschale_bedingungen_data.clear(); pauschale_bedingungen_indexed.clear()
     tabellen_dict_by_table.clear()
     token_doc_freq.clear()
 
     files_to_load = {
-        "Leistungskatalog": (LEISTUNGSKATALOG_PATH, leistungskatalog_data, 'LKN', leistungskatalog_dict),
+        "Leistungskatalog": (LEISTUNGSKATALOG_PATH, None, 'LKN', leistungskatalog_dict),
         "PauschaleLP": (PAUSCHALE_LP_PATH, pauschale_lp_data, None, None),
-        "Pauschalen": (PAUSCHALEN_PATH, pauschalen_data, 'Pauschale', pauschalen_dict),
+        "Pauschalen": (PAUSCHALEN_PATH, None, 'Pauschale', pauschalen_dict),
         "PauschaleBedingungen": (PAUSCHALE_BED_PATH, pauschale_bedingungen_data, None, None),
-        "TARDOC_TARIF": (TARDOC_TARIF_PATH, [], 'LKN', tardoc_tarif_dict),  # Tarifpositionen
-        "TARDOC_INTERP": (TARDOC_INTERP_PATH, [], 'LKN', tardoc_interp_dict),  # Interpretationen
-        "Tabellen": (TABELLEN_PATH, tabellen_data, None, None)  # Tabellen nur in Liste (vorerst)
+        "TARDOC_TARIF": (TARDOC_TARIF_PATH, None, 'LKN', tardoc_tarif_dict),  # Tarifpositionen
+        "TARDOC_INTERP": (TARDOC_INTERP_PATH, None, 'LKN', tardoc_interp_dict),  # Interpretationen
+        "Tabellen": (TABELLEN_PATH, None, None, None)  # Tabellen nur für Dict
     }
 
     for name, (path, target_list_ref, key_field, target_dict_ref) in files_to_load.items():
