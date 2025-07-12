@@ -32,9 +32,11 @@ def check_single_condition(
     tabellen_dict_by_table: Dict[str, List[Dict]]
 ) -> bool:
     """Prüft eine einzelne Bedingungszeile und gibt True/False zurück."""
+    request_id = context.get("request_id", "pauschale_standalone") # Hole request_id aus Kontext
     check_icd_conditions_at_all = context.get("useIcd", True)
-    pauschale_code_for_debug = condition.get('Pauschale', 'N/A_PAUSCHALE') # Für besseres Debugging
-    gruppe_for_debug = condition.get('Gruppe', 'N/A_GRUPPE') # Für besseres Debugging
+    pauschale_code_for_debug = condition.get('Pauschale', 'N/A_PAUSCHALE')
+    gruppe_for_debug = condition.get('Gruppe', 'N/A_GRUPPE')
+    bedingungs_id_for_debug = condition.get('BedingungsID', 'N/A_ID')
 
     BED_TYP_KEY = 'Bedingungstyp'; BED_WERTE_KEY = 'Werte'; BED_FELD_KEY = 'Feld'
     BED_MIN_KEY = 'MinWert'; BED_MAX_KEY = 'MaxWert'
@@ -53,176 +55,137 @@ def check_single_condition(
     provided_seitigkeit_str = str(context.get("Seitigkeit", "unbekannt")).lower() # Default 'unbekannt' und lower
 
     # print(f"--- DEBUG check_single --- P: {pauschale_code_for_debug} G: {gruppe_for_debug} Typ: {bedingungstyp}, Regel-Werte: '{werte_str}', Kontext: {context.get('Seitigkeit', 'N/A')}/{context.get('Anzahl', 'N/A')}")
+    logger.debug(f"[{request_id}] Check P: {pauschale_code_for_debug}, G: {gruppe_for_debug}, ID: {bedingungs_id_for_debug}, Typ: {bedingungstyp}, Regel: '{werte_str}'")
 
+    result = False
     try:
         if bedingungstyp == "ICD": # ICD IN LISTE
-            if not check_icd_conditions_at_all: return True
-            required_icds_in_rule_list = {w.strip().upper() for w in str(werte_str).split(',') if w.strip()}
-            if not required_icds_in_rule_list: return True # Leere Regel-Liste ist immer erfüllt
-            return any(req_icd in provided_icds_upper for req_icd in required_icds_in_rule_list)
+            if not check_icd_conditions_at_all: result = True
+            else:
+                required_icds_in_rule_list = {w.strip().upper() for w in str(werte_str).split(',') if w.strip()}
+                if not required_icds_in_rule_list: result = True # Leere Regel-Liste ist immer erfüllt
+                else: result = any(req_icd in provided_icds_upper for req_icd in required_icds_in_rule_list)
 
         elif bedingungstyp == "HAUPTDIAGNOSE IN TABELLE": # ICD IN TABELLE
-            if not check_icd_conditions_at_all: return True
-            table_ref = werte_str
-            icd_codes_in_rule_table = {entry['Code'].upper() for entry in get_table_content(table_ref, "icd", tabellen_dict_by_table) if entry.get('Code')}
-            if not icd_codes_in_rule_table: # Wenn Tabelle leer oder nicht gefunden
-                 return False if provided_icds_upper else True # Nur erfüllt, wenn auch keine ICDs im Kontext sind
-            return any(provided_icd in icd_codes_in_rule_table for provided_icd in provided_icds_upper)
+            if not check_icd_conditions_at_all: result = True
+            else:
+                table_ref = werte_str
+                icd_codes_in_rule_table = {entry['Code'].upper() for entry in get_table_content(table_ref, "icd", tabellen_dict_by_table) if entry.get('Code')}
+                if not icd_codes_in_rule_table: # Wenn Tabelle leer oder nicht gefunden
+                    result = False if provided_icds_upper else True # Nur erfüllt, wenn auch keine ICDs im Kontext sind
+                else: result = any(provided_icd in icd_codes_in_rule_table for provided_icd in provided_icds_upper)
 
         elif bedingungstyp == "GTIN" or bedingungstyp == "MEDIKAMENTE IN LISTE":
             werte_list_gtin = [w.strip() for w in str(werte_str).split(',') if w.strip()]
-            if not werte_list_gtin: return True
-            return any(req_gtin in provided_gtins for req_gtin in werte_list_gtin)
+            if not werte_list_gtin: result = True
+            else: result = any(req_gtin in provided_gtins for req_gtin in werte_list_gtin)
 
         elif bedingungstyp == "LKN" or bedingungstyp == "LEISTUNGSPOSITIONEN IN LISTE":
             werte_list_upper_lkn = [w.strip().upper() for w in str(werte_str).split(',') if w.strip()]
-            if not werte_list_upper_lkn: return True
-            return any(req_lkn in provided_lkns_upper for req_lkn in werte_list_upper_lkn)
+            if not werte_list_upper_lkn: result = True
+            else: result = any(req_lkn in provided_lkns_upper for req_lkn in werte_list_upper_lkn)
 
         elif bedingungstyp == "GESCHLECHT IN LISTE": # Z.B. Werte: "Männlich,Weiblich"
             if werte_str: # Nur prüfen, wenn Regel einen Wert hat
                 geschlechter_in_regel_lower = {g.strip().lower() for g in str(werte_str).split(',') if g.strip()}
-                return provided_geschlecht_str in geschlechter_in_regel_lower
-            return True # Wenn Regel keinen Wert hat, ist es für jedes Geschlecht ok
+                result = provided_geschlecht_str in geschlechter_in_regel_lower
+            else: result = True # Wenn Regel keinen Wert hat, ist es für jedes Geschlecht ok
 
         elif bedingungstyp == "LEISTUNGSPOSITIONEN IN TABELLE" or bedingungstyp == "TARIFPOSITIONEN IN TABELLE":
             table_ref = werte_str
             lkn_codes_in_rule_table = {entry['Code'].upper() for entry in get_table_content(table_ref, "service_catalog", tabellen_dict_by_table) if entry.get('Code')}
-            if not lkn_codes_in_rule_table: return False # Leere Tabelle kann nicht erfüllt werden, wenn LKNs im Kontext sind (implizit)
-            return any(provided_lkn in lkn_codes_in_rule_table for provided_lkn in provided_lkns_upper)
+            if not lkn_codes_in_rule_table: result = False # Leere Tabelle kann nicht erfüllt werden, wenn LKNs im Kontext sind (implizit)
+            else: result = any(provided_lkn in lkn_codes_in_rule_table for provided_lkn in provided_lkns_upper)
 
         elif bedingungstyp == "PATIENTENBEDINGUNG": # Für Alter, Geschlecht (spezifisch)
-            # feld_ref ist hier z.B. "Alter" oder "Geschlecht"
-            # wert_regel_explizit ist der Wert aus der Spalte "Werte" der Bedingungstabelle
-            # min_val_regel, max_val_regel sind MinWert/MaxWert aus der Bedingungstabelle
             if feld_ref == "Alter":
-                if provided_alter is None: return False # Alter muss im Kontext sein
-                try:
-                    alter_patient = int(provided_alter); alter_ok = True
-                    if min_val_regel is not None and alter_patient < int(min_val_regel): alter_ok = False
-                    if max_val_regel is not None and alter_patient > int(max_val_regel): alter_ok = False
-                    # Wenn weder Min noch Max, aber ein expliziter Wert in der Regel steht
-                    if min_val_regel is None and max_val_regel is None and wert_regel_explizit is not None:
-                        if alter_patient != int(wert_regel_explizit): alter_ok = False
-                    return alter_ok
-                except (ValueError, TypeError): return False
+                if provided_alter is None: result = False # Alter muss im Kontext sein
+                else:
+                    try:
+                        alter_patient = int(provided_alter); alter_ok = True
+                        if min_val_regel is not None and alter_patient < int(min_val_regel): alter_ok = False
+                        if max_val_regel is not None and alter_patient > int(max_val_regel): alter_ok = False
+                        if min_val_regel is None and max_val_regel is None and wert_regel_explizit is not None:
+                            if alter_patient != int(wert_regel_explizit): alter_ok = False
+                        result = alter_ok
+                    except (ValueError, TypeError): result = False
             elif feld_ref == "Geschlecht":
-                 # Hier wird ein exakter String-Vergleich erwartet (z.B. Regelwert 'Männlich')
                  if isinstance(wert_regel_explizit, str):
-                     return provided_geschlecht_str == wert_regel_explizit.strip().lower()
-                 return False # Wenn Regelwert kein String ist
+                     result = provided_geschlecht_str == wert_regel_explizit.strip().lower()
+                 else: result = False # Wenn Regelwert kein String ist
             else:
-                logger.warning(
-                    "WARNUNG (check_single PATIENTENBEDINGUNG): Unbekanntes Feld '%s'.",
-                    feld_ref,
-                )
-                return True # Oder False, je nach gewünschtem Verhalten
+                logger.warning(f"[{request_id}] WARNUNG (check_single PATIENTENBEDINGUNG): Unbekanntes Feld '{feld_ref}'.")
+                result = True # Oder False, je nach gewünschtem Verhalten
 
         elif bedingungstyp == "ALTER IN JAHREN BEI EINTRITT":
             alter_eintritt = context.get("AlterBeiEintritt")
-            if alter_eintritt is None:
-                return False
-            try:
-                alter_val = int(alter_eintritt)
-                regel_wert = int(werte_str)
-                vergleichsoperator = condition.get("Vergleichsoperator")
-
-                if vergleichsoperator == ">=":
-                    return alter_val >= regel_wert
-                elif vergleichsoperator == "<=":
-                    return alter_val <= regel_wert
-                elif vergleichsoperator == ">":
-                    return alter_val > regel_wert
-                elif vergleichsoperator == "<":
-                    return alter_val < regel_wert
-                elif vergleichsoperator == "=":
-                    return alter_val == regel_wert
-                elif vergleichsoperator == "!=":
-                    return alter_val != regel_wert
-                else:
-                    logger.warning(
-                        "WARNUNG (check_single ALTER BEI EINTRITT): Unbekannter Vergleichsoperator '%s'.",
-                        vergleichsoperator,
-                    )
-                    return False
-            except (ValueError, TypeError) as e_alter:
-                logger.error(
-                    "FEHLER (check_single ALTER BEI EINTRITT) Konvertierung: %s. Regelwert: '%s', Kontextwert: '%s'",
-                    e_alter,
-                    werte_str,
-                    alter_eintritt,
-                )
-                return False
+            if alter_eintritt is None: result = False
+            else:
+                try:
+                    alter_val = int(alter_eintritt)
+                    regel_wert = int(werte_str)
+                    vergleichsoperator = condition.get("Vergleichsoperator")
+                    if vergleichsoperator == ">=": result = alter_val >= regel_wert
+                    elif vergleichsoperator == "<=": result = alter_val <= regel_wert
+                    elif vergleichsoperator == ">": result = alter_val > regel_wert
+                    elif vergleichsoperator == "<": result = alter_val < regel_wert
+                    elif vergleichsoperator == "=": result = alter_val == regel_wert
+                    elif vergleichsoperator == "!=": result = alter_val != regel_wert
+                    else:
+                        logger.warning(f"[{request_id}] WARNUNG (check_single ALTER BEI EINTRITT): Unbekannter Vergleichsoperator '{vergleichsoperator}'.")
+                        result = False
+                except (ValueError, TypeError) as e_alter:
+                    logger.error(f"[{request_id}] FEHLER (check_single ALTER BEI EINTRITT) Konvertierung: {e_alter}. Regelwert: '{werte_str}', Kontextwert: '{alter_eintritt}'")
+                    result = False
 
         elif bedingungstyp == "ANZAHL":
-            if provided_anzahl is None: return False
-            try:
-                kontext_anzahl_val = int(provided_anzahl)
-                regel_wert_anzahl_val = int(werte_str)
-                vergleichsoperator = condition.get('Vergleichsoperator')
-
-                if vergleichsoperator == ">=": return kontext_anzahl_val >= regel_wert_anzahl_val
-                elif vergleichsoperator == "<=": return kontext_anzahl_val <= regel_wert_anzahl_val
-                elif vergleichsoperator == ">": return kontext_anzahl_val > regel_wert_anzahl_val
-                elif vergleichsoperator == "<": return kontext_anzahl_val < regel_wert_anzahl_val
-                elif vergleichsoperator == "=": return kontext_anzahl_val == regel_wert_anzahl_val
-                elif vergleichsoperator == "!=": return kontext_anzahl_val != regel_wert_anzahl_val
-                else:
-                    logger.warning(
-                        "WARNUNG (check_single ANZAHL): Unbekannter Vergleichsoperator '%s'.",
-                        vergleichsoperator,
-                    )
-                    return False
-            except (ValueError, TypeError) as e_anzahl:
-                logger.error(
-                    "FEHLER (check_single ANZAHL) Konvertierung: %s. Regelwert: '%s', Kontextwert: '%s'",
-                    e_anzahl,
-                    werte_str,
-                    provided_anzahl,
-                )
-                return False
+            if provided_anzahl is None: result = False
+            else:
+                try:
+                    kontext_anzahl_val = int(provided_anzahl)
+                    regel_wert_anzahl_val = int(werte_str)
+                    vergleichsoperator = condition.get('Vergleichsoperator')
+                    if vergleichsoperator == ">=": result = kontext_anzahl_val >= regel_wert_anzahl_val
+                    elif vergleichsoperator == "<=": result = kontext_anzahl_val <= regel_wert_anzahl_val
+                    elif vergleichsoperator == ">": result = kontext_anzahl_val > regel_wert_anzahl_val
+                    elif vergleichsoperator == "<": result = kontext_anzahl_val < regel_wert_anzahl_val
+                    elif vergleichsoperator == "=": result = kontext_anzahl_val == regel_wert_anzahl_val
+                    elif vergleichsoperator == "!=": result = kontext_anzahl_val != regel_wert_anzahl_val
+                    else:
+                        logger.warning(f"[{request_id}] WARNUNG (check_single ANZAHL): Unbekannter Vergleichsoperator '{vergleichsoperator}'.")
+                        result = False
+                except (ValueError, TypeError) as e_anzahl:
+                    logger.error(f"[{request_id}] FEHLER (check_single ANZAHL) Konvertierung: {e_anzahl}. Regelwert: '{werte_str}', Kontextwert: '{provided_anzahl}'")
+                    result = False
 
         elif bedingungstyp == "SEITIGKEIT":
-            # werte_str aus der Regel ist z.B. "'B'" oder "'E'"
             regel_wert_seitigkeit_norm = werte_str.strip().replace("'", "").lower()
             vergleichsoperator = condition.get('Vergleichsoperator')
-            # provided_seitigkeit_str ist schon lower und hat Default 'unbekannt'
-
             if vergleichsoperator == "=":
-                if regel_wert_seitigkeit_norm == 'b': return provided_seitigkeit_str == 'beidseits'
-                elif regel_wert_seitigkeit_norm == 'e': return provided_seitigkeit_str in ['einseitig', 'links', 'rechts']
-                elif regel_wert_seitigkeit_norm == 'l': return provided_seitigkeit_str == 'links'
-                elif regel_wert_seitigkeit_norm == 'r': return provided_seitigkeit_str == 'rechts'
-                else: return provided_seitigkeit_str == regel_wert_seitigkeit_norm # Direkter Vergleich
+                if regel_wert_seitigkeit_norm == 'b': result = provided_seitigkeit_str == 'beidseits'
+                elif regel_wert_seitigkeit_norm == 'e': result = provided_seitigkeit_str in ['einseitig', 'links', 'rechts']
+                elif regel_wert_seitigkeit_norm == 'l': result = provided_seitigkeit_str == 'links'
+                elif regel_wert_seitigkeit_norm == 'r': result = provided_seitigkeit_str == 'rechts'
+                else: result = provided_seitigkeit_str == regel_wert_seitigkeit_norm # Direkter Vergleich
             elif vergleichsoperator == "!=":
-                if regel_wert_seitigkeit_norm == 'b': return provided_seitigkeit_str != 'beidseits'
-                elif regel_wert_seitigkeit_norm == 'e': return provided_seitigkeit_str not in ['einseitig', 'links', 'rechts']
-                elif regel_wert_seitigkeit_norm == 'l': return provided_seitigkeit_str != 'links'
-                elif regel_wert_seitigkeit_norm == 'r': return provided_seitigkeit_str != 'rechts'
-                else: return provided_seitigkeit_str != regel_wert_seitigkeit_norm
+                if regel_wert_seitigkeit_norm == 'b': result = provided_seitigkeit_str != 'beidseits'
+                elif regel_wert_seitigkeit_norm == 'e': result = provided_seitigkeit_str not in ['einseitig', 'links', 'rechts']
+                elif regel_wert_seitigkeit_norm == 'l': result = provided_seitigkeit_str != 'links'
+                elif regel_wert_seitigkeit_norm == 'r': result = provided_seitigkeit_str != 'rechts'
+                else: result = provided_seitigkeit_str != regel_wert_seitigkeit_norm
             else:
-                logger.warning(
-                    "WARNUNG (check_single SEITIGKEIT): Unbekannter Vergleichsoperator '%s'.",
-                    vergleichsoperator,
-                )
-                return False
+                logger.warning(f"[{request_id}] WARNUNG (check_single SEITIGKEIT): Unbekannter Vergleichsoperator '{vergleichsoperator}'.")
+                result = False
         else:
-            logger.warning(
-                "WARNUNG (check_single): Unbekannter Pauschalen-Bedingungstyp '%s'. Wird als False angenommen.",
-                bedingungstyp,
-            )
-            return False
+            logger.warning(f"[{request_id}] WARNUNG (check_single): Unbekannter Pauschalen-Bedingungstyp '{bedingungstyp}'. Wird als False angenommen.")
+            result = False
     except Exception as e:
-        logger.error(
-            "FEHLER (check_single) für P: %s G: %s Typ: %s, Werte: %s: %s",
-            pauschale_code_for_debug,
-            gruppe_for_debug,
-            bedingungstyp,
-            werte_str,
-            e,
-        )
+        logger.error(f"[{request_id}] FEHLER (check_single) für P: {pauschale_code_for_debug} G: {gruppe_for_debug} ID: {bedingungs_id_for_debug}, Typ: {bedingungstyp}, Werte: {werte_str}: {e}")
         traceback.print_exc()
-        return False
+        result = False
+
+    logger.debug(f"[{request_id}] Result for P: {pauschale_code_for_debug}, G: {gruppe_for_debug}, ID: {bedingungs_id_for_debug}, Typ: {bedingungstyp} -> {result}")
+    return result
 
 def get_beschreibung_fuer_lkn_im_backend(lkn_code: str, leistungskatalog_dict: Dict, lang: str = 'de') -> str:
     details = leistungskatalog_dict.get(str(lkn_code).upper())

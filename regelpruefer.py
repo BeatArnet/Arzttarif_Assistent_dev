@@ -87,6 +87,12 @@ def pruefe_abrechnungsfaehigkeit(fall: dict, regelwerk: dict) -> dict:
     gtins = fall.get("GTIN") or [] # Stelle sicher, dass GTIN hier ankommt
     if isinstance(gtins, str): gtins = [gtins] # Mache zur Liste, falls String
 
+    # Eindeutige ID für Logging, falls 'fall' sie nicht enthält
+    request_id = fall.get("request_id", "regelpruefer_standalone")
+    logger.info(f"[{request_id}] Starte Regelprüfung für LKN {lkn} mit Menge {menge}.")
+    logger.debug(f"[{request_id}] Fall-Kontext für {lkn}: {json.dumps(fall, ensure_ascii=False)}")
+
+
     errors: list = []
     allowed = True
 
@@ -94,25 +100,33 @@ def pruefe_abrechnungsfaehigkeit(fall: dict, regelwerk: dict) -> dict:
     rules = regelwerk.get(lkn) or []
     if not rules:
         # Keine Regeln definiert -> gilt als OK
+        logger.info(f"[{request_id}] Keine Regeln für LKN {lkn} gefunden. Abrechnungsfähig: True.")
         return {"abrechnungsfaehig": True, "fehler": []}
 
-    for rule in rules:
+    logger.info(f"[{request_id}] Prüfe {len(rules)} Regel(n) für LKN {lkn}.")
+    for i, rule in enumerate(rules):
         typ = rule.get("Typ")
-        if not typ: continue # Regel ohne Typ ignorieren
+        if not typ:
+            logger.warning(f"[{request_id}] Regel {i+1} für LKN {lkn} hat keinen Typ. Wird ignoriert.")
+            continue # Regel ohne Typ ignorieren
+
+        rule_passed = True
+        error_msg = ""
+        logger.debug(f"[{request_id}] LKN {lkn}, Regel {i+1}: Typ='{typ}', Regel='{rule}'")
 
         # --- Mengenbesschränkung ---
         if typ == REGEL_MENGE:
             max_menge = rule.get("MaxMenge")
             if isinstance(max_menge, (int, float)) and menge > max_menge:
-                allowed = False
-                errors.append(f"Mengenbeschränkung überschritten (max. {max_menge}, angefragt {menge})")
+                rule_passed = False
+                error_msg = f"Mengenbeschränkung überschritten (max. {max_menge}, angefragt {menge})"
 
         # --- Nur als Zuschlag zu ---
         elif typ == REGEL_ZUSCHLAG_ZU:
             parent = rule.get("LKN")
             if parent and parent not in begleit:
-                allowed = False
-                errors.append(f"Nur als Zuschlag zu {parent} zulässig (Basis fehlt)")
+                rule_passed = False
+                error_msg = f"Nur als Zuschlag zu {parent} zulässig (Basis fehlt)"
 
         # --- Nicht kumulierbar mit ---
         elif typ == REGEL_NICHT_KUMULIERBAR:
@@ -120,9 +134,9 @@ def pruefe_abrechnungsfaehigkeit(fall: dict, regelwerk: dict) -> dict:
             if isinstance(not_with, str): not_with = [not_with]
             konflikt = [code for code in begleit if code in not_with]
             if konflikt:
-                allowed = False
+                rule_passed = False
                 codes = ", ".join(konflikt)
-                errors.append(f"Nicht kumulierbar mit: {codes}")
+                error_msg = f"Nicht kumulierbar mit: {codes}"
 
         # --- Patientenbedingung (Generisch) ---
         elif typ == REGEL_PAT_BEDINGUNG:
@@ -133,11 +147,11 @@ def pruefe_abrechnungsfaehigkeit(fall: dict, regelwerk: dict) -> dict:
             wert_fall = fall.get(field) # Wert aus dem Abrechnungsfall
 
             bedingung_text = f"Patientenbedingung ({field})"
-            condition_met = False
+            condition_met = True # Start with True, set to False on failure
 
             if wert_fall is None:
                 condition_met = False # Bedingung nicht prüfbar/erfüllt, wenn Wert fehlt
-                errors.append(f"{bedingung_text} nicht erfüllt: Kontextwert fehlt")
+                error_msg = f"{bedingung_text} nicht erfüllt: Kontextwert fehlt"
             elif field == "Alter":
                 try:
                     alter_patient = int(wert_fall)
@@ -147,29 +161,30 @@ def pruefe_abrechnungsfaehigkeit(fall: dict, regelwerk: dict) -> dict:
                     if max_val is not None and alter_patient > int(max_val): alter_ok = False; range_parts.append(f"max. {max_val}")
                     if wert_regel is not None and alter_patient != int(wert_regel): alter_ok = False; range_parts.append(f"exakt {wert_regel}") # Exakter Wert?
                     condition_met = alter_ok
-                    if not condition_met: errors.append(f"{bedingung_text} ({' '.join(range_parts)}) nicht erfüllt (Patient: {alter_patient})")
+                    if not condition_met: error_msg = f"{bedingung_text} ({' '.join(range_parts)}) nicht erfüllt (Patient: {alter_patient})"
                 except (ValueError, TypeError):
-                    condition_met = False; errors.append(f"{bedingung_text}: Ungültiger Alterswert im Fall ({wert_fall})")
+                    condition_met = False; error_msg = f"{bedingung_text}: Ungültiger Alterswert im Fall ({wert_fall})"
             elif field == "Geschlecht":
                 if isinstance(wert_regel, str) and isinstance(wert_fall, str):
                     condition_met = wert_fall.lower() == wert_regel.lower()
-                    if not condition_met: errors.append(f"{bedingung_text}: erwartet '{wert_regel}', gefunden '{wert_fall}'")
-                else: condition_met = False; errors.append(f"{bedingung_text}: Ungültige Werte für Geschlechtsprüfung")
+                    if not condition_met: error_msg = f"{bedingung_text}: erwartet '{wert_regel}', gefunden '{wert_fall}'"
+                else: condition_met = False; error_msg = f"{bedingung_text}: Ungültige Werte für Geschlechtsprüfung"
             elif field == "GTIN":
                  # Prüfe, ob mindestens ein benötigter GTIN im Fall vorhanden ist
                  required_gtins = [str(wert_regel)] if isinstance(wert_regel, (str, int)) else [str(w) for w in (wert_regel or [])]
                  provided_gtins_str = [str(g) for g in (gtins or [])] # Nutze gtins Variable
                  condition_met = any(req in provided_gtins_str for req in required_gtins)
-                 if not condition_met: errors.append(f"{bedingung_text}: Erwartet einen von {required_gtins}, nicht gefunden")
+                 if not condition_met: error_msg = f"{bedingung_text}: Erwartet einen von {required_gtins}, nicht gefunden"
             else:
                 logger.warning(
-                    "WARNUNG: Unbekanntes Feld '%s' für Patientenbedingung bei LKN %s.",
+                    "[%s] WARNUNG: Unbekanntes Feld '%s' für Patientenbedingung bei LKN %s.",
+                    request_id,
                     field,
                     lkn,
                 )
                 condition_met = True  # Unbekannte Felder ignorieren? Oder Fehler? Hier: Ignorieren
 
-            if not condition_met: allowed = False
+            if not condition_met: rule_passed = False
 
         # --- Diagnosepflicht ---
         elif typ == REGEL_DIAGNOSE:
@@ -179,8 +194,8 @@ def pruefe_abrechnungsfaehigkeit(fall: dict, regelwerk: dict) -> dict:
             if isinstance(provided_icds, str): provided_icds = [provided_icds]
 
             if required_icds and not any(req_icd.upper() in (p_icd.upper() for p_icd in provided_icds) for req_icd in required_icds):
-                 allowed = False
-                 errors.append(f"Erforderliche Diagnose(n) nicht vorhanden (Benötigt: {', '.join(required_icds)})")
+                 rule_passed = False
+                 error_msg = f"Erforderliche Diagnose(n) nicht vorhanden (Benötigt: {', '.join(required_icds)})"
 
         # --- Pauschalenausschluss ---
         elif typ == REGEL_PAUSCHAL_AUSSCHLUSS:
@@ -190,18 +205,27 @@ def pruefe_abrechnungsfaehigkeit(fall: dict, regelwerk: dict) -> dict:
              if isinstance(abgerechnete_pauschalen, str): abgerechnete_pauschalen = [abgerechnete_pauschalen]
 
              if any(verb in abgerechnete_pauschalen for verb in verbotene_pauschalen):
-                  allowed = False
-                  errors.append(f"Leistung nicht zulässig bei gleichzeitiger Abrechnung der Pauschale(n): {', '.join(verbotene_pauschalen)}")
+                  rule_passed = False
+                  error_msg = f"Leistung nicht zulässig bei gleichzeitiger Abrechnung der Pauschale(n): {', '.join(verbotene_pauschalen)}"
 
         # --- Unbekannter Regeltyp ---
         else:
             logger.warning(
-                "WARNUNG: Unbekannter Regeltyp '%s' für LKN %s ignoriert.",
+                "[%s] WARNUNG: Unbekannter Regeltyp '%s' für LKN %s ignoriert.",
+                request_id,
                 typ,
                 lkn,
             )
             continue
 
+        if not rule_passed:
+            allowed = False
+            if error_msg: errors.append(error_msg)
+            logger.info(f"[{request_id}] LKN {lkn}, Regel {i+1} ('{typ}') NICHT ERFÜLLT. Grund: {error_msg}")
+        else:
+            logger.debug(f"[{request_id}] LKN {lkn}, Regel {i+1} ('{typ}') ERFÜLLT.")
+
+    logger.info(f"[{request_id}] Regelprüfung für LKN {lkn} abgeschlossen. Abrechnungsfähig: {allowed}, Fehler: {errors}")
     return {"abrechnungsfaehig": allowed, "fehler": errors}
 
 
