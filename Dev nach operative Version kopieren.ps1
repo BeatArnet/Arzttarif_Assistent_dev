@@ -1,7 +1,3 @@
-Neu
-+46
--0
-
 <#
     Deploy-V1.1.ps1
     Kopiert die aktuelle Entwicklerversion in das lokale Produktionsrepo
@@ -16,6 +12,7 @@ param(
 )
 
 $RepoUrl = "https://github.com/BeatArnet/Arzttarif-Assistent"
+$Version = "v1.2"
 
 if (-not (Test-Path $DevPath)) {
     Write-Error "Entwicklungsverzeichnis '$DevPath' wurde nicht gefunden."
@@ -31,20 +28,25 @@ git fetch origin
 git checkout $Branch
 git pull origin $Branch
 
+# Alte Dateien (außer .git) entfernen
 Get-ChildItem -Force | Where-Object { $_.Name -ne '.git' } | Remove-Item -Recurse -Force
 git clean -xdf
 
+# Dateien kopieren, .git auslassen
 try {
-    Copy-Item -Path (Join-Path $DevPath '*') -Destination $ProdPath -Recurse -Force -Exclude '.git' -ErrorAction Stop
+    $sourceItems = Get-ChildItem -Path $DevPath -Force -Exclude '.git'
+    foreach ($item in $sourceItems) {
+        Copy-Item -Path $item.FullName -Destination $ProdPath -Recurse -Force -ErrorAction Stop
+    }
 } catch {
     Write-Error "Kopieren fehlgeschlagen: $_"
     exit 1
 }
 
 git add .
-git commit -m "Release Version V1.2"
+git commit -m "Release Version $Version"
 git push origin $Branch
-git tag v1.1
-git push origin v1.1
+git tag $Version
+git push origin $Version
 
-Write-Host "Deployment von Version V1.2 abgeschlossen."
+Write-Host "✅ Deployment von Version $Version abgeschlossen."
