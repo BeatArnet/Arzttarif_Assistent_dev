@@ -22,19 +22,19 @@ REM Entferne verwaiste Remote-Referenzen
 git remote prune %REMOTE%
 
 REM Lösche alle lokalen Branches ausser main und dev
-FOR /F "tokens=*" %%b IN ('git branch ^| findstr /V "main" ^| findstr /V "dev"') DO (
+FOR /F "tokens=*" %%b IN ('git branch --format="%%(refname:short)" ^| findstr /V "main" ^| findstr /V "dev"') DO (
     git branch -D %%b
 )
 
 REM Lösche alle Remote-Branches ausser main und dev
+SETLOCAL ENABLEDELAYEDEXPANSION
 FOR /F "tokens=*" %%r IN ('git branch -r ^| findstr /V "%REMOTE%/main" ^| findstr /V "%REMOTE%/dev" ^| findstr /V "HEAD"') DO (
-    SETLOCAL ENABLEDELAYEDEXPANSION
     SET "rb=%%r"
     SET "branch=!rb:%REMOTE%/=!"
     echo Lösche Remote-Branch: !branch!
-    git push %REMOTE% --delete "!branch!" >nul 2>&1
-    ENDLOCAL
+    git push %REMOTE% --delete !branch! >nul 2>&1
 )
+ENDLOCAL
 
 REM Git intern aufräumen
 git gc --prune=now
