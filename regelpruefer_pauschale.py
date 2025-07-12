@@ -807,9 +807,11 @@ def check_pauschale_conditions(
             elif active_condition_type_for_display in ["LEISTUNGSPOSITIONEN IN TABELLE", "TARIFPOSITIONEN IN TABELLE", "LKN IN TABELLE"]:
                 table_names_orig = [t.strip() for t in original_werte.split(',') if t.strip()]
                 if table_names_orig:
-                    linked_table_names = [
-                        create_html_info_link(tn, "lkn_table", escape(tn)) for tn in table_names_orig
-                    ]
+                    linked_table_names = []
+                    for tn in table_names_orig:
+                        table_content = get_table_content(tn, "service_catalog", tabellen_dict_by_table, lang)
+                        table_content_json = json.dumps(table_content)
+                        linked_table_names.append(create_html_info_link(tn, "lkn_table", escape(tn), data_content=table_content_json))
                     werte_display = translate('condition_text_lkn_table', lang, table_names=", ".join(linked_table_names))
                 else:
                     werte_display = f"<i>{translate('no_table_name', lang)}</i>"
@@ -817,9 +819,11 @@ def check_pauschale_conditions(
             elif active_condition_type_for_display in ["HAUPTDIAGNOSE IN TABELLE", "ICD IN TABELLE"]:
                 table_names_icd = [t.strip() for t in original_werte.split(',') if t.strip()]
                 if table_names_icd:
-                    linked_table_names_icd = [
-                        create_html_info_link(tn, "icd_table", escape(tn)) for tn in table_names_icd
-                    ]
+                    linked_table_names_icd = []
+                    for tn in table_names_icd:
+                        table_content = get_table_content(tn, "icd", tabellen_dict_by_table, lang)
+                        table_content_json = json.dumps(table_content)
+                        linked_table_names_icd.append(create_html_info_link(tn, "icd_table", escape(tn), data_content=table_content_json))
                     werte_display = translate('condition_text_icd_table', lang, table_names=", ".join(linked_table_names_icd))
                 else:
                     werte_display = f"<i>{translate('no_table_name', lang)}</i>"

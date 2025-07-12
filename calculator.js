@@ -624,6 +624,32 @@ function showPauschaleInfoByCode(code) {
     showInfoModal(html);
 }
 
+function buildTablePopup(data, tableName) {
+    let tableHtml = `<div class="info-modal-header" style="cursor: grab;"><h2>Tabelle: ${escapeHtml(tableName)}</h2></div>`;
+    tableHtml += `<div class="info-modal-body" style="max-height: calc(0.75 * 100vh); overflow-y: auto;">`;
+    tableHtml += '<table><thead><tr><th>Code</th><th>Text</th></tr></thead><tbody>';
+    data.forEach(row => {
+        const code = row.Code || '';
+        const text = row.Code_Text || '';
+        const isServiceCatalog = row.Tabelle_Typ === 'service_catalog';
+        const isMedication = row.Tabelle_Typ === 402;
+        const isIcd = row.Tabelle_Typ === 'icd';
+
+        let style = '';
+        let codeDisplay = escapeHtml(code);
+
+        if (isServiceCatalog) {
+            style = 'font-weight: bold;';
+        } else {
+            codeDisplay = `<a href="#" class="info-link" data-type="${isIcd ? 'diagnosis' : 'lkn'}" data-code="${escapeHtml(code)}">${escapeHtml(code)}</a>`;
+        }
+        
+        tableHtml += `<tr><td style="${style}">${codeDisplay}</td><td>${escapeHtml(text)}</td></tr>`;
+    });
+    tableHtml += '</tbody></table></div>';
+    return tableHtml;
+}
+
 
 function displayOutput(html, type = "info") {
     const out = $("output");
@@ -839,16 +865,23 @@ document.addEventListener("DOMContentLoaded", () => {
             else if (type === 'group') html = buildGroupInfoHtml(code);
             else if (type === 'diagnosis') html = buildDiagnosisInfoHtmlFromCode(code);
             else if (type === 'lkn_table' || type === 'icd_table') {
-                // For table links, we might want a specific function or just display a placeholder
-                // For now, let's assume buildLknInfoHtmlFromCode or a new function handles table views.
-                // This part needs to be thought out: what should clicking a table link show?
-                // For now, a simple placeholder:
-                html = `<h3>${type === 'lkn_table' ? 'LKN Tabelle' : 'ICD Tabelle'}: ${escapeHtml(code)}</h3><p>Details zur Tabelle '${escapeHtml(code)}' werden hier angezeigt.</p><p><i>(Logik zur Tabellenansicht noch zu implementieren)</i></p>`;
+                const dataContent = link.dataset.content;
+                if (dataContent) {
+                    try {
+                        const jsonData = JSON.parse(dataContent);
+                        html = buildTablePopup(jsonData, code);
+                    } catch (e) {
+                        console.error("Fehler beim Parsen der JSON-Daten für das Popup: ", e);
+                        html = `<p>Fehler beim Laden der Tabellendaten.</p>`;
+                    }
+                } else {
+                    html = `<p>Keine Daten für diese Tabelle verfügbar.</p>`;
+                }
             } else {
                 console.warn(`Unknown info-link type: ${type} for code: ${code}`);
                 html = `<p>Information für Code ${escapeHtml(code)} (Typ: ${escapeHtml(type)}) nicht verfügbar.</p>`;
             }
-            showModal('infoModalMainOverlay', html); // Generic info links still use the main modal
+            showModal('infoModalDetailOverlay', html);
         }
 
         const pLink = e.target.closest('a.pauschale-exp-link');

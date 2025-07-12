@@ -567,14 +567,21 @@ def translate_condition_type(cond_type: str, lang: str = 'de') -> str:
     lang = str(lang).lower()
     return translations.get(lang, translations.get('de', cond_type))
 
-def create_html_info_link(code: str, data_type: str, display_text: str) -> str:
+from typing import Optional
+
+def create_html_info_link(code: str, data_type: str, display_text: str, data_content: Optional[str] = None) -> str:
     """
     Generates an HTML <a> tag for info links, used by the frontend.
     display_text is already escaped and prepared by the caller.
     """
     escaped_code = escape(code)
     # data_type does not need escaping as it's from a controlled set.
-    return f'<a href="#" class="info-link" data-type="{data_type}" data-code="{escaped_code}">{display_text}</a>'
+    css_class = "info-link"
+    data_attributes = f'data-type="{data_type}" data-code="{escaped_code}"'
+    if data_content:
+        css_class += " popup-link"
+        data_attributes += f" data-content='{escape(data_content)}'"
+    return f'<a href="#" class="{css_class}" {data_attributes}>{display_text}</a>'
 
 def expand_compound_words(text: str) -> str:
     """Expand common German compound words with directional prefixes.
