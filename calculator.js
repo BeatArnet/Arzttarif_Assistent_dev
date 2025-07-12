@@ -303,19 +303,18 @@ function showModal(modalOverlayId, htmlContent) {
         console.error(`Modal overlay with ID ${modalOverlayId} not found.`);
         return;
     }
-    const contentDiv = modalOverlay.querySelector('.info-modal > div[id$="Content"]'); // e.g., infoModalMainContent or infoModalDetailContent
+    const contentDiv = modalOverlay.querySelector('.info-modal > div[id$="Content"]');
     if (!contentDiv) {
         console.error(`Content div not found within ${modalOverlayId}.`);
         return;
     }
     contentDiv.innerHTML = htmlContent;
-    modalOverlay.style.display = 'block'; // Use block instead of flex
+    modalOverlay.style.display = 'block';
 
     const modalDialog = modalOverlay.querySelector('.info-modal');
     if (modalDialog) {
-        // Reset position to default before showing, to avoid it appearing off-screen
-        modalDialog.style.left = '';
-        modalDialog.style.top = '';
+        // Reset transform property to ensure it opens at the CSS-defined position
+        modalDialog.style.transform = 'translate(0px, 0px)';
         if (!modalDialog.classList.contains('draggable-initialized')) {
             makeModalDraggable(modalDialog);
             modalDialog.classList.add('draggable-initialized');
@@ -331,38 +330,57 @@ function hideModal(modalOverlayId) {
 }
 
 function makeModalDraggable(modalElement) {
-    let offsetX, offsetY, isDragging = false;
+    let isDragging = false;
+    let startX, startY;
+    let x = 0, y = 0; // To store the current translation
+
+    // Function to parse the current transform values
+    function getCurrentTransform() {
+        const style = window.getComputedStyle(modalElement);
+        const matrix = new DOMMatrix(style.transform);
+        x = matrix.m41;
+        y = matrix.m42;
+    }
 
     modalElement.addEventListener('mousedown', (e) => {
-        // Only drag if the mousedown is directly on the modal or its non-interactive children,
-        // not on buttons, links, or inputs within the modal.
-        if (e.target.closest('button, a, input, select, textarea, details, summary')) {
+        // Only drag if the mousedown is on the modal header or a non-interactive part.
+        // The resize handle is usually in the corner, so this prevents dragging while resizing.
+        if (e.target.closest('button, a, input, select, textarea, details, summary, .info-modal-body')) {
+             // Also prevent dragging from the body to allow text selection etc.
             return;
         }
-        isDragging = true;
-        // Calculate offset from the top-left of the modal element
+        // Check if the click is on the resize handle area (bottom-right corner)
         const rect = modalElement.getBoundingClientRect();
-        offsetX = e.clientX - rect.left;
-        offsetY = e.clientY - rect.top;
-
-        modalElement.style.cursor = 'grabbing';
-        // Ensure the modal is positioned absolutely or fixed to allow dragging
-        if (getComputedStyle(modalElement).position === 'static') {
-            modalElement.style.position = 'relative'; // Or 'absolute' if it makes more sense in context
+        const resizeHandleSize = 20; // Approximate size of the handle area
+        if (e.clientX > rect.right - resizeHandleSize && e.clientY > rect.bottom - resizeHandleSize) {
+            return; // Don't start dragging if it's a resize action
         }
+
+
+        isDragging = true;
+        getCurrentTransform(); // Get the current translation before starting
+        startX = e.clientX;
+        startY = e.clientY;
+        modalElement.style.cursor = 'grabbing';
+        // No need to change position property, it's absolute from CSS
     });
 
     document.addEventListener('mousemove', (e) => {
         if (!isDragging) return;
-        // Set position based on mouse coordinates minus the offset
-        modalElement.style.left = (e.clientX - offsetX) + 'px';
-        modalElement.style.top = (e.clientY - offsetY) + 'px';
+        e.preventDefault(); // Prevent text selection while dragging
+
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        modalElement.style.transform = `translate(${x + dx}px, ${y + dy}px)`;
     });
 
     document.addEventListener('mouseup', () => {
         if (isDragging) {
             isDragging = false;
             modalElement.style.cursor = 'grab';
+            // The final position is already set by the transform, no need to do anything else.
+            // The next mousedown will re-read the current transform.
         }
     });
 
