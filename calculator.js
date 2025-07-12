@@ -309,12 +309,17 @@ function showModal(modalOverlayId, htmlContent) {
         return;
     }
     contentDiv.innerHTML = htmlContent;
-    modalOverlay.style.display = 'flex'; // Use flex to allow centering if desired, or adjust as needed
-    // Make the actual modal draggable (the child of the overlay)
+    modalOverlay.style.display = 'block'; // Use block instead of flex
+
     const modalDialog = modalOverlay.querySelector('.info-modal');
-    if (modalDialog && !modalDialog.classList.contains('draggable-initialized')) {
-        makeModalDraggable(modalDialog);
-        modalDialog.classList.add('draggable-initialized');
+    if (modalDialog) {
+        // Reset position to default before showing, to avoid it appearing off-screen
+        modalDialog.style.left = '';
+        modalDialog.style.top = '';
+        if (!modalDialog.classList.contains('draggable-initialized')) {
+            makeModalDraggable(modalDialog);
+            modalDialog.classList.add('draggable-initialized');
+        }
     }
 }
 
@@ -839,20 +844,37 @@ document.addEventListener("DOMContentLoaded", () => {
     loadIcdCheckboxState();
     loadData();
 
-    const modalMainClose = $('infoModalMainClose');
-    const modalMainOverlay = $('infoModalMainOverlay');
-    if (modalMainClose) modalMainClose.addEventListener('click', () => hideModal('infoModalMainOverlay'));
-    if (modalMainOverlay) modalMainOverlay.addEventListener('click', (e) => {
-        if (e.target === modalMainOverlay) hideModal('infoModalMainOverlay');
+    // --- Modal Close Handlers ---
+    const modals = [
+        { id: 'infoModalMain', overlayId: 'infoModalMainOverlay', closeId: 'infoModalMainClose' },
+        { id: 'infoModalDetail', overlayId: 'infoModalDetailOverlay', closeId: 'infoModalDetailClose' },
+        { id: 'infoModalNested', overlayId: 'infoModalNestedOverlay', closeId: 'infoModalNestedClose' }
+    ];
+
+    modals.forEach(modal => {
+        const closeButton = $(modal.closeId);
+        const overlay = $(modal.overlayId);
+        if (closeButton) closeButton.addEventListener('click', () => hideModal(modal.overlayId));
+        if (overlay) overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) hideModal(modal.overlayId);
+        });
     });
 
-    const modalDetailClose = $('infoModalDetailClose');
-    const modalDetailOverlay = $('infoModalDetailOverlay');
-    if (modalDetailClose) modalDetailClose.addEventListener('click', () => hideModal('infoModalDetailOverlay'));
-    if (modalDetailOverlay) modalDetailOverlay.addEventListener('click', (e) => {
-        if (e.target === modalDetailOverlay) hideModal('infoModalDetailOverlay');
+    // --- ESC Key to close top-most modal ---
+    document.addEventListener('keydown', (e) => {
+        if (e.key === "Escape") {
+            if ($('infoModalNestedOverlay').style.display !== 'none') {
+                hideModal('infoModalNestedOverlay');
+            } else if ($('infoModalDetailOverlay').style.display !== 'none') {
+                hideModal('infoModalDetailOverlay');
+            } else if ($('infoModalMainOverlay').style.display !== 'none') {
+                hideModal('infoModalMainOverlay');
+            }
+        }
     });
 
+
+    // --- General Click Handler for Info Links ---
     document.addEventListener('click', (e) => {
         const link = e.target.closest('a.info-link');
         if (link) {
@@ -860,6 +882,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const code = (link.dataset.code || '').trim();
             const type = link.dataset.type;
             let html = '';
+
+            // --- Build HTML content based on link type ---
             if (type === 'lkn') html = buildLknInfoHtmlFromCode(code);
             else if (type === 'chapter') html = buildChapterInfoHtml(code);
             else if (type === 'group') html = buildGroupInfoHtml(code);
@@ -870,18 +894,27 @@ document.addEventListener("DOMContentLoaded", () => {
                     try {
                         const jsonData = JSON.parse(dataContent);
                         html = buildTablePopup(jsonData, code);
-                    } catch (e) {
-                        console.error("Fehler beim Parsen der JSON-Daten für das Popup: ", e);
-                        html = `<p>Fehler beim Laden der Tabellendaten.</p>`;
+                    } catch (err) {
+                        console.error("Error parsing JSON data for popup: ", err);
+                        html = `<p>Error loading table data.</p>`;
                     }
                 } else {
-                    html = `<p>Keine Daten für diese Tabelle verfügbar.</p>`;
+                    html = `<p>No data available for this table.</p>`;
                 }
             } else {
                 console.warn(`Unknown info-link type: ${type} for code: ${code}`);
-                html = `<p>Information für Code ${escapeHtml(code)} (Typ: ${escapeHtml(type)}) nicht verfügbar.</p>`;
+                html = `<p>Information for code ${escapeHtml(code)} (type: ${escapeHtml(type)}) not available.</p>`;
             }
-            showModal('infoModalDetailOverlay', html);
+
+            // --- Decide which modal to show ---
+            const isInsideModal = e.target.closest('.info-modal');
+            if (isInsideModal) {
+                // If the click is inside any modal, open the nested one
+                showModal('infoModalNestedOverlay', html);
+            } else {
+                // Otherwise, open the first-level detail modal
+                showModal('infoModalDetailOverlay', html);
+            }
         }
 
         const pLink = e.target.closest('a.pauschale-exp-link');
