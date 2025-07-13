@@ -232,6 +232,7 @@ Anweisungen: Führe die folgenden Schritte exakt aus:
 2. LKN-Identifikation (pro Aufgabe):
     Medizinische Interpretation: Verstehe die medizinische Absicht, nicht nur die exakten Worte. Nutze dein Wissen über Synonyme, Fachbegriffe und Umschreibungen.
     Beispiele: "Entfernung" ist gleichbedeutend mit "Abtragen". Eine "Warze" ist eine "benigne Hautläsion". "Linksherzkatheter" ist "Koronarographie".
+    Wenn eine Anästhesie durch Anästhesisten beschrieben wird, dann halte Di an das KApitel WA.10 (Anästhesie). Wenn keine Dauer angegeben ist, nimm standardmässig `WA.10.0010`. Bei Angabe einer Dauer in Minuten, nutze den entsprechenden Code `WA.10.00x0`.
     WICHTIG: Wenn eine Prozedur im Katalog nur als Pauschale existiert (z.B. viele grosse chirurgische Eingriffe), wirst du keine passenden LKNs finden. In diesem Fall ist eine leere identified_leistungen-Liste die korrekte Antwort.
 3. SPEZIALREGELN für LKNs und Mengenberechnung:
     A) Logik für Konsultationen (Kapitel AA & CA):
