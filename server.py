@@ -123,7 +123,6 @@ from prompts import get_stage1_prompt, get_stage2_mapping_prompt, get_stage2_ran
 
 import logging
 import sys
-import psutil
 
 # Configure logging
 # Custom StreamHandler to handle encoding errors
@@ -162,7 +161,6 @@ GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 GEMINI_MODEL = os.getenv('GEMINI_MODEL', "gemini-2.5-flash")
 DATA_DIR = Path("data")
 LEISTUNGSKATALOG_PATH = DATA_DIR / "LKAAT_Leistungskatalog.json"
-LKN_INDEX_PATH = DATA_DIR / "lkn_index.json"
 TARDOC_TARIF_PATH = DATA_DIR / "TARDOC_Tarifpositionen.json"
 TARDOC_INTERP_PATH = DATA_DIR / "TARDOC_Interpretationen.json"
 PAUSCHALE_LP_PATH = DATA_DIR / "PAUSCHALEN_Leistungspositionen.json"
@@ -322,7 +320,7 @@ except Exception as e_gen: # Fängt auch andere Fehler während des Imports
     traceback.print_exc()
 
 # --- Globale Datencontainer ---
-lkn_index: dict[str, int] = {}
+leistungskatalog_data: list[dict] = []
 leistungskatalog_dict: dict[str, dict] = {}
 regelwerk_dict: dict[str, list] = {} # Annahme: lade_regelwerk gibt List[RegelDict] pro LKN
 tardoc_tarif_dict: dict[str, dict] = {}
@@ -381,20 +379,20 @@ def create_app() -> FlaskType:
 
 # --- Daten laden Funktion ---
 def load_data() -> bool:
-    global lkn_index, leistungskatalog_dict, regelwerk_dict, tardoc_tarif_dict, tardoc_interp_dict
+    global leistungskatalog_data, leistungskatalog_dict, regelwerk_dict, tardoc_tarif_dict, tardoc_interp_dict
     global pauschale_lp_data, pauschalen_data, pauschalen_dict, pauschale_bedingungen_data, pauschale_bedingungen_indexed, tabellen_data
     global tabellen_dict_by_table, daten_geladen
 
     all_loaded_successfully = True
     logger.info("--- Lade Daten ---")
     # Reset all data containers
-    lkn_index.clear(); leistungskatalog_dict.clear(); regelwerk_dict.clear(); tardoc_tarif_dict.clear(); tardoc_interp_dict.clear()
+    leistungskatalog_data.clear(); leistungskatalog_dict.clear(); regelwerk_dict.clear(); tardoc_tarif_dict.clear(); tardoc_interp_dict.clear()
     pauschale_lp_data.clear(); pauschalen_data.clear(); pauschalen_dict.clear(); pauschale_bedingungen_data.clear(); pauschale_bedingungen_indexed.clear(); tabellen_data.clear()
     tabellen_dict_by_table.clear()
     token_doc_freq.clear()
 
     files_to_load = {
-        "LKNIndex": (LKN_INDEX_PATH, [], 'LKN', lkn_index),
+        "Leistungskatalog": (LEISTUNGSKATALOG_PATH, leistungskatalog_data, 'LKN', leistungskatalog_dict),
         "PauschaleLP": (PAUSCHALE_LP_PATH, pauschale_lp_data, None, None),
         "Pauschalen": (PAUSCHALEN_PATH, pauschalen_data, 'Pauschale', pauschalen_dict),
         "PauschaleBedingungen": (PAUSCHALE_BED_PATH, pauschale_bedingungen_data, None, None),
@@ -407,7 +405,6 @@ def load_data() -> bool:
         try:
             logger.info("  Versuche %s von %s zu laden...", name, path)
             if path.is_file():
-                logger.info(f"Lade Datei: {path}")
                 with open(path, 'r', encoding='utf-8') as f:
                     data_from_file = json.load(f)
 
@@ -541,12 +538,6 @@ def load_data() -> bool:
     else:
         logger.info("INFO: Alle Daten erfolgreich geladen.")
         daten_geladen = True
-
-    # Log memory usage
-    process = psutil.Process(os.getpid())
-    mem_info = process.memory_info()
-    logger.info(f"Speichernutzung nach dem Laden der Daten: RSS={mem_info.rss / 1024 ** 2:.2f} MB, VMS={mem_info.vms / 1024 ** 2:.2f} MB")
-
     logger.info("DEBUG: load_data() beendet. leistungskatalog_dict leer? %s", not leistungskatalog_dict)
     return all_loaded_successfully
 
@@ -1141,11 +1132,14 @@ def rank_leistungskatalog_entries(tokens: Set[str], limit: int = 200) -> List[st
     """Return LKN codes ranked by weighted token occurrences."""
     scored: List[Tuple[float, str]] = []
 
-    # Iterate over all LKNs in the index
-    for lkn_code in lkn_index.keys():
-        details = get_lkn_details(lkn_code)
-        if not details:
-            continue
+    # --- Add all WA.10 LKNs with a high score ---
+    for lkn_code, details in leistungskatalog_dict.items():
+        if lkn_code.startswith("WA.10"):
+            scored.append((1000.0, lkn_code))
+
+    for lkn_code, details in leistungskatalog_dict.items():
+        if lkn_code.startswith("WA.10"):
+            continue # Already added
 
         texts = []
         for base in [
@@ -1164,60 +1158,13 @@ def rank_leistungskatalog_entries(tokens: Set[str], limit: int = 200) -> List[st
         for t in tokens:
             occ = combined.count(t.lower())
             if occ:
-                # Boost score for anesthesia-related tokens
-                if "anästhesie" in t.lower() or "narkose" in t.lower():
-                    score += occ * 1000
-                else:
-                    df = token_doc_freq.get(t, len(lkn_index))
-                    if df:
-                        score += occ * (1.0 / df)
+                df = token_doc_freq.get(t, len(leistungskatalog_dict))
+                if df:
+                    score += occ * (1.0 / df)
         if score > 0:
             scored.append((score, lkn_code))
-
     scored.sort(key=lambda x: x[0], reverse=True)
-
-    # Entferne Duplikate, behalte den ersten (höheren) Score
-    seen = set()
-    unique_scored = []
-    for score, code in scored:
-        if code not in seen:
-            unique_scored.append((score, code))
-            seen.add(code)
-
-    return [code for _, code in unique_scored[:limit]]
-
-def get_lkn_details(lkn_code: str) -> dict | None:
-    """
-    Retrieves the details for a given LKN from the Leistungskatalog file.
-    """
-    if lkn_code not in lkn_index:
-        return None
-
-    offset = lkn_index[lkn_code]
-    with open(LEISTUNGSKATALOG_PATH, 'rb') as f:
-        f.seek(offset)
-        obj_str = b''
-        balance = 0
-
-        char = f.read(1)
-        while char != b'{':
-            char = f.read(1)
-
-        obj_str += char
-        balance = 1
-
-        while balance > 0:
-            char = f.read(1)
-            obj_str += char
-            if char == b'{':
-                balance += 1
-            elif char == b'}':
-                balance -= 1
-
-        try:
-            return json.loads(obj_str)
-        except json.JSONDecodeError:
-            return None
+    return [code for _, code in scored[:limit]]
 
 # --- API Endpunkt ---
 @app.route('/api/analyze-billing', methods=['POST'])
@@ -1291,24 +1238,22 @@ def analyze_billing():
         tokens = extract_keywords(user_input)
 
         # --- DEBUGGING START ---
-        logger.info(f"[{request_id}] DEBUG: Zustand vor rank_leistungskatalog_entries:")
-        logger.info(f"[{request_id}] DEBUG: len(leistungskatalog_dict): {len(leistungskatalog_dict)}")
+        logger.info(f"DEBUG: Zustand vor rank_leistungskatalog_entries:")
+        logger.info(f"DEBUG: len(leistungskatalog_dict): {len(leistungskatalog_dict)}")
         if leistungskatalog_dict:
-            logger.info(f"[{request_id}] DEBUG: Beispiel Leistungskatalog Key: {next(iter(leistungskatalog_dict.keys()))}")
-        logger.info(f"[{request_id}] DEBUG: len(token_doc_freq): {len(token_doc_freq)}")
+            logger.info(f"DEBUG: Beispiel Leistungskatalog Key: {next(iter(leistungskatalog_dict.keys()))}")
+        logger.info(f"DEBUG: len(token_doc_freq): {len(token_doc_freq)}")
         if token_doc_freq:
-            logger.info(f"[{request_id}] DEBUG: Beispiel token_doc_freq Key: {next(iter(token_doc_freq.keys()))}")
+            logger.info(f"DEBUG: Beispiel token_doc_freq Key: {next(iter(token_doc_freq.keys()))}")
         # --- DEBUGGING END ---
 
         ranked_codes = rank_leistungskatalog_entries(tokens, 200)
         # --- DEBUGGING START ---
-        logger.info(f"[{request_id}] DEBUG: ranked_codes: {ranked_codes[:10]}") # Logge die ersten 10 gerankten Codes
+        logger.info(f"DEBUG: ranked_codes: {ranked_codes[:10]}") # Logge die ersten 10 gerankten Codes
         # --- DEBUGGING END ---
 
         for lkn_code in ranked_codes:
-            details = get_lkn_details(lkn_code)
-            if not details:
-                continue
+            details = leistungskatalog_dict.get(lkn_code, {})
             desc_texts = []
             for base in ["Beschreibung", "Beschreibung_f", "Beschreibung_i"]:
                 val = details.get(base)
@@ -1333,31 +1278,29 @@ def analyze_billing():
             katalog_context_parts.append(context_line)
         katalog_context_str = "\n".join(katalog_context_parts)
         # --- DEBUGGING START ---
-        logger.info(f"[{request_id}] DEBUG: len(katalog_context_str): {len(katalog_context_str)}")
+        logger.info(f"DEBUG: len(katalog_context_str): {len(katalog_context_str)}")
         if not katalog_context_str:
-            logger.error(f"[{request_id}] DEBUG: katalog_context_str ist leer. Abbruch vor LLM-Aufruf.")
+            logger.error("DEBUG: katalog_context_str ist leer. Abbruch vor LLM-Aufruf.")
         # --- DEBUGGING END ---
         if not katalog_context_str:
             raise ValueError("Leistungskatalog für LLM-Kontext (Stufe 1) ist leer.")
 
         # --- DEBUGGING START ---
-        logger.info(f"[{request_id}] DEBUG: Zustand vor call_gemini_stage1:")
-        logger.info(f"[{request_id}] DEBUG: len(leistungskatalog_dict): {len(leistungskatalog_dict)}")
-        logger.info(f"[{request_id}] DEBUG: llm_stage1_result (vor Aufruf): {llm_stage1_result}")
+        logger.info(f"DEBUG: Zustand vor call_gemini_stage1:")
+        logger.info(f"DEBUG: len(leistungskatalog_dict): {len(leistungskatalog_dict)}")
+        logger.info(f"DEBUG: llm_stage1_result (vor Aufruf): {llm_stage1_result}")
         # --- DEBUGGING END ---
         llm_stage1_result = call_gemini_stage1(preprocessed_input, katalog_context_str, lang)
     except ConnectionError as e:
-        logger.error(f"[{request_id}] Verbindung zu LLM1 fehlgeschlagen: %s", e)
+        logger.error("Verbindung zu LLM1 fehlgeschlagen: %s", e)
         return jsonify({"error": f"Verbindungsfehler zum Analyse-Service (Stufe 1): {e}"}), 504
     except ValueError as e:
-        logger.error(f"[{request_id}] Verarbeitung LLM1 fehlgeschlagen: %s", e, exc_info=True)
+        logger.error("Verarbeitung LLM1 fehlgeschlagen: %s", e, exc_info=True)
         return jsonify({"error": f"Fehler bei der Leistungsanalyse (Stufe 1): {e}"}), 400
     except Exception as e:
-        logger.error(f"[{request_id}] Unerwarteter Fehler bei LLM1: %s", e, exc_info=True)
+        logger.error("Unerwarteter Fehler bei LLM1: %s", e, exc_info=True)
         return jsonify({"error": f"Unerwarteter interner Fehler (Stufe 1): {e}"}), 500
-    llm1_time = time.time(); logger.info(f"[{request_id}] Zeit nach LLM Stufe 1: %.2fs", llm1_time - start_time)
-    logger.info(f"[{request_id}] LLM Stufe 1 Ergebnis: {json.dumps(llm_stage1_result, ensure_ascii=False)}")
-
+    llm1_time = time.time(); logger.info("Zeit nach LLM Stufe 1: %.2fs", llm1_time - start_time)
 
     final_validated_llm_leistungen: List[Dict[str,Any]] = []
     # Nutze get mit Fallback auf leere Liste, falls "identified_leistungen" fehlt
@@ -1368,7 +1311,7 @@ def analyze_billing():
         if not lkn_llm: continue # Überspringe leere LKN nach strip
 
         menge_llm = leistung_llm.get("menge", 1)
-        local_lkn_data = get_lkn_details(lkn_llm)
+        local_lkn_data = leistungskatalog_dict.get(lkn_llm) # Globale Variable hier OK
         if local_lkn_data:
             final_validated_llm_leistungen.append({
                 "lkn": lkn_llm,
@@ -1378,14 +1321,11 @@ def analyze_billing():
             })
         else:
             logger.warning(
-                "[%s] Vom LLM (Stufe 1) identifizierte LKN '%s' nicht im lokalen Katalog. Wird ignoriert.",
-                request_id,
+                "Vom LLM (Stufe 1) identifizierte LKN '%s' nicht im lokalen Katalog. Wird ignoriert.",
                 lkn_llm,
             )
     llm_stage1_result["identified_leistungen"] = final_validated_llm_leistungen
-    logger.info(f"[{request_id}] {len(final_validated_llm_leistungen)} LKNs nach LLM Stufe 1 und lokaler Katalogvalidierung.")
-    logger.info(f"[{request_id}] Validierte LKNs Stufe 1: {json.dumps(final_validated_llm_leistungen, ensure_ascii=False)}")
-
+    logger.info("%s LKNs nach LLM Stufe 1 und lokaler Katalogvalidierung.", len(final_validated_llm_leistungen))
 
     extracted_info_llm = llm_stage1_result.get("extracted_info", {})
     alter_context_val = alter_user if alter_user is not None else extracted_info_llm.get("alter")
@@ -1399,31 +1339,28 @@ def analyze_billing():
     if seitigkeit_context_val.lower() == 'beidseits' and anzahl_fuer_pauschale_context is None:
         if len(final_validated_llm_leistungen) == 1 and final_validated_llm_leistungen[0].get('menge') == 1:
             anzahl_fuer_pauschale_context = 2
-            logger.info(f"[{request_id}] (Heuristik) 'Anzahl' für Pauschale auf 2 gesetzt.")
+            logger.info("(Heuristik) 'Anzahl' für Pauschale auf 2 gesetzt.")
         elif any(l.get('lkn') == "C02.CP.0100" and l.get('menge') == 1 for l in final_validated_llm_leistungen):
             anzahl_fuer_pauschale_context = 2
-            logger.info(f"[{request_id}] (Heuristik C02.CP.0100) 'Anzahl' für Pauschale auf 2 gesetzt.")
+            logger.info("(Heuristik C02.CP.0100) 'Anzahl' für Pauschale auf 2 gesetzt.")
 
     finale_abrechnung_obj: Dict[str, Any] | None = None
     fallback_pauschale_search = False
 
     if not final_validated_llm_leistungen:
-        logger.info(f"[{request_id}] Keine LKNs von Stufe 1, starte Fallback-Pauschalen-Suche.")
         fallback_pauschale_search = True
         try:
             kandidaten_liste = search_pauschalen(user_input)
-            logger.info(f"[{request_id}] Fallback-Suche fand {len(kandidaten_liste)} Pauschalen-Kandidaten.")
 
             kandidaten_text = "\n".join(
                 f"{k['code']}: {k['text']}" for k in kandidaten_liste
             )
             ranking_codes = call_gemini_stage2_ranking(user_input, kandidaten_text, lang)
-            logger.info(f"[{request_id}] Fallback-Ranking ergab: {ranking_codes}")
         except ConnectionError as e_rank:
-            logger.error(f"[{request_id}] Verbindung zu LLM Stufe 2 (Ranking) im Fallback: %s", e_rank)
+            logger.error("Verbindung zu LLM Stufe 2 (Ranking) im Fallback: %s", e_rank)
             ranking_codes = []
         except Exception as e_rank_gen:
-            logger.error(f"[{request_id}] Fehler beim Fallback-Ranking: %s", e_rank_gen)
+            logger.error("Fehler beim Fallback-Ranking: %s", e_rank_gen)
             traceback.print_exc()
             ranking_codes = []
 
@@ -1440,7 +1377,6 @@ def analyze_billing():
                 "Anzahl": anzahl_fuer_pauschale_context,
             }
             try:
-                logger.info(f"[{request_id}] Starte Pauschalen-Prüfung für Fallback-Kandidaten.")
                 pauschale_pruef_ergebnis_dict = determine_applicable_pauschale_func(
                     user_input,
                         [], # rule_checked_leistungen_list_param
@@ -1457,18 +1393,16 @@ def analyze_billing():
                 finale_abrechnung_obj = pauschale_pruef_ergebnis_dict
                 if finale_abrechnung_obj.get("type") == "Pauschale":
                     logger.info(
-                        "[%s] Fallback-Pauschale gefunden: %s",
-                        request_id,
+                        "Fallback-Pauschale gefunden: %s",
                         finale_abrechnung_obj.get('details', {}).get('Pauschale'),
                     )
                 else:
                     logger.info(
-                        "[%s] Fallback-Pauschalenprüfung ohne Treffer. Grund: %s",
-                        request_id,
+                        "Fallback-Pauschalenprüfung ohne Treffer. Grund: %s",
                         finale_abrechnung_obj.get('message', 'Unbekannt'),
                     )
             except Exception as e_pausch_fb:
-                logger.error(f"[{request_id}] Fehler bei Pauschalen-Fallback-Prüfung: %s", e_pausch_fb)
+                logger.error("Fehler bei Pauschalen-Fallback-Prüfung: %s", e_pausch_fb)
                 traceback.print_exc()
                 finale_abrechnung_obj = None
 
@@ -1479,7 +1413,6 @@ def analyze_billing():
          regel_ergebnisse_details_list.append({"lkn": None, "initiale_menge": 0, "regelpruefung": {"abrechnungsfaehig": False, "fehler": [msg_none]}, "finale_menge": 0})
     else:
         alle_lkn_codes_fuer_regelpruefung = [str(l.get("lkn")) for l in final_validated_llm_leistungen if l.get("lkn")] # Sicherstellen, dass es Strings sind
-        logger.info(f"[{request_id}] Starte Regelprüfung für {len(alle_lkn_codes_fuer_regelpruefung)} LKNs: {alle_lkn_codes_fuer_regelpruefung}")
         for leistung_data in final_validated_llm_leistungen:
             lkn_code_val = leistung_data.get("lkn")
             if not isinstance(lkn_code_val, str): continue # Sollte durch obige Validierung nicht passieren
@@ -1497,7 +1430,6 @@ def analyze_billing():
                     "ICD": icd_input, "Geschlecht": geschlecht_context_val, "Alter": alter_context_val,
                     "Pauschalen": [], "GTIN": gtin_input
                 }
-                logger.info(f"[{request_id}] Regelprüfer-Kontext für {lkn_code}: {json.dumps(abrechnungsfall_kontext, ensure_ascii=False)}")
                 try:
                     regel_ergebnis_dict = rp_lkn_module.pruefe_abrechnungsfaehigkeit(abrechnungsfall_kontext, regelwerk_dict) # Globale Variable hier OK
                     if regel_ergebnis_dict.get("abrechnungsfaehig"):
@@ -1512,8 +1444,7 @@ def analyze_billing():
                                     finale_menge_nach_regeln = int(match_menge.group(1))
                                     regel_ergebnis_dict["abrechnungsfaehig"] = True
                                     logger.info(
-                                        "[%s] Menge für LKN %s durch Regelprüfer auf %s angepasst.",
-                                        request_id,
+                                        "Menge für LKN %s durch Regelprüfer auf %s angepasst.",
                                         lkn_code,
                                         finale_menge_nach_regeln,
                                     )
@@ -1531,8 +1462,7 @@ def analyze_billing():
                                             f"Menge auf {finale_menge_nach_regeln} reduziert (Mengenbeschränkung)"
                                         )
                                         logger.info(
-                                            "[%s] Menge für LKN %s automatisch auf %s reduziert wegen Mengenbeschränkung.",
-                                            request_id,
+                                            "Menge für LKN %s automatisch auf %s reduziert wegen Mengenbeschränkung.",
                                             lkn_code,
                                             finale_menge_nach_regeln,
                                         )
@@ -1540,17 +1470,16 @@ def analyze_billing():
                                         finale_menge_nach_regeln = 0
                         if finale_menge_nach_regeln == 0:
                             logger.info(
-                                "[%s] LKN %s nicht abrechnungsfähig wegen Regel(n): %s",
-                                request_id,
+                                "LKN %s nicht abrechnungsfähig wegen Regel(n): %s",
                                 lkn_code,
                                 regel_ergebnis_dict.get('fehler', []),
                             )
                 except Exception as e_rule:
-                    logger.error(f"[{request_id}] Fehler bei Regelprüfung für LKN %s: %s", lkn_code, e_rule)
+                    logger.error("Fehler bei Regelprüfung für LKN %s: %s", lkn_code, e_rule)
                     traceback.print_exc()
                     regel_ergebnis_dict = {"abrechnungsfaehig": False, "fehler": [f"Interner Fehler bei Regelprüfung: {e_rule}"]}
             else:
-                logger.warning(f"[{request_id}] Keine Regelprüfung für LKN %s durchgeführt (Regelprüfer oder Regelwerk fehlt).", lkn_code)
+                logger.warning("Keine Regelprüfung für LKN %s durchgeführt (Regelprüfer oder Regelwerk fehlt).", lkn_code)
                 regel_ergebnis_dict = {"abrechnungsfaehig": False, "fehler": ["Regelprüfung nicht verfügbar."]}
             
             if lang in ["fr", "it"]:
@@ -1559,10 +1488,9 @@ def analyze_billing():
             regel_ergebnisse_details_list.append({"lkn": lkn_code, "initiale_menge": menge_initial_val, "regelpruefung": regel_ergebnis_dict, "finale_menge": finale_menge_nach_regeln})
             if regel_ergebnis_dict.get("abrechnungsfaehig") and finale_menge_nach_regeln > 0:
                 rule_checked_leistungen_list.append({**leistung_data, "menge": finale_menge_nach_regeln})
-    rule_time = time.time(); logger.info(f"[{request_id}] Zeit nach Regelprüfung: %.2fs", rule_time - llm1_time)
+    rule_time = time.time(); logger.info("Zeit nach Regelprüfung: %.2fs", rule_time - llm1_time)
     logger.info(
-        "[%s] Regelkonforme Leistungen für Pauschalenprüfung: %s",
-        request_id,
+        "Regelkonforme Leistungen für Pauschalenprüfung: %s",
         [f"{l['lkn']} (Menge {l['menge']})" for l in rule_checked_leistungen_list],
     )
 
@@ -1570,13 +1498,12 @@ def analyze_billing():
 
     hat_pauschalen_potential_nach_regeln = any(l.get('typ') in ['P', 'PZ'] for l in rule_checked_leistungen_list)
     if not rule_checked_leistungen_list or not hat_pauschalen_potential_nach_regeln:
-        logger.info(f"[{request_id}] Keine P/PZ LKNs nach Regelprüfung oder keine LKNs übrig. Gehe direkt zu TARDOC.")
+        logger.info("Keine P/PZ LKNs nach Regelprüfung oder keine LKNs übrig. Gehe direkt zu TARDOC.")
     else:
-        logger.info(f"[{request_id}] Pauschalenpotenzial nach Regelprüfung vorhanden. Starte LKN-Mapping & Pauschalen-Hauptprüfung.")
+        logger.info("Pauschalenpotenzial nach Regelprüfung vorhanden. Starte LKN-Mapping & Pauschalen-Hauptprüfung.")
         potential_pauschale_codes_set: Set[str] = set()
         regelkonforme_lkn_codes_fuer_suche = {str(l.get('lkn')) for l in rule_checked_leistungen_list if l.get('lkn')} # Sicherstellen Strings
         
-        logger.info(f"[{request_id}] Suche initiale Pauschalen mit LKNs: {regelkonforme_lkn_codes_fuer_suche}")
         for item_lp in pauschale_lp_data: # Globale Variable
             lkn_in_lp_db_val = item_lp.get('Leistungsposition')
             if isinstance(lkn_in_lp_db_val, str) and lkn_in_lp_db_val in regelkonforme_lkn_codes_fuer_suche:
@@ -1615,22 +1542,21 @@ def analyze_billing():
                             potential_pauschale_codes_set.add(pc_code_cond)
                             break
         logger.info(
-            "[%s] DEBUG: %s potenzielle Pauschalen für Mapping/Prüfung gefunden: %s",
-            request_id,
+            "DEBUG: %s potenzielle Pauschalen für Mapping/Prüfung gefunden: %s",
             len(potential_pauschale_codes_set),
             potential_pauschale_codes_set,
         )
 
         if not potential_pauschale_codes_set:
-            logger.info(f"[{request_id}] Keine potenziellen Pauschalen nach initialer Suche gefunden. Gehe zu TARDOC.")
+            logger.info("Keine potenziellen Pauschalen nach initialer Suche gefunden. Gehe zu TARDOC.")
         else:
             mapping_candidate_lkns_dict = get_LKNs_from_pauschalen_conditions(
                 potential_pauschale_codes_set, pauschale_bedingungen_data, # Globale Variablen
                 tabellen_dict_by_table, leistungskatalog_dict) # Globale Variablen
-            logger.info(f"[{request_id}] {len(mapping_candidate_lkns_dict)} LKN-Kandidaten für LLM-Mapping vorbereitet.")
+            # print(f"DEBUG: {len(mapping_candidate_lkns_dict)} LKN-Kandidaten für LLM-Mapping vorbereitet.")
 
             tardoc_lkns_to_map_list = [l for l in rule_checked_leistungen_list if l.get('typ') in ['E', 'EZ']]
-            logger.info(f"[{request_id}] {len(tardoc_lkns_to_map_list)} TARDOC LKNs (E/EZ) zum Mappen identifiziert: {[l.get('lkn') for l in tardoc_lkns_to_map_list]}")
+            # print(f"DEBUG: {len(tardoc_lkns_to_map_list)} TARDOC LKNs (E/EZ) zum Mappen identifiziert: {[l.get('lkn') for l in tardoc_lkns_to_map_list]}")
             mapped_lkn_codes_set: Set[str] = set()
             mapping_process_had_connection_error = False
 
@@ -1649,15 +1575,14 @@ def analyze_billing():
                         }
                         if filtered_anast_candidates:
                             current_candidates_for_llm = filtered_anast_candidates
-                            logger.info(f"[{request_id}]  INFO: Für Mapping von {t_lkn_code} wurden Kandidaten auf ANAST/WA.* ({len(current_candidates_for_llm)}) reduziert.")
+                            # print(f"  INFO: Für Mapping von {t_lkn_code} wurden Kandidaten auf ANAST/WA.* ({len(current_candidates_for_llm)}) reduziert.")
 
                     if t_lkn_code and t_lkn_desc and current_candidates_for_llm:
                         try:
-                            logger.info(f"[{request_id}] Rufe LLM-Mapping für {t_lkn_code} auf...")
                             mapped_target_lkn_code = call_gemini_stage2_mapping(str(t_lkn_code), str(t_lkn_desc), current_candidates_for_llm, lang)
                             if mapped_target_lkn_code:
                                 mapped_lkn_codes_set.add(mapped_target_lkn_code)
-                                logger.info(f"[{request_id}] LKN-Mapping: {t_lkn_code} -> {mapped_target_lkn_code}")
+                                # print(f"INFO: LKN-Mapping: {t_lkn_code} -> {mapped_target_lkn_code}")
                             llm_stage2_mapping_results["mapping_results"].append({
                                 "tardoc_lkn": t_lkn_code, "tardoc_desc": t_lkn_desc,
                                 "mapped_lkn": mapped_target_lkn_code,
@@ -1665,8 +1590,7 @@ def analyze_billing():
                             })
                         except ConnectionError as e_conn_map:
                             logger.error(
-                                "[%s] Verbindung zu LLM Stufe 2 (Mapping) für %s fehlgeschlagen: %s",
-                                request_id,
+                                "Verbindung zu LLM Stufe 2 (Mapping) für %s fehlgeschlagen: %s",
                                 t_lkn_code,
                                 e_conn_map,
                             )
@@ -1678,8 +1602,7 @@ def analyze_billing():
                             break
                         except Exception as e_map_call:
                             logger.error(
-                                "[%s] Fehler bei Aufruf von LLM Stufe 2 (Mapping) für %s: %s",
-                                request_id,
+                                "Fehler bei Aufruf von LLM Stufe 2 (Mapping) für %s: %s",
                                 t_lkn_code,
                                 e_map_call,
                             )
@@ -1696,16 +1619,15 @@ def analyze_billing():
                     else:
                         llm_stage2_mapping_results["mapping_results"].append({"tardoc_lkn": t_lkn_code or "N/A", "tardoc_desc": t_lkn_desc or "N/A", "mapped_lkn": None, "info": "Mapping übersprungen", "candidates_considered_count": len(current_candidates_for_llm) if current_candidates_for_llm else 0})
             else:
-                logger.info(f"[{request_id}] Überspringe LKN-Mapping (keine E/EZ LKNs oder keine Mapping-Kandidaten).")
-            mapping_time = time.time(); logger.info(f"[{request_id}] Zeit nach LKN-Mapping: %.2fs", mapping_time - rule_time)
+                logger.info("Überspringe LKN-Mapping (keine E/EZ LKNs oder keine Mapping-Kandidaten).")
+            mapping_time = time.time(); logger.info("Zeit nach LKN-Mapping: %.2fs", mapping_time - rule_time)
 
             if not mapping_process_had_connection_error:
                 final_lkn_context_for_pauschale_set = {str(l.get('lkn')) for l in rule_checked_leistungen_list if l.get('lkn')} # Sicherstellen Strings
                 final_lkn_context_for_pauschale_set.update(mapped_lkn_codes_set)
                 final_lkn_context_list_for_pauschale = list(final_lkn_context_for_pauschale_set)
                 logger.info(
-                    "[%s] Finaler LKN-Kontext für Pauschalen-Hauptprüfung (%s LKNs): %s",
-                    request_id,
+                    "Finaler LKN-Kontext für Pauschalen-Hauptprüfung (%s LKNs): %s",
                     len(final_lkn_context_list_for_pauschale),
                     final_lkn_context_list_for_pauschale,
                 )
@@ -1713,7 +1635,6 @@ def analyze_billing():
                 # Nach dem Mapping: potenzielle Pauschalen anhand des erweiterten
                 # LKN-Sets erneut suchen (inkl. gemappter LKNs)
                 erweiterte_lkn_suchmenge = {str(l).upper() for l in final_lkn_context_for_pauschale_set}
-                logger.info(f"[{request_id}] Suche erweiterte Pauschalen mit LKNs: {erweiterte_lkn_suchmenge}")
 
                 neu_gefundene_codes: Set[str] = set()
 
@@ -1763,8 +1684,7 @@ def analyze_billing():
                 if neu_gefundene_codes:
                     potential_pauschale_codes_set.update(neu_gefundene_codes)
                 logger.info(
-                    "[%s] DEBUG: %s potenzielle Pauschalen nach erweiterter Suche: %s",
-                    request_id,
+                    "DEBUG: %s potenzielle Pauschalen nach erweiterter Suche: %s",
                     len(potential_pauschale_codes_set),
                     potential_pauschale_codes_set,
                 )
@@ -1777,7 +1697,6 @@ def analyze_billing():
                 }
                 try:
                     logger.info(f"[{request_id}] Starte Pauschalen-Hauptprüfung (useIcd=%s)...", use_icd_flag)
-                    logger.info(f"[{request_id}] Kontext für Pauschalen-Hauptprüfung: {json.dumps(pauschale_haupt_pruef_kontext, ensure_ascii=False)}")
                     time_before_determine_pauschale = time.time()
                     # KORREKTUR: Aufruf über die Funktionsvariable determine_applicable_pauschale_func
                     pauschale_pruef_ergebnis_dict = determine_applicable_pauschale_func(
@@ -1786,24 +1705,22 @@ def analyze_billing():
                         # pauschale_bedingungen_data, # Ersetzt durch pauschale_bedingungen_indexed
                         pauschale_bedingungen_data, # KORREKTUR: Liste statt Dict
                         pauschalen_dict,
-            lkn_index, tabellen_dict_by_table, potential_pauschale_codes_set,
+                        leistungskatalog_dict, tabellen_dict_by_table, potential_pauschale_codes_set,
                         lang
                     )
                     finale_abrechnung_obj = pauschale_pruef_ergebnis_dict
                     if finale_abrechnung_obj.get("type") == "Pauschale":
                         logger.info(
-                            "[%s] Anwendbare Pauschale gefunden: %s",
-                            request_id,
+                            "Anwendbare Pauschale gefunden: %s",
                             finale_abrechnung_obj.get('details', {}).get('Pauschale'),
                         )
                     else:
                         logger.info(
-                            "[%s] Keine anwendbare Pauschale. Grund: %s",
-                            request_id,
+                            "Keine anwendbare Pauschale. Grund: %s",
                             finale_abrechnung_obj.get('message', 'Unbekannt'),
                         )
                 except Exception as e_pauschale_main:
-                    logger.error(f"[{request_id}] Fehler bei Pauschalen-Hauptprüfung: %s", e_pauschale_main)
+                    logger.error("Fehler bei Pauschalen-Hauptprüfung: %s", e_pauschale_main)
                     traceback.print_exc()
                     finale_abrechnung_obj = {
                         "type": "Error",
@@ -1811,11 +1728,11 @@ def analyze_billing():
                     }
 
     if finale_abrechnung_obj is None or finale_abrechnung_obj.get("type") != "Pauschale":
-        logger.info(f"[{request_id}] Keine gültige Pauschale ausgewählt oder Prüfung übersprungen. Bereite TARDOC-Abrechnung vor.")
+        logger.info("Keine gültige Pauschale ausgewählt oder Prüfung übersprungen. Bereite TARDOC-Abrechnung vor.")
         # prepare_tardoc_abrechnung_func wurde oben initialisiert (entweder echt oder Fallback)
         finale_abrechnung_obj = prepare_tardoc_abrechnung_func(regel_ergebnisse_details_list, leistungskatalog_dict, lang)
 
-    decision_time = time.time(); logger.info(f"[{request_id}] Zeit nach finaler Entscheidung: %.2fs (seit Start)", decision_time - start_time)
+    decision_time = time.time(); logger.info("Zeit nach finaler Entscheidung: %.2fs (seit Start)", decision_time - start_time)
     final_response_payload = {
         "llm_ergebnis_stufe1": llm_stage1_result,
         "regel_ergebnisse_details": regel_ergebnisse_details_list,
@@ -1826,13 +1743,12 @@ def analyze_billing():
     if fallback_pauschale_search:
         final_response_payload["fallback_pauschale_search"] = True
     end_time = time.time(); total_time = end_time - start_time
-    logger.info(f"[{request_id}] Gesamtverarbeitungszeit Backend: %.2fs", total_time)
+    logger.info("Gesamtverarbeitungszeit Backend: %.2fs", total_time)
     logger.info(
-        "[%s] Sende finale Antwort Typ '%s' an Frontend.",
-        request_id,
+        "Sende finale Antwort Typ '%s' an Frontend.",
         finale_abrechnung_obj.get('type') if finale_abrechnung_obj else 'None',
     )
-    # logger.info(f"Final response payload for /api/analyze-billing: {json.dumps(final_response_payload, ensure_ascii=False, indent=2)}")
+    logger.info(f"Final response payload for /api/analyze-billing: {json.dumps(final_response_payload, ensure_ascii=False, indent=2)}")
     return jsonify(final_response_payload)
 
 
