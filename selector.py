@@ -1,8 +1,8 @@
-from typing import Dict, List, Set, Tuple
+from typing import Any, Dict, List, Set, Tuple
 from utils import expand_compound_words, extract_keywords
 
 def compute_token_doc_freq(
-    leistungskatalog_dict: Dict[str, Dict[str, any]],
+    leistungskatalog_dict: Dict[str, Dict[str, Any]],
     token_doc_freq: Dict[str, int],
 ) -> None:
     """Compute document frequency for tokens across the Leistungskatalog."""
@@ -27,7 +27,7 @@ def compute_token_doc_freq(
 
 def rank_leistungskatalog_entries(
     tokens: Set[str],
-    leistungskatalog_dict: Dict[str, Dict[str, any]],
+    leistungskatalog_dict: Dict[str, Dict[str, Any]],
     token_doc_freq: Dict[str, int],
     limit: int = 200,
 ) -> List[str]:
