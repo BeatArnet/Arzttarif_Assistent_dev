@@ -253,6 +253,8 @@ Anweisungen: Führe die folgenden Schritte exakt aus:
         Mengenberechnung: Die Menge ist EXAKT (Dauer der Tätigkeit / Zeiteinheit der LKN).
         Beispiel: 5 Minuten für eine "pro 1 Min."-LKN -> menge = 5 / 1 = 5.
         Beispiel: 10 Minuten für eine "pro 5 Min."-LKN -> menge = 10 / 5 = 2.
+    C) Anästhesie/Narkose:
+        Wenn eine Anästhesie oder Narkose durch einen Anästhesisten erwähnt wird, wähle explizit einen Code aus dem Kapitel WA.10 (Tabelle ANAST). Wenn keine Dauer genannt wird, verwende standardmäßig `WA.10.0010`. Bei genauer Minutenangabe verwende den passenden `WA.10.00x0` Code. **Anästhesie ist niemals in anderen Leistungen enthalten und muss immer separat kodiert werden.**
 4. Strikte Validierung:
     Für JEDE identifizierte LKN: Prüfe BUCHSTABE FÜR BUCHSTABE und ZIFFER FÜR ZIFFER, dass der Code im Katalog existiert.
     Nur LKNs, die diese Prüfung bestehen, kommen in die finale Liste.
