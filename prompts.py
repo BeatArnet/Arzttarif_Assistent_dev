@@ -85,7 +85,6 @@ def get_stage1_prompt(user_input: str, katalog_context: str, lang: str) -> str:
     {{
       "lkn": "VALIDIERTE_LKN_1",
       "typ": "TYP_AUS_KATALOG_1",
-      "beschreibung": "BESCHREIBUNG_AUS_KATALOG_1",
       "menge": MENGE_ZAHL_LKN_1
     }}
   ],
@@ -193,7 +192,6 @@ Réponse JSON:"""
     {{
       "lkn": "VALIDIERTE_LKN_1",
       "typ": "TYP_AUS_KATALOG_1",
-      "beschreibung": "BESCHREIBUNG_AUS_KATALOG_1",
       "menge": MENGE_ZAHL_LKN_1
     }}
   ],
@@ -270,7 +268,6 @@ Output-Format: NUR valides JSON, KEIN anderer Text.
     {{
       "lkn": "VALIDIERTE_LKN_1",
       "typ": "TYP_AUS_KATALOG_1",
-      "beschreibung": "BESCHREIBUNG_AUS_KATALOG_1",
       "menge": MENGE_ZAHL_LKN_1
     }}
   ],
