@@ -172,6 +172,8 @@ BASELINE_RESULTS_PATH = DATA_DIR / "baseline_results.json"
 BEISPIELE_PATH = DATA_DIR / "beispiele.json"
 
 # Retry configuration for Gemini API calls
+# Bei HTTP 429 (Rate Limit) wird nach dem Exponential-Backoff-Schema erneut
+# versucht. Die Wartezeit berechnet sich als GEMINI_BACKOFF_SECONDS * (2**Versuch).
 GEMINI_MAX_RETRIES = 3
 GEMINI_BACKOFF_SECONDS = 1.0
 
