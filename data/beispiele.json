@@ -25,7 +25,7 @@
     "value_FR": "Consultation 10 min, ablation verrue 5 min, passage en dermatologie",
     "extendedValue_FR": "Consultation médicale de 10 minutes et curetage d'une verrue (durée 5 minutes), y compris temps de changement vers la salle traitement dermatologique",
     "value_IT": "Consultazione 10 minuti, rimozione di una verruca 5 minuti, passaggio a dermatologia",
-    "extendedValue_IT": "Consulta médica de 10 minutos y rimozione di una verruca con cucchiaio tagliente, que tarda 5 minutos, compreso tempo di cambio per dermatologia"
+    "extendedValue_IT": "Consulta specialistica dermatologica  de 10 minutos y rimozione di una verruca con cucchiaio tagliente, que tarda 5 minutos, compreso tempo di cambio per dermatologia"
   },
   {
     "label": "Konsultation 25 Minuten, grosser rheumatologischer Untersuch",
@@ -61,7 +61,7 @@
     "value_FR": "Consultation de MF 15 min + 10 min conseil enfant",
     "extendedValue_FR": "Consultation du médecin de famille 15 min plus 10 min de consultation enfant",
     "value_IT": "Consultazione MF 15 min + 10 min consulenza bambino",
-    "extendedValue_IT": "Consultazione del medico di famiglia di 15 minuti e 10 minuti consulenza bambino"
+    "extendedValue_IT": "Consultazione del medico di famiglia di 15 minuti per un bambino di meno di 12 anni (incluso supplemento). Inoltre, 10 minuti di consulenza supplementare specifica ai genitori, separata dalla consultazione (ad es. educazione sanitaria, spiegazione dettagliata, colloquio di supporto)."
   },
   {
     "label": "Kiefergelenk, Luxation. Geschlossene Reposition",
