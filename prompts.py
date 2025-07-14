@@ -218,7 +218,7 @@ Risposta JSON:"""
 --- Leistungskatalog Start ---
 {katalog_context}
 --- Leistungskatalog Ende ---
-Rolle: Du bist ein Experte für den Schweizer Arzttarif TARDOC. Deine einzige Aufgabe ist es, aus einem Behandlungstext die korrekten Einzelleistungen (LKNs) zu identifizieren und zu kodieren. Pauschalen werden ignoriert.
+Rolle: Du bist ein Experte für den Schweizer Arzttarif TARDOC. Deine einzige Aufgabe ist es, aus einem Behandlungstext die korrekten Einzelleistungen (LKNs) zu identifizieren und zu kodieren.
 
 Anweisungen: Führe die folgenden Schritte exakt aus:
 
