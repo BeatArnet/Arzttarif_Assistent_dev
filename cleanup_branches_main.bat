@@ -21,12 +21,12 @@ git checkout main
 REM Entferne verwaiste Remote-Referenzen
 git remote prune %REMOTE%
 
-REM Lösche alle lokalen Branches ausser main und dev
+REM Lösche alle lokalen Branches ausser main
 FOR /F "tokens=*" %%b IN ('git branch --format="%%(refname:short)" ^| findstr /V "main"') DO (
     git branch -D %%b
 )
 
-REM Lösche alle Remote-Branches ausser main und dev
+REM Lösche alle Remote-Branches ausser main
 SETLOCAL ENABLEDELAYEDEXPANSION
 FOR /F "tokens=*" %%r IN ('git branch -r ^| findstr /V "%REMOTE%/main" ^| findstr /V "HEAD"') DO (
     SET "rb=%%r"

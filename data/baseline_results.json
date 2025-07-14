@@ -348,9 +348,9 @@
     },
     "current": {},
     "query": {
-      "de": "Hausärztliche Konsultation 15 Min plus 10 Minuten Beratung Kind",
-      "fr": "Consultation du médecin de famille 15 min plus 10 min de consultation enfant",
-      "it": "Consultazione del medico di famiglia di 15 minuti per un bambino di meno di 12 anni (incluso supplemento). Inoltre, 10 minuti di consulenza supplementare specifica ai genitori, separata dalla consultazione (ad es. educazione sanitaria, spiegazione dettagliata, colloquio di supporto)."
+      "de": "Hausärztliche Konsultation 15 Min plus 10 Minuten Beratung Kind 8 jährig",
+      "fr": "Consultation du médecin de famille 15 min plus 10 min de consultation enfant de 8 ans",
+      "it": "Consultazione del medico di famiglia di 15 minuti per un bambino di 8 anni (incluso supplemento). Inoltre, 10 minuti di consulenza supplementare specifica ai genitori, separata dalla consultazione (ad es. educazione sanitaria, spiegazione dettagliata, colloquio di supporto)."
     }
   },
   "7": {

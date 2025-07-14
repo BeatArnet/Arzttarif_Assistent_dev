@@ -57,11 +57,11 @@
   {
     "label": "Konsultation HAz 15 Min + 10 Min Beratung Kind",
     "value_DE": "Konsultation HAz 15 Min + 10 Min Beratung Kind",
-    "extendedValue_DE": "Hausärztliche Konsultation 15 Min plus 10 Minuten Beratung Kind",
+    "extendedValue_DE": "Hausärztliche Konsultation 15 Min plus 10 Minuten Beratung Kind 8 jährig",
     "value_FR": "Consultation de MF 15 min + 10 min conseil enfant",
-    "extendedValue_FR": "Consultation du médecin de famille 15 min plus 10 min de consultation enfant",
+    "extendedValue_FR": "Consultation du médecin de famille 15 min plus 10 min de consultation enfant de 8 ans",
     "value_IT": "Consultazione MF 15 min + 10 min consulenza bambino",
-    "extendedValue_IT": "Consultazione del medico di famiglia di 15 minuti per un bambino di meno di 12 anni (incluso supplemento). Inoltre, 10 minuti di consulenza supplementare specifica ai genitori, separata dalla consultazione (ad es. educazione sanitaria, spiegazione dettagliata, colloquio di supporto)."
+    "extendedValue_IT": "Consultazione del medico di famiglia di 15 minuti per un bambino di 8 anni (incluso supplemento). Inoltre, 10 minuti di consulenza supplementare specifica ai genitori, separata dalla consultazione (ad es. educazione sanitaria, spiegazione dettagliata, colloquio di supporto)."
   },
   {
     "label": "Kiefergelenk, Luxation. Geschlossene Reposition",
