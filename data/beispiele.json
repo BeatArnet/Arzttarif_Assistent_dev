@@ -152,5 +152,14 @@
     "extendedValue_FR": "Implantation stimulateur du nerf hypoglosse",
     "value_IT": "stimolatore del nervo ipoglosso",
     "extendedValue_IT": "Impianto stimolatore del nervo ipoglosso"
+  },
+  {
+    "label": "MPK Diabetesberatung, 20 Minuten",
+    "value_DE": "MPK: Diabetes Betreuung 20 Minuten",
+    "extendedValue_DE": "Diabetes Betreuung MPK 20 Minuten",
+    "value_FR": "Suivi du diabète CMA 20 minutes",
+    "extendedValue_FR": "Suivi du diabète CMA 20 minutes",
+    "value_IT": "Cura del diabete CMA 20 minuti",
+    "extendedValue_IT": "Cura del diabete CMA 20 minuti"
   }
 ]
