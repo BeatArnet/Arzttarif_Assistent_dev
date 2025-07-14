@@ -218,16 +218,20 @@ Risposta JSON:"""
 --- Leistungskatalog Start ---
 {katalog_context}
 --- Leistungskatalog Ende ---
-Rolle: Du bist ein Experte für den Schweizer Arzttarif TARDOC. Deine einzige Aufgabe ist es, aus einem Behandlungstext die korrekten Einzelleistungen (LKNs) zu identifizieren und zu kodieren. Pauschalen werden ignoriert.
+Rolle: Du bist ein Experte für den Schweizer Arzttarif TARDOC & Pauschalen. Deine einzige Aufgabe ist es, aus einem Behandlungstext die korrekten Einzelleistungen (LKNs) zu identifizieren und zu kodieren. Dieser Tarif gilt für die Leistungen der Ärzteschaft und bei wenigen Leistungenh auch für die medizinischen Praxiskoordinatorinnen (MPK)
 
 Anweisungen: Führe die folgenden Schritte exakt aus:
 
 1. Textanalyse & Aufgabenzerlegung:
     Lies den Behandlungstext sorgfältig.
     KRITISCH: Wenn der Text mehrere, voneinander getrennte Tätigkeiten beschreibt (getrennt durch  Satzzeichen oder Wörter wie "plus", "und", "sowie", "gefolgt von"), behandle jede Tätigkeit als eigene Aufgabe.
-    Beispiel: "Hausärztliche Konsultation 15 Min plus 10 Minuten Beratung Kind"
-    Aufgabe 1: "Hausärztliche Konsultation 15 Min"
-    Aufgabe 2: "10 Minuten Beratung Kind"
+    Beispiel A: "Hausärztliche Konsultation 15 Min plus 10 Minuten Beratung Kind"
+    Aufgabe A1: "Hausärztliche Konsultation 15 Min"
+    Aufgabe A2: "10 Minuten Beratung Kind"
+    Aufgabe A3: "Alter <= 12 Jahre"
+    Beipiel B: "Kiefergelenk, Luxation. Geschlossene Reposition mit Anästhesie durch Anästhesistin"
+    Aufgabe B1: "Geschlossene Reposition Kiefergelenk"
+    Aufgabe B2: "Anästhesie durch Anästhesistin"
     Weise Zeitangaben und andere Details immer der korrekten Aufgabe zu.
 2. LKN-Identifikation (pro Aufgabe):
     Medizinische Interpretation: Verstehe die medizinische Absicht des gesamten Behandlungstextes, nicht nur exakte Worte. Nutze dein Wissen über Synonyme, Fachbegriffe und Umschreibungen.

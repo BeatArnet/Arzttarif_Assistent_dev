@@ -662,5 +662,42 @@
       "fr": "stimulateur du nerf hypoglosse\nImplantation stimulateur du nerf hypoglosse",
       "it": "stimolatore del nervo ipoglosso\nImpianto stimolatore del nervo ipoglosso"
     }
+  },
+"17": {
+    "baseline": {
+      "de": {
+        "pauschale": null,
+        "einzelleistungen": [
+          {
+            "code": "AK.05.0020",
+            "qty": 1
+          }
+        ]
+      },
+      "fr": {
+        "pauschale": null,
+        "einzelleistungen": [
+          {
+            "code": "AK.05.0020",
+            "qty": 1
+          }
+        ]
+      },
+      "it": {
+        "pauschale": null,
+        "einzelleistungen": [
+          {
+            "code": "AK.05.0020",
+            "qty": 1
+          }
+        ]
+      }
+    },
+    "current": {},
+    "query": {
+      "de": "Diabetes Betreuung MPK 20 Minuten",
+      "fr": "Suivi du diabète CMA 20 minutes",
+      "it": "Cura del diabete CMA 20 minuti"
+    }
   }
 }
