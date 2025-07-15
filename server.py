@@ -1203,12 +1203,18 @@ def search_pauschalen(keyword: str) -> List[Dict[str, Any]]:
     return results
 
 
+import threading
+
+# Lock for sequential processing
+processing_lock = threading.Lock()
+
 # --- API Endpunkt ---
 @app.route('/api/analyze-billing', methods=['POST'])
 def analyze_billing():
-    # Basic request data for logging before full parsing
-    data_for_log = request.get_json(silent=True) or {}
-    user_input_log = data_for_log.get('inputText', '')[:100]
+    with processing_lock:
+        # Basic request data for logging before full parsing
+        data_for_log = request.get_json(silent=True) or {}
+        user_input_log = data_for_log.get('inputText', '')[:100]
     icd_input_log = data_for_log.get('icd', [])
     gtin_input_log = data_for_log.get('gtin', [])
     use_icd_flag_log = data_for_log.get('useIcd', True)
