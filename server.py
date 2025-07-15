@@ -1290,7 +1290,7 @@ def analyze_billing():
             logger.info(f"DEBUG: Beispiel token_doc_freq Key: {next(iter(token_doc_freq.keys()))}")
         # --- DEBUGGING END ---
 
-        ranked_codes = rank_leistungskatalog_entries(tokens, leistungskatalog_dict, token_doc_freq, 200)
+        ranked_codes = rank_leistungskatalog_entries(tokens, leistungskatalog_dict, token_doc_freq, 500)
         # --- DEBUGGING START ---
         logger.info(f"DEBUG: ranked_codes: {ranked_codes[:10]}") # Logge die ersten 10 gerankten Codes
         # --- DEBUGGING END ---
