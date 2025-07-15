@@ -92,7 +92,25 @@ function runTest(id, lang) {
     });
 }
 
+let testQueue = [];
+let isTesting = false;
+
 async function runTestsForRow(id) {
+    testQueue.push(id);
+    processTestQueue();
+}
+
+async function processTestQueue() {
+    if (isTesting || testQueue.length === 0) {
+        return;
+    }
+    isTesting = true;
+
+    const id = testQueue.shift();
+
+    const singleTestBtn = document.querySelector(`.single-test-all-langs[data-id="${id}"]`);
+    if(singleTestBtn) singleTestBtn.disabled = true;
+
     // Clear previous results for this row
     document.getElementById(`res-${id}-de`).textContent = '...';
     document.getElementById(`res-${id}-fr`).textContent = '...';
@@ -102,10 +120,20 @@ async function runTestsForRow(id) {
     for (const lang of langs) {
         await runTest(id, lang); // Wait for each test to complete before starting the next
     }
-    // Note: Overall summary is not updated per row, only for testAll
+
+    if(singleTestBtn) singleTestBtn.disabled = false;
+
+    isTesting = false;
+    processTestQueue();
 }
 
 async function testAll() {
+    const testAllBtn = document.getElementById('testAllBtn');
+    const singleTestBtns = document.querySelectorAll('.single-test-all-langs');
+
+    testAllBtn.disabled = true;
+    singleTestBtns.forEach(btn => btn.disabled = true);
+
     totalTests = 0;
     passedTests = 0;
 
@@ -121,6 +149,9 @@ async function testAll() {
     passedTests = Array.from(results).filter(cell => cell.style.color === 'green').length;
 
     updateOverallSummary();
+
+    testAllBtn.disabled = false;
+    singleTestBtns.forEach(btn => btn.disabled = false);
 }
 
 function updateOverallSummary() {
