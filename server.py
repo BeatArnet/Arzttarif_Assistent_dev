@@ -556,7 +556,7 @@ def call_gemini_stage1(user_input: str, katalog_context: str, lang: str = "de") 
         "generationConfig": {
             "response_mime_type": "application/json",
             "temperature": 0.05,
-            "maxOutputTokens": 8192
+            "maxOutputTokens": 65536
         }
     }
     logger.info("Sende Anfrage Stufe 1 an Gemini Model: %s...", GEMINI_MODEL)
