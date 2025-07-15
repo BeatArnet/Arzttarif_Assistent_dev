@@ -542,8 +542,6 @@ def load_data() -> bool:
 # Die App-Instanz, auf die Gunicorn zugreift
 app: FlaskType = create_app()
 
-
-
 # --- LLM Stufe 1: LKN Identifikation ---
 def call_gemini_stage1(user_input: str, katalog_context: str, lang: str = "de") -> dict:
     logger.info(f"LLM_S1_INIT: Aufruf von call_gemini_stage1. GEMINI_API_KEY vorhanden: {bool(GEMINI_API_KEY)}")
@@ -551,7 +549,6 @@ def call_gemini_stage1(user_input: str, katalog_context: str, lang: str = "de") 
         logger.error("LLM_S1_ERROR: GEMINI_API_KEY fehlt oder ist leer. Funktion wird vorzeitig beendet.")
         return {"identified_leistungen": [], "extracted_info": {}, "begruendung_llm": "Fehler: API Key nicht konfiguriert."}
     prompt = get_stage1_prompt(user_input, katalog_context, lang)
-
 
     gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
     payload = {
