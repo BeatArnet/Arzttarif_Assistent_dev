@@ -33,7 +33,7 @@ def run_tests() -> None:
 
     with app.test_client() as client:
         for ex_id, entry in baseline_data.items():
-            langs = list(entry.get("baseline", {}).keys())
+            langs = list(entry.get("query", {}).keys())
             for lang in langs:
                 resp = client.post(
                     "/api/test-example",
