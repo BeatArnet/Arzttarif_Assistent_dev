@@ -1,80 +1,44 @@
-# Stellt sicher, dass die Ausgabe korrekt (mit Umlauten etc.) dargestellt wird.
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
-# --- Konfiguration ---
-# Den Ziel-Branch hier definieren, um das Skript einfacher anzupassen (z.B. für 'master' oder 'develop')
-$targetBranch = 'main'
-# --------------------
-
-# Git-Änderungen von allen Remotes abrufen
+# Git-Änderungen abrufen
 git fetch --all
 
-# Lokale Branches anzeigen, damit der Benutzer eine Auswahl hat
-Write-Host "Verfuegbare lokale Branches:" -ForegroundColor Cyan
+# Lokale Branches anzeigen
+Write-Host "Verfuegbare lokale Branches:"
 git branch
 
-# Benutzer nach dem zu mergenden Branch fragen
-$userInput = Read-Host "Welchen Branch moechten Sie in '$targetBranch' mergen?"
+# Benutzer nach Branch fragen
+# Eingabe von moeglichen Leerzeichen befreien
+$branchName = (Read-Host "Welchen Branch moechten Sie in 'main' mergen?").Trim()
 
-# Eingabe bereinigen: Sternchen (*) und Leerzeichen am Anfang/Ende entfernen
-$branchName = $userInput.Replace('*', '').Trim()
-
-# Prüfen, ob eine Eingabe gemacht wurde
-if ([string]::IsNullOrWhiteSpace($branchName)) {
-    Write-Host "Fehler: Es wurde kein Branch-Name eingegeben." -ForegroundColor Red
-    exit
+# Prüfen, ob Branch existiert
+if (-not (git show-ref --verify --quiet "refs/heads/$branchName")) {
+    Write-Host "Fehler: Branch '$branchName' nicht gefunden." -ForegroundColor Red
+    exit 1
 }
 
-# Prüfen, ob der Benutzer versucht, den Branch in sich selbst zu mergen
-if ($branchName -eq $targetBranch) {
-    Write-Host "Fehler: Sie koennen den Branch '$targetBranch' nicht in sich selbst mergen." -ForegroundColor Red
-    exit
-}
+# Zu main wechseln
+git checkout main
 
-# Prüfen, ob der eingegebene Branch lokal existiert
-# `git branch --list` filtert die Branches und gibt den Namen aus, wenn er existiert.
-if (-not (git branch --list $branchName | Select-String -Quiet .)) {
-    Write-Host "Fehler: Der lokale Branch '$branchName' wurde nicht gefunden." -ForegroundColor Red
-    Write-Host "Stellen Sie sicher, dass der Branch lokal existiert und kein Tippfehler vorliegt." -ForegroundColor Yellow
-    exit
-}
-
-# Zum Ziel-Branch wechseln
-Write-Host "Wechsle zu Branch '$targetBranch'..."
-git checkout $targetBranch
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Fehler beim Wechseln zum Branch '$targetBranch'." -ForegroundColor Red
-    exit
-}
-
-# Den ausgewählten Branch mergen
-Write-Host "Merge Branch '$branchName' in '$targetBranch'..."
+# Mergen
 git merge $branchName
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "Fehler beim Mergen. Bitte beheben Sie die Konflikte manuell und schliessen Sie den Merge ab." -ForegroundColor Red
-    exit
+    Write-Host "Fehler beim Mergen. Bitte Konflikte beheben und Merge manuell abschliessen." -ForegroundColor Red
+    exit 1
 }
 
-# Die Änderungen zum Remote-Repository pushen
-Write-Host "Pushe Änderungen zu 'origin/$targetBranch'..."
-git push origin $targetBranch
+# Push
+git push origin main
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "Fehler beim Pushen zu 'origin/$targetBranch'." -ForegroundColor Red
-    exit
+    Write-Host "Fehler beim Pushen zu 'main'." -ForegroundColor Red
+    exit 1
 }
-
-Write-Host "Merge und Push erfolgreich abgeschlossen." -ForegroundColor Green
-
-# Optionales Löschen des alten Branches
+# Optionales Löschen des Branches
 $delete = Read-Host "Moechten Sie den Branch '$branchName' lokal loeschen? (j/n)"
 if ($delete -eq 'j') {
     git branch -d $branchName
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Fehler beim Loeschen des Branches '$branchName'. Moeglicherweise sind nicht alle Aenderungen gemerged." -ForegroundColor Red
-    } else {
-        Write-Host "Branch '$branchName' wurde lokal geloescht." -ForegroundColor Green
-    }
+    Write-Host "Branch '$branchName' wurde lokal geloescht." -ForegroundColor Green
 }
 
-Write-Host "Skript beendet."
+Write-Host "Merge und Push erfolgreich abgeschlossen." -ForegroundColor Green

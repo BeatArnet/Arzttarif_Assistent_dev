@@ -100,43 +100,49 @@ async function runTestsForRow(id) {
     processTestQueue();
 }
 
-async function processTestQueue(isTestAll = false) {
-    if (isTesting || testQueue.length === 0) {
-        if (!isTesting && testQueue.length === 0) {
-            document.body.style.cursor = 'default';
-            if (isTestAll) {
-                const testAllBtn = document.getElementById('testAllBtn');
-                const singleTestBtns = document.querySelectorAll('.single-test-all-langs');
-                testAllBtn.disabled = false;
-                singleTestBtns.forEach(btn => btn.disabled = false);
+function processTestQueue(isTestAll = false) {
+    return new Promise(resolve => {
+        if (isTesting || testQueue.length === 0) {
+            if (!isTesting && testQueue.length === 0) {
+                document.body.style.cursor = 'default';
+                if (isTestAll) {
+                    const testAllBtn = document.getElementById('testAllBtn');
+                    const singleTestBtns = document.querySelectorAll('.single-test-all-langs');
+                    testAllBtn.disabled = false;
+                    singleTestBtns.forEach(btn => btn.disabled = false);
+                }
             }
+            resolve();
+            return;
         }
-        return;
-    }
-    isTesting = true;
-    document.body.style.cursor = 'wait';
+        isTesting = true;
+        document.body.style.cursor = 'wait';
 
-    const id = testQueue.shift();
+        const id = testQueue.shift();
 
-    const singleTestBtn = document.querySelector(`.single-test-all-langs[data-id="${id}"]`);
-    if(singleTestBtn) singleTestBtn.disabled = true;
+        const singleTestBtn = document.querySelector(`.single-test-all-langs[data-id="${id}"]`);
+        if(singleTestBtn) singleTestBtn.disabled = true;
 
-    // Clear previous results for this row
-    document.getElementById(`res-${id}-de`).textContent = '...';
-    document.getElementById(`res-${id}-fr`).textContent = '...';
-    document.getElementById(`res-${id}-it`).textContent = '...';
+        // Clear previous results for this row
+        document.getElementById(`res-${id}-de`).textContent = '...';
+        document.getElementById(`res-${id}-fr`).textContent = '...';
+        document.getElementById(`res-${id}-it`).textContent = '...';
 
-    const langs = ['de', 'fr', 'it'];
-    for (const lang of langs) {
-        const cell = document.getElementById(`res-${id}-${lang}`);
-        if(cell) cell.textContent = `testing ${lang}...`;
-        await runTest(id, lang); // Wait for each test to complete before starting the next
-    }
+        const langs = ['de', 'fr', 'it'];
+        (async () => {
+            for (const lang of langs) {
+                const cell = document.getElementById(`res-${id}-${lang}`);
+                if(cell) cell.textContent = `testing ${lang}...`;
+                await runTest(id, lang); // Wait for each test to complete before starting the next
+            }
 
-    if(singleTestBtn && !isTestAll) singleTestBtn.disabled = false;
+            if(singleTestBtn && !isTestAll) singleTestBtn.disabled = false;
 
-    isTesting = false;
-    processTestQueue(isTestAll);
+            isTesting = false;
+            await processTestQueue(isTestAll);
+            resolve();
+        })();
+    });
 }
 
 async function testAll() {
@@ -155,7 +161,7 @@ async function testAll() {
     for (const exampleId of exampleIds) {
         testQueue.push(exampleId);
     }
-    processTestQueue(true);
+    await processTestQueue(true);
 
     // After all tests are run, count the passed tests
     const results = document.querySelectorAll('td[id^="res-"]');

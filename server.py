@@ -851,6 +851,13 @@ def call_gemini_stage2_mapping(tardoc_lkn: str, tardoc_desc: str, candidate_paus
         return None
 
     candidates_text = "\n".join([f"- {lkn}: {desc}" for lkn, desc in candidate_pauschal_lkns.items()])
+    if len(candidates_text) > 15000:  # Limit Kontextlänge (Anpassen nach Bedarf)
+        logger.warning(
+            "Kandidatenliste für %s zu lang (%s Zeichen), wird gekürzt.",
+            tardoc_lkn,
+            len(candidates_text),
+        )
+        candidates_text = candidates_text[:15000] + "\n..."  # Einfache Kürzung
 
     prompt = get_stage2_mapping_prompt(tardoc_lkn, tardoc_desc, candidates_text, lang)
 

@@ -207,7 +207,7 @@
   },
   "11": {
     "query": {
-      "de": "Korrekturoperation eines Hallux valgus rechts",
+      "de": "Korrektur eines Hallux valgus rechts",
       "fr": "Correction d'un hallux valgus droit",
       "it": "Correzione di alluce valgo destro"
     },
@@ -306,7 +306,7 @@
       "einzelleistungen": [
         {
           "code": "AK.05.0020",
-          "qty": 20
+          "qty": 1
         }
       ]
     },
