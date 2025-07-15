@@ -115,27 +115,19 @@ async function runTestsForRow(id) {
 async function testAll() {
     totalTests = 0;
     passedTests = 0;
-    const testPromises = [];
-    // examplesData[0] is often metadata or headers, actual examples start from index 1
-    // or ensure examplesData is filtered to only contain actual examples.
-    // Assuming examplesData[0] might be an issue if it's not a valid example.
-    // Let's iterate from 1, or adjust if examplesData is 0-indexed for actual examples.
-    const numExamples = examplesData.length -1; // if examples start from 1
-    totalTests = numExamples * 3; // DE, FR, IT for each example
+
+    const numExamples = examplesData.length -1;
+    totalTests = numExamples * 3;
 
     for (let i = 1; i < examplesData.length; i++) {
-        const exampleId = i; // Or examplesData[i].id if available and more robust
-        document.getElementById(`res-${exampleId}-de`).textContent = '...';
-        document.getElementById(`res-${exampleId}-fr`).textContent = '...';
-        document.getElementById(`res-${exampleId}-it`).textContent = '...';
-
-        testPromises.push(runTest(exampleId, 'de'));
-        testPromises.push(runTest(exampleId, 'fr'));
-        testPromises.push(runTest(exampleId, 'it'));
+        const exampleId = i;
+        await runTestsForRow(exampleId);
     }
 
-    const results = await Promise.all(testPromises);
-    passedTests = results.filter(r => r.passed).length;
+    // After all tests are run, count the passed tests
+    const results = document.querySelectorAll('td[id^="res-"]');
+    passedTests = Array.from(results).filter(cell => cell.style.color === 'green').length;
+
     updateOverallSummary();
 }
 
