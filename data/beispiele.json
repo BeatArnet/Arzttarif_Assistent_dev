@@ -1,15 +1,5 @@
 [
   {
-    "label": "--- Bitte wählen ---",
-    "value_DE": "",
-    "extendedValue_DE": "",
-    "value_FR": "",
-    "extendedValue_FR": "",
-    "value_IT": "",
-    "extendedValue_IT": ""
-  },
-  {
-
     "label": "Konsultation HAz, 17 Minuten",
     "value_DE": "Konsultation HAz, 17 Minuten",
     "extendedValue_DE": "Hausärztliche Konsultation von 17 Minuten",
