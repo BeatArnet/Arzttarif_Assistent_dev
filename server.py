@@ -1845,9 +1845,9 @@ def test_example():
     if not baseline_entry:
         return jsonify({'error': 'Baseline not found'}), 404
 
-    baseline = baseline_entry.get('baseline', {}).get(lang)
+    baseline = baseline_entry.get('baseline')
     if baseline is None:
-        return jsonify({'error': 'Baseline missing for language'}), 404
+        return jsonify({'error': 'Baseline missing for example'}), 404
 
     query_text = baseline_entry.get('query', {}).get(lang)
     if not query_text:
@@ -1858,7 +1858,7 @@ def test_example():
         # Wenn eine Pauschale erwartet wird, versuchen wir es erstmal ohne strikte ICD-Prüfung,
         # da die baseline_results.json keine ICDs pro Testfall spezifiziert.
         # Langfristig sollten Testfälle spezifische ICDs und useIcd-Flags haben können.
-        expected_pauschale = baseline_entry.get('baseline', {}).get(lang, {}).get('pauschale')
+        expected_pauschale = baseline.get('pauschale')
         test_use_icd = True
         test_icd_codes = [] # Standardmäßig keine ICDs für Tests, es sei denn, sie wären in baseline_results definiert
 
