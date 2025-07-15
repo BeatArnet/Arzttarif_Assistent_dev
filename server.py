@@ -560,6 +560,7 @@ def call_gemini_stage1(user_input: str, katalog_context: str, lang: str = "de") 
         }
     }
     logger.info("Sende Anfrage Stufe 1 an Gemini Model: %s...", GEMINI_MODEL)
+    logger.debug(f"LLM_S1_REQUEST_PAYLOAD: {json.dumps(payload, ensure_ascii=False)}")
     try:
         response = None
         for attempt in range(GEMINI_MAX_RETRIES):
@@ -570,23 +571,23 @@ def call_gemini_stage1(user_input: str, katalog_context: str, lang: str = "de") 
                     raise requests.exceptions.HTTPError(response=response)
                 response.raise_for_status()
                 break
-            except requests.exceptions.HTTPError as http_err:
-                if (
-                    http_err.response is not None
-                    and http_err.response.status_code == 429
-                    and attempt < GEMINI_MAX_RETRIES - 1
-                ):
+            except requests.exceptions.RequestException as e:
+                if attempt < GEMINI_MAX_RETRIES - 1:
                     wait_time = GEMINI_BACKOFF_SECONDS * (2 ** attempt)
                     logger.warning(
-                        "Gemini Stufe 1 Rate Limit erreicht. Neuer Versuch in %s Sekunden.",
+                        "Gemini Stufe 1 Netzwerkfehler: %s. Neuer Versuch in %s Sekunden.",
+                        e,
                         wait_time,
                     )
                     time.sleep(wait_time)
                     continue
-                raise
+                else:
+                    logger.error("Netzwerkfehler bei Gemini Stufe 1 nach %s Versuchen: %s", GEMINI_MAX_RETRIES, e)
+                    raise ConnectionError(f"Netzwerkfehler bei Gemini Stufe 1: {e}") from e
         if response is None:
             raise ConnectionError("Keine Antwort von Gemini Stufe 1 erhalten")
         gemini_data = response.json()
+        logger.debug(f"LLM_S1_RAW_GEMINI_RESPONSE: {json.dumps(gemini_data, ensure_ascii=False)}")
         logger.info(
             f"LLM_S1_RAW_GEMINI_DATA: {json.dumps(gemini_data, ensure_ascii=False)}"
         )
@@ -666,27 +667,24 @@ def call_gemini_stage1(user_input: str, katalog_context: str, lang: str = "de") 
                 raise ValueError(f"Unerwarteter Zustand: Candidate is not a dict ({type(candidate)}) and no text response.")
 
         try:
-            llm_response_json = json.loads(raw_text_response)
+            # Attempt to find JSON within ```json ... ``` blocks first
+            match = re.search(r'```json\s*([\s\S]*?)\s*```', raw_text_response, re.IGNORECASE)
+            if match:
+                json_text = match.group(1)
+                logger.info("JSON aus Markdown extrahiert.")
+            else:
+                json_text = raw_text_response
+
+            llm_response_json = json.loads(json_text)
             logger.info(f"LLM_S1_PARSED_JSON_INITIAL: {json.dumps(llm_response_json, ensure_ascii=False)}")
         except json.JSONDecodeError as json_err:
-            if not raw_text_response.strip():
-                logger.warning("LLM_S1_WARN: LLM Stufe 1 lieferte leeren String, der nicht als JSON geparst werden kann. Erstelle leeres Ergebnis.")
-                llm_response_json = {
-                    "identified_leistungen": [],
-                    "extracted_info": {
-                        "dauer_minuten": None, "menge_allgemein": None, "alter": None,
-                        "geschlecht": None, "seitigkeit": "unbekannt", "anzahl_prozeduren": None
-                    },
-                    "begruendung_llm": "LLM lieferte leere Antwort."
-                }
-            else: # Es gab Text, aber er war kein valides JSON
-                match = re.search(r'```json\s*([\s\S]*?)\s*```', raw_text_response, re.IGNORECASE)
-                if match:
-                    try:
-                        llm_response_json = json.loads(match.group(1))
-                        logger.info("JSON aus Markdown extrahiert.")
-                    except json.JSONDecodeError: raise ValueError(f"JSONDecodeError auch nach Markdown-Extraktion: {json_err}. Rohtext: {raw_text_response[:500]}...")
-                else: raise ValueError(f"JSONDecodeError: {json_err}. Rohtext: {raw_text_response[:500]}...")
+            logger.error(f"Fehler beim Parsen der LLM Stufe 1 Antwort: {json_err}. Rohtext: {raw_text_response[:500]}...")
+            # Return a default error structure if JSON parsing fails completely
+            llm_response_json = {
+                "identified_leistungen": [],
+                "extracted_info": {},
+                "begruendung_llm": f"Fehler: Ungültiges JSON vom LLM erhalten. {json_err}"
+            }
 
         # print(f"DEBUG: Geparstes LLM JSON Stufe 1 VOR Validierung: {json.dumps(llm_response_json, indent=2, ensure_ascii=False)}")
         logger.info(f"LLM_S1_PARSED_JSON_BEFORE_VALIDATION: {json.dumps(llm_response_json, indent=2, ensure_ascii=False)}")
@@ -1202,12 +1200,18 @@ def search_pauschalen(keyword: str) -> List[Dict[str, Any]]:
     return results
 
 
+import threading
+
+# Lock for sequential processing
+processing_lock = threading.Lock()
+
 # --- API Endpunkt ---
 @app.route('/api/analyze-billing', methods=['POST'])
 def analyze_billing():
-    # Basic request data for logging before full parsing
-    data_for_log = request.get_json(silent=True) or {}
-    user_input_log = data_for_log.get('inputText', '')[:100]
+    with processing_lock:
+        # Basic request data for logging before full parsing
+        data_for_log = request.get_json(silent=True) or {}
+        user_input_log = data_for_log.get('inputText', '')[:100]
     icd_input_log = data_for_log.get('icd', [])
     gtin_input_log = data_for_log.get('gtin', [])
     use_icd_flag_log = data_for_log.get('useIcd', True)
@@ -1283,7 +1287,7 @@ def analyze_billing():
             logger.info(f"DEBUG: Beispiel token_doc_freq Key: {next(iter(token_doc_freq.keys()))}")
         # --- DEBUGGING END ---
 
-        ranked_codes = rank_leistungskatalog_entries(tokens, leistungskatalog_dict, token_doc_freq, 200)
+        ranked_codes = rank_leistungskatalog_entries(tokens, leistungskatalog_dict, token_doc_freq, 500)
         # --- DEBUGGING START ---
         logger.info(f"DEBUG: ranked_codes: {ranked_codes[:10]}") # Logge die ersten 10 gerankten Codes
         # --- DEBUGGING END ---
