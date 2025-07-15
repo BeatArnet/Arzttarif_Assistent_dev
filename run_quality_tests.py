@@ -67,5 +67,22 @@ def run_tests() -> None:
     logger.info("\n%s/%s Tests bestanden.", passed_count, total)
 
 
+import pytest
+
+def run_pytest_tests():
+    """Runs all pytest tests."""
+    test_files = [
+        "tests/test_server.py",
+        "tests/test_pauschale_logic.py",
+        "tests/test_pauschale_selection.py",
+    ]
+    for test_file in test_files:
+        if Path(test_file).exists():
+            logger.info(f"Running tests for {test_file}")
+            pytest.main([test_file])
+        else:
+            logger.warning(f"Test file not found: {test_file}")
+
 if __name__ == "__main__":
     run_tests()
+    run_pytest_tests()
