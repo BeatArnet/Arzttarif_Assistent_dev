@@ -561,12 +561,16 @@ def evaluate_pauschale_logic_orchestrator(
     an AST operator, they are connected based on the 'Operator' field of the last
     condition of the preceding group (UND if 'UND', otherwise ODER).
     """
-    # Filter conditions for the current pauschale and sort them by BedingungsID
-    # This sorting is crucial for correct sequential processing of defined logic.
-    conditions_for_pauschale = sorted(
-        [cond for cond in all_pauschale_bedingungen_data if cond.get("Pauschale") == pauschale_code],
-        key=lambda x: x.get("BedingungsID", 0)
-    )
+    # Filter conditions for the current pauschale. The original order of the
+    # incoming list reflects the logical sequencing defined in the source data
+    # (each row's ``Operator`` links it with the following row). Sorting by
+    # ``BedingungsID`` can therefore corrupt the intended evaluation order,
+    # especially in tests that deliberately use non-sequential IDs. We keep the
+    # list order as provided.
+    conditions_for_pauschale = [
+        cond for cond in all_pauschale_bedingungen_data
+        if cond.get("Pauschale") == pauschale_code
+    ]
 
     if not conditions_for_pauschale:
         if debug:

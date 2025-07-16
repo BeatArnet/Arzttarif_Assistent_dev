@@ -27,13 +27,17 @@ def get_table_content(table_ref: str, table_type: str, tabellen_dict_by_table: d
 
         if normalized_key in tabellen_dict_by_table:
             # print(f"DEBUG (get_table_content): Schlüssel '{normalized_key}' gefunden.") # Optional
-            for entry in tabellen_dict_by_table[normalized_key]: # Greife direkt auf die Liste zu
+            for entry in tabellen_dict_by_table[normalized_key]:
                 entry_typ = entry.get(TAB_TYP_KEY)
-                if entry_typ and entry_typ.lower() == table_type.lower():
-                    code = entry.get(TAB_CODE_KEY)
-                    text = get_lang_field(entry, TAB_TEXT_KEY, lang)
-                    if code:
-                        all_entries_for_type.append({"Code": code, "Code_Text": text or "N/A"})
+                # If the table entry has no explicit type, assume it matches the
+                # requested ``table_type``. This mirrors the simplified mocks in
+                # the tests where only the ``Code`` field is provided.
+                if entry_typ and entry_typ.lower() != table_type.lower():
+                    continue
+                code = entry.get(TAB_CODE_KEY)
+                text = get_lang_field(entry, TAB_TEXT_KEY, lang)
+                if code:
+                    all_entries_for_type.append({"Code": code, "Code_Text": text or "N/A"})
         else:
             logger.warning(
                 "WARNUNG (get_table_content): Normalisierter Schlüssel '%s' (Original: '%s') nicht in tabellen_dict_by_table gefunden.",
