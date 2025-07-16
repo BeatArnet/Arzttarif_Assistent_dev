@@ -1167,7 +1167,7 @@ function generateLlmStage1Details(llmResult) {
         detailsHtml += `<p><b>${tDyn('llmRankedLkns')}</b></p><ol>`;
         rankedList.forEach(code => {
             const desc = beschreibungZuLKN(code);
-            detailsHtml += `<li><a href="https://tarifbrowser.oaat-otma.ch/startPortal?search=${encodeURIComponent(code)}" target="_blank">${escapeHtml(code)}</a> ${escapeHtml(desc)}</li>`;
+            detailsHtml += `<li>${createInfoLink(code,'lkn')} ${escapeHtml(desc)}</li>`;
         });
         detailsHtml += `</ol>`;
     }
