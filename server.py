@@ -1277,7 +1277,11 @@ def analyze_billing():
         katalog_context_parts = []
         preprocessed_input = expand_compound_words(user_input)
         tokens = extract_keywords(user_input)
-        direct_codes = [c for c in extract_lkn_codes_from_text(user_input) if c in leistungskatalog_dict]
+        # Extract any potential LKN codes mentioned in the text. Even if a code
+        # is unknown to the loaded Leistungskatalog we still include it so that
+        # the LLM context is never empty when the user explicitly provides a
+        # code.
+        direct_codes = [c.upper() for c in extract_lkn_codes_from_text(user_input)]
 
         # --- DEBUGGING START ---
         logger.info(f"DEBUG: Zustand vor rank_leistungskatalog_entries:")

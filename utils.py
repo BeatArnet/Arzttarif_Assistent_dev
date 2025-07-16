@@ -3,7 +3,6 @@ import html
 import logging
 from typing import Dict, List, Any, Set
 import re
-import re
 
 logger = logging.getLogger(__name__)
 
