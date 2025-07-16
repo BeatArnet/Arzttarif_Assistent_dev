@@ -111,7 +111,7 @@ except ModuleNotFoundError:
     def load_dotenv(*a, **k) -> bool:
         return False
 import regelpruefer # Dein Modul
-from typing import Dict, List, Any, Set, Tuple, Callable # Tuple und Callable hinzugefügt
+from typing import Dict, List, Any, Set, Tuple, Callable, cast  # Tuple und Callable hinzugefügt
 from utils import (
     get_table_content,
     translate_rule_error_message,
@@ -1294,12 +1294,15 @@ def analyze_billing():
             logger.info(f"DEBUG: Beispiel token_doc_freq Key: {next(iter(token_doc_freq.keys()))}")
         # --- DEBUGGING END ---
 
-        ranked_results = rank_leistungskatalog_entries(
-            tokens,
-            leistungskatalog_dict,
-            token_doc_freq,
-            500,
-            return_scores=True,
+        ranked_results = cast(
+            List[Tuple[float, str]],
+            rank_leistungskatalog_entries(
+                tokens,
+                leistungskatalog_dict,
+                token_doc_freq,
+                500,
+                return_scores=True,
+            ),
         )
         ranked_codes = [code for _, code in ranked_results]
         top_ranking_results = ranked_results[:5]
