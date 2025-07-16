@@ -3,6 +3,7 @@ import html
 import logging
 from typing import Dict, List, Any, Set
 import re
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -701,4 +702,17 @@ def extract_keywords(text: str) -> Set[str]:
         expanded_tokens.update(collect_synonyms(t))
 
     return expanded_tokens
+
+
+# --- New helper: Extract LKN codes directly from text ---
+LKN_CODE_REGEX = re.compile(r"\b[A-Z]{2}\.[A-Z0-9]{2}\.[A-Z0-9]{4}\b", re.IGNORECASE)
+
+def extract_lkn_codes_from_text(text: str) -> List[str]:
+    """Return all potential LKN codes found in ``text``.
+
+    The pattern matches codes like ``GG.15.0330`` irrespective of case.
+    """
+    if not isinstance(text, str):
+        return []
+    return [m.group(0).upper() for m in LKN_CODE_REGEX.finditer(text)]
 

@@ -117,6 +117,7 @@ from utils import (
     translate_rule_error_message,
     expand_compound_words,
     extract_keywords,
+    extract_lkn_codes_from_text,
 )
 import html
 from prompts import get_stage1_prompt, get_stage2_mapping_prompt, get_stage2_ranking_prompt
@@ -1276,6 +1277,7 @@ def analyze_billing():
         katalog_context_parts = []
         preprocessed_input = expand_compound_words(user_input)
         tokens = extract_keywords(user_input)
+        direct_codes = [c for c in extract_lkn_codes_from_text(user_input) if c in leistungskatalog_dict]
 
         # --- DEBUGGING START ---
         logger.info(f"DEBUG: Zustand vor rank_leistungskatalog_entries:")
@@ -1288,6 +1290,8 @@ def analyze_billing():
         # --- DEBUGGING END ---
 
         ranked_codes = rank_leistungskatalog_entries(tokens, leistungskatalog_dict, token_doc_freq, 500)
+        if direct_codes:
+            ranked_codes = list(dict.fromkeys(direct_codes + ranked_codes))
         # --- DEBUGGING START ---
         logger.info(f"DEBUG: ranked_codes: {ranked_codes[:10]}") # Logge die ersten 10 gerankten Codes
         # --- DEBUGGING END ---
