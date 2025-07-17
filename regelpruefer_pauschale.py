@@ -1037,29 +1037,32 @@ def check_pauschale_conditions(
             group_val = cond_data.get(GRUPPE_KEY)
 
             if group_val != current_group_id_for_display_logic:
-                if current_group_id_for_display_logic is not None: # Close previous group
-                    html_parts.append("</div>") # condition-group
+                if current_group_id_for_display_logic is not None:
+                    html_parts.append("</div>")
 
-                # Check if this group is new within the current AST block or if an implicit operator is needed
-                if group_val in processed_groups_in_current_ast_block and last_actual_condition_in_current_group:
-                    # This means we are starting a new group, but there was a previous group in this same AST block.
-                    # The operator from the last condition of that *previous group* should apply.
-                    # This is complex as `last_actual_condition_in_current_group` refers to the previous line.
-                    # The logic for implicit inter-group operators (if not AST) is handled by orchestrator.
-                    # For display, if an AST operator wasn't just printed, and we are switching groups,
-                    # the orchestrator implies UND by default between groups in a sequence if no AST.
-                    # This display logic might not perfectly mirror the orchestrator's implicit UND between groups
-                    # without an explicit AST operator. The user asked for operators between groups.
-                    # AST operators are explicit. Implicit ones are harder to display here cleanly.
-                    # For now, we only display explicit AST operators.
-                    pass
+                    if last_actual_condition_in_current_group:
+                        implicit_op = str(last_actual_condition_in_current_group.get(OPERATOR_KEY, "ODER")).upper()
+                    else:
+                        implicit_op = "ODER"
 
+                    translated_implicit_op = ""
+                    if implicit_op in ["UND", "AND"]:
+                        translated_implicit_op = translate('AND', lang)
+                    elif implicit_op in ["ODER", "OR"]:
+                        translated_implicit_op = translate('OR', lang)
 
-                current_group_id_for_display_logic = group_val
+                    if translated_implicit_op:
+                        html_parts.append(
+                            f"<div class=\"condition-separator inter-group-operator\">{translated_implicit_op}</div>"
+                        )
+
                 processed_groups_in_current_ast_block.add(group_val)
+                current_group_id_for_display_logic = group_val
                 group_title = f"{translate('condition_group', lang)} {escape(str(current_group_id_for_display_logic))}"
-                html_parts.append(f"<div class=\"condition-group\"><div class=\"condition-group-title\">{group_title}</div>")
-                last_actual_condition_in_current_group = None # Reset for the new group
+                html_parts.append(
+                    f"<div class=\"condition-group\"><div class=\"condition-group-title\">{group_title}</div>"
+                )
+                last_actual_condition_in_current_group = None
 
             # Intra-Gruppen Operator (between conditions *within* the same group div)
             if last_actual_condition_in_current_group and last_actual_condition_in_current_group.get(GRUPPE_KEY) == current_group_id_for_display_logic:
