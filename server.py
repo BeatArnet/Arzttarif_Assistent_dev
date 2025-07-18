@@ -1961,6 +1961,75 @@ def test_example():
         'diff': diff
     })
 
+
+# --- Feedback via GitHub --------------------------------------------------
+
+@app.route('/api/submit-feedback', methods=['POST'])
+def submit_feedback() -> Any:
+    """Create a GitHub issue from user feedback."""
+    token = os.environ.get("GITHUB_TOKEN")
+    repo = os.environ.get("GITHUB_REPO")
+    if not token or not repo:
+        logger.error("Feedback not configured: missing GITHUB_TOKEN or GITHUB_REPO")
+        return jsonify({"error": "Feedback not configured"}), 500
+
+    data = request.get_json() or {}
+    category = data.get("category", "Allgemein")
+    code = (data.get("code") or "").strip()
+    message = data.get("message", "")
+
+    title_parts = [category]
+    if code:
+        title_parts.append(code)
+    title = " - ".join(title_parts)
+    body = f"**Kategorie:** {category}\n" + (f"**Code:** {code}\n" if code else "") + f"\n{message}"
+
+    issue_url = f"https://api.github.com/repos/{repo}/issues"
+    headers = {
+        "Authorization": f"token {token}",
+        "Accept": "application/vnd.github+json",
+    }
+    payload = {"title": title, "body": body, "labels": ["feedback"]}
+    try:
+        resp = requests.post(issue_url, json=payload, headers=headers, timeout=10)
+    except Exception as exc:
+        logger.error("GitHub request failed: %s", exc)
+        return jsonify({"error": "Could not submit feedback"}), 500
+    if resp.status_code >= 300:
+        logger.error("GitHub issue creation failed: %s - %s", resp.status_code, resp.text)
+        return jsonify({"error": "GitHub issue creation failed"}), 500
+
+    return jsonify({"status": "ok"})
+
+
+@app.route('/api/approved-feedback', methods=['GET'])
+def approved_feedback() -> Any:
+    """Return feedback issues labeled for display."""
+    token = os.environ.get("GITHUB_TOKEN")
+    repo = os.environ.get("GITHUB_REPO")
+    label = os.environ.get("FEEDBACK_APPROVED_LABEL", "feedback-approved")
+    if not token or not repo:
+        return jsonify([])
+    url = f"https://api.github.com/repos/{repo}/issues"
+    headers = {
+        "Authorization": f"token {token}",
+        "Accept": "application/vnd.github+json",
+    }
+    params = {"state": "all", "labels": label}
+    try:
+        resp = requests.get(url, headers=headers, params=params, timeout=10)
+    except Exception as exc:
+        logger.error("GitHub fetch failed: %s", exc)
+        return jsonify([])
+    if resp.status_code != 200:
+        logger.error("GitHub fetch failed: %s - %s", resp.status_code, resp.text)
+        return jsonify([])
+    items = [
+        {"title": i.get("title", ""), "body": i.get("body", "")}
+        for i in resp.json()
+    ]
+    return jsonify(items)
+
 # --- Static‑Routes & Start ---
 @app.route("/")
 def index_route(): # Umbenannt, um Konflikt mit Modul 'index' zu vermeiden, falls es existiert

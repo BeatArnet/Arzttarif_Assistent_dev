@@ -500,6 +500,23 @@
         <!-- Content will be inserted by JavaScript -->
     </div>
 
+    <button id="feedbackButton" onclick="toggleFeedback()">Feedback geben</button>
+    <div id="feedbackContainer" style="display:none; margin-top:15px;">
+        <label for="feedbackCategory" id="fbCategoryLabel">Kategorie:</label>
+        <select id="feedbackCategory">
+            <option value="Allgemein">Allgemein</option>
+            <option value="Leistungsbeschreibung">Leistungsbeschreibung</option>
+            <option value="Pauschale">Pauschale</option>
+            <option value="Einzelleistung">Einzelleistung</option>
+        </select>
+        <label for="feedbackCode" id="fbCodeLabel">Code (optional):</label>
+        <input type="text" id="feedbackCode">
+        <label for="feedbackText" id="fbMessageLabel">Nachricht:</label>
+        <textarea id="feedbackText" rows="3"></textarea>
+        <button onclick="sendFeedback()" id="fbSubmitButton">Absenden</button>
+        <div id="feedbackStatus" style="margin-top:10px;"></div>
+    </div>
+
     <script src="calculator.js"></script>
     <script>
         const translations = {
@@ -535,7 +552,13 @@
                 testExample: 'Beispiel testen',
                 testAll: 'Alle Beispiele testen',
                 pass: 'OK',
-                fail: 'Fehler'
+                fail: 'Fehler',
+                feedbackButton: 'Feedback geben',
+                fbCategory: 'Kategorie:',
+                fbCode: 'Code (optional):',
+                fbMessage: 'Nachricht:',
+                fbSubmit: 'Absenden',
+                fbThanks: 'Vielen Dank für das Feedback!'
             },
             fr: {
                 langLabel: 'Langue :',
@@ -570,7 +593,13 @@
                 testExample: 'Tester exemple',
                 testAll: 'Tester tous les exemples',
                 pass: 'OK',
-                fail: 'Erreur'
+                fail: 'Erreur',
+                feedbackButton: 'Envoyer un feedback',
+                fbCategory: 'Catégorie:',
+                fbCode: 'Code (optionnel):',
+                fbMessage: 'Message:',
+                fbSubmit: 'Envoyer',
+                fbThanks: 'Merci pour votre feedback!'
             },
             it: {
                 langLabel: 'Lingua:',
@@ -604,7 +633,13 @@
                 testExample: 'Prova esempio',
                 testAll: 'Testa tutti gli esempi',
                 pass: 'OK',
-                fail: 'Errore'
+                fail: 'Errore',
+                feedbackButton: 'Invia feedback',
+                fbCategory: 'Categoria:',
+                fbCode: 'Codice (opzionale):',
+                fbMessage: 'Messaggio:',
+                fbSubmit: 'Invia',
+                fbThanks: 'Grazie per il feedback!'
             }
         };
         let examplesData = [];
@@ -657,6 +692,16 @@
             document.getElementById('spinner').textContent = t.loading;
             const qLink = document.getElementById('qualityLink');
             if(qLink) qLink.textContent = t.qualityLink;
+            const fbBtn = document.getElementById('feedbackButton');
+            if(fbBtn) fbBtn.textContent = t.feedbackButton;
+            const fbCat = document.getElementById('fbCategoryLabel');
+            if(fbCat) fbCat.textContent = t.fbCategory;
+            const fbCode = document.getElementById('fbCodeLabel');
+            if(fbCode) fbCode.textContent = t.fbCode;
+            const fbMsg = document.getElementById('fbMessageLabel');
+            if(fbMsg) fbMsg.textContent = t.fbMessage;
+            const fbSub = document.getElementById('fbSubmitButton');
+            if(fbSub) fbSub.textContent = t.fbSubmit;
             const out = document.getElementById('output');
             if(out){
                 const prev = translations[prevLang] || translations['de'];
@@ -692,6 +737,36 @@
         }
         document.getElementById('languageSelect').addEventListener('change',e=>applyLanguage(e.target.value));
         document.addEventListener('DOMContentLoaded',initLanguage);
+
+        function toggleFeedback(){
+            const c = document.getElementById('feedbackContainer');
+            if(c) c.style.display = c.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function sendFeedback(){
+            const status = document.getElementById('feedbackStatus');
+            if(status) status.textContent = '';
+            const payload = {
+                category: document.getElementById('feedbackCategory').value,
+                code: document.getElementById('feedbackCode').value,
+                message: document.getElementById('feedbackText').value
+            };
+            try{
+                const resp = await fetch('/api/submit-feedback', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                if(resp.ok){
+                    if(status) status.textContent = translations[currentLang].fbThanks;
+                    document.getElementById('feedbackText').value = '';
+                } else {
+                    if(status) status.textContent = 'Fehler';
+                }
+            }catch(e){
+                if(status) status.textContent = 'Fehler';
+            }
+        }
     </script>
 </body>
 </html>
