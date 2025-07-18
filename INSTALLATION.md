@@ -27,7 +27,7 @@ Der "Arzttarif-Assistent" ist eine Webanwendung, die medizinische Leistungstexte
 
 *   **Backend:** Flask (Python) Anwendung (`server.py`).
 *   **Frontend:** HTML, CSS und Vanilla JavaScript (`index.html`, `calculator.js`).
-*   **Daten:** JSON-Dateien im `./data`-Verzeichnis, die direkt im Git-Repository gespeichert und mit **Git LFS** versioniert werden.
+*   **Daten:** JSON-Dateien im `./data`-Verzeichnis, die direkt im Git-Repository gespeichert werden.
 *   **KI-Service:** Google Gemini API.
 
 ## 2. Voraussetzungen
@@ -36,10 +36,9 @@ Der "Arzttarif-Assistent" ist eine Webanwendung, die medizinische Leistungstexte
     *   Python (Version 3.9 oder höher)
     *   `pip` (Python Package Installer)
     *   Git
-    *   Git LFS ([https://git-lfs.github.com/](https://git-lfs.github.com/))
     *   Ein Google Gemini API Key
 *   **Für Deployment:**
-    *   Ein Git-Hosting-Konto (z.B. GitHub), das Git LFS unterstützt.
+    *   Ein Git-Hosting-Konto (z.B. GitHub).
     *   Ein Hosting-Anbieter-Konto (z.B. Render.com).
 
 ## 3. Lokale Einrichtung und Ausführung
@@ -50,13 +49,7 @@ git clone https://github.com/BeatArnet/Arzttarif-Assistent.git
 cd Arzttarif-Assistent
 ```
 
-**3.2. Git LFS Dateien herunterladen**
-Nach dem Klonen müssen die grossen Datendateien mit Git LFS explizit geholt werden:
-```bash
-git lfs pull
-```
-
-**3.3. Python-Umgebung einrichten (Empfohlen)**
+**3.2. Python-Umgebung einrichten (Empfohlen)**
 ```bash
 python -m venv venv
 # Windows:
@@ -93,7 +86,7 @@ Der Server startet standardmässig auf `http://127.0.0.1:8000`.
     ```
     web: gunicorn server:app --timeout 120
     ```
-4.  **Git LFS:** Stelle sicher, dass die `.gitattributes`-Datei committet ist und alle Änderungen gepusht wurden.
+4.  **Git-Repository:** Stelle sicher, dass alle Änderungen committet und gepusht wurden.
 
 **4.2. Konfiguration auf Render.com**
 1.  Erstelle einen neuen "Web Service" und verbinde dein Git-Repository.
