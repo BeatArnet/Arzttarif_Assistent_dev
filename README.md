@@ -84,11 +84,7 @@ Der Assistent ist in den drei Landessprachen DE, FR und IT verfügbar. Die Sprac
     git clone https://github.com/BeatArnet/Arzttarif-Assistent.git
     cd Arzttarif-Assistent
     ```
-3.  **Git LFS Dateien holen:**
-    ```bash
-    git lfs pull
-    ```
-4.  **Virtuelle Umgebung (Empfohlen):**
+3.  **Virtuelle Umgebung (Empfohlen):**
     ```bash
     python -m venv venv
     # Windows:
@@ -96,17 +92,17 @@ Der Assistent ist in den drei Landessprachen DE, FR und IT verfügbar. Die Sprac
     # macOS/Linux:
     source venv/bin/activate
     ```
-5.  **Abhängigkeiten installieren:**
+4.  **Abhängigkeiten installieren:**
     ```bash
     pip install -r requirements.txt
     ```
-6.  **API-Schlüssel konfigurieren:**
+5.  **API-Schlüssel konfigurieren:**
     *   Erstelle eine Datei namens `.env` im Hauptverzeichnis.
     *   Füge deinen Google Gemini API-Schlüssel hinzu:
         ```env
         GEMINI_API_KEY="DEIN_API_SCHLUESSEL_HIER"
         ```
-7.  **Anwendung starten:**
+6.  **Anwendung starten:**
     ```bash
     python server.py
     ```
