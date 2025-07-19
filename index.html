@@ -766,14 +766,17 @@
                     headers: {'Content-Type':'application/json'},
                     body: JSON.stringify(payload)
                 });
+                let data = {};
+                try { data = await resp.json(); } catch(_) {}
                 if(resp.ok){
                     if(status) status.textContent = translations[currentLang].fbThanks;
                     document.getElementById('feedbackText').value = '';
                 } else {
-                    if(status) status.textContent = 'Fehler';
+                    const msg = data.error || translations[currentLang].fail;
+                    if(status) status.textContent = msg;
                 }
             }catch(e){
-                if(status) status.textContent = 'Fehler';
+                if(status) status.textContent = translations[currentLang].fail;
             }
         }
     </script>

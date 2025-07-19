@@ -5,6 +5,7 @@ import json
 import time # für Zeitmessung
 import traceback # für detaillierte Fehlermeldungen
 from pathlib import Path
+from datetime import datetime
 from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -1969,9 +1970,6 @@ def submit_feedback() -> Any:
     """Create a GitHub issue from user feedback."""
     token = os.environ.get("GITHUB_TOKEN")
     repo = os.environ.get("GITHUB_REPO")
-    if not token or not repo:
-        logger.error("Feedback not configured: missing GITHUB_TOKEN or GITHUB_REPO")
-        return jsonify({"error": "Feedback not configured"}), 500
 
     data = request.get_json() or {}
     category = data.get("category", "Allgemein")
@@ -1982,6 +1980,34 @@ def submit_feedback() -> Any:
     einzelleistungen = data.get("einzelleistungen", [])
     begruendung1 = data.get("begruendung_llm1", "")
     begruendung2 = data.get("begruendung_llm2", "")
+
+    if not token or not repo:
+        # Fallback: store feedback locally if GitHub is not configured
+        entry = {
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "category": category,
+            "code": code,
+            "message": message,
+            "user_input": user_input,
+            "pauschale": pauschale,
+            "einzelleistungen": einzelleistungen,
+            "begruendung_llm1": begruendung1,
+            "begruendung_llm2": begruendung2,
+        }
+        feedback_file = Path("feedback_local.json")
+        try:
+            if feedback_file.exists():
+                existing = json.loads(feedback_file.read_text(encoding="utf-8"))
+            else:
+                existing = []
+            existing.append(entry)
+            feedback_file.write_text(json.dumps(existing, ensure_ascii=False, indent=2), encoding="utf-8")
+            logger.info("Stored feedback locally: %s", entry)
+        except Exception as exc:
+            logger.error("Failed to store feedback locally: %s", exc)
+            return jsonify({"error": "Could not save feedback"}), 500
+        return jsonify({"status": "saved"})
+
 
     title_parts = [category]
     if code:
