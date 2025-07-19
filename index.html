@@ -398,13 +398,15 @@
         .top-info {
             position: absolute;
             top: 10px;
+            left: 10px;
             right: 10px;
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 0.75em;
+            font-size: 0.85em;
             color: #555;
         }
+        .top-info button { margin-top: 0; }
         #qualityLink { color: var(--primary); text-decoration:none; }
         #qualityLink:hover { text-decoration: underline; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -456,6 +458,7 @@
     </div>
 
     <div class="top-info">
+        <button id="feedbackButton" type="button">Feedback geben</button>
         <div class="language-select">
             <label id="langLabel" for="languageSelect">Sprache:</label>
             <select id="languageSelect">
@@ -464,12 +467,12 @@
                 <option value="it">Italiano</option>
             </select>
         </div>
+        <a id="qualityLink" href="quality.html">Qualitätskontrolle</a>
         <div class="version-info">
             V2.1, Arnet Konsilium,
             <a href="https://www.arkons.ch/" target="_blank">https://www.arkons.ch/</a>,
             2025
         </div>
-        <a id="qualityLink" href="quality.html">Qualitätskontrolle</a>
     </div>
 
     <h1 id="mainHeader">Neuer Arzttarif Schweiz: TARDOC und Pauschalen</h1>
@@ -507,7 +510,6 @@
         <!-- Content will be inserted by JavaScript -->
     </div>
 
-    <button id="feedbackButton" type="button">Feedback geben</button>
     <div id="feedbackModalOverlay" class="info-modal-overlay" style="display:none;">
         <div id="feedbackModal" class="info-modal" style="width:400px;height:auto;top:20vh;left:calc(50% - 200px);">
             <button id="feedbackModalClose" class="modal-close">&times;</button>
@@ -795,11 +797,15 @@
                 url: window.location.href,
                 userAgent: navigator.userAgent,
                 screen: `${window.screen.width}x${window.screen.height}`,
-                inputs: {
+                form: {
                     userInput: document.getElementById('userInput').value,
                     icdInput: document.getElementById('icdInput').value,
                     gtinInput: document.getElementById('gtinInput').value,
-                    useIcd: document.getElementById('useIcdCheckbox').checked
+                    useIcd: document.getElementById('useIcdCheckbox').checked,
+                    pauschale: (typeof selectedPauschaleDetails === 'object' && selectedPauschaleDetails ? selectedPauschaleDetails.Pauschale : null),
+                    einzelleistungen: Array.isArray(lastBackendResponse?.abrechnung?.leistungen) ? lastBackendResponse.abrechnung.leistungen : [],
+                    begruendung_llm1: lastBackendResponse?.llm_ergebnis_stufe1?.begruendung_llm || '',
+                    begruendung_llm2: lastBackendResponse?.llm_ergebnis_stufe2 || {}
                 }
             };
             document.getElementById('fbContextPre').textContent = JSON.stringify(ctx, null, 2);

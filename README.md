@@ -125,7 +125,7 @@ python run_quality_tests.py
 
 ## Feedback
 
-Über den Button "Feedback geben" öffnet sich ein modales Formular. Es sammelt automatisch Kontextinformationen (URL, Browser, Bildschirmauflösung sowie die aktuellen Eingaben) und sendet sie zusammen mit der Nachricht an das Backend. Sind `GITHUB_TOKEN` und `GITHUB_REPO` gesetzt, wird daraus ein GitHub-Issue erstellt, ansonsten landet das Feedback in `feedback_local.json`.
+Über den Button "Feedback geben" oben neben der Sprachauswahl öffnet sich ein modales Formular. Es sammelt automatisch Kontextinformationen (URL, Browser, Bildschirmauflösung sowie eine Momentaufnahme der aktuellen Formulareingaben und Analyseergebnisse) und sendet sie zusammen mit der Nachricht an das Backend. Sind `GITHUB_TOKEN` und `GITHUB_REPO` gesetzt, wird daraus ein GitHub-Issue erstellt, ansonsten landet das Feedback in `feedback_local.json`.
 
 ## Unittests mit `pytest`
 
