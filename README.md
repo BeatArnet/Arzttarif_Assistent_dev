@@ -14,6 +14,7 @@ Dies ist ein Prototyp einer Webanwendung zur Unterstützung bei der Abrechnung m
 
 ### V2.2 (Aktuell)
 - Dokumentation (README.md, INSTALLATION.md) aktualisiert mit den neuesten Hinweisen und Versionsdetails.
+- Neue Feedback-Funktion: Über ein Formular kann Feedback an ein GitHub-Repository gesendet oder lokal gespeichert werden, wenn keine GitHub-Konfiguration vorliegt.
 
 ### V2.0
 - **Qualitätstests und Baseline-Vergleiche:** Einführung einer neuen Testseite (`quality.html`, `quality.js`) und eines Skripts (`run_quality_tests.py`) zum automatisierten Vergleich von Beispielen mit Referenzwerten (`baseline_results.json`). Ein neuer Backend-Endpunkt `/api/quality` wurde dafür in `server.py` hinzugefügt.
@@ -118,6 +119,10 @@ Die Datei `data/beispiele.json` enthält Testfälle. Mit `run_quality_tests.py` 
 ```bash
 python run_quality_tests.py
 ```
+
+## Feedback
+
+Über den Button "Feedback geben" können Nutzende Kommentare abgeben. Wenn die Umgebungsvariablen `GITHUB_TOKEN` und `GITHUB_REPO` gesetzt sind, wird daraus automatisch ein GitHub-Issue erstellt. Andernfalls speichert die Anwendung das Feedback lokal in `feedback_local.json`.
 
 ## Unittests mit `pytest`
 

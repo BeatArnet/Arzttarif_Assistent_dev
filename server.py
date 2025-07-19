@@ -5,7 +5,7 @@ import json
 import time # für Zeitmessung
 import traceback # für detaillierte Fehlermeldungen
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -1984,7 +1984,7 @@ def submit_feedback() -> Any:
     if not token or not repo:
         # Fallback: store feedback locally if GitHub is not configured
         entry = {
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "category": category,
             "code": code,
             "message": message,
