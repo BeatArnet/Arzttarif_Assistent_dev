@@ -1537,6 +1537,7 @@ function processTardocLookup(lkn) {
 
 // ─── 5 · Feedback-Funktionalität ───────────────────────────────────────────
 function openFeedbackModal(type, context = '', description = '') {
+    alert(`openFeedbackModal called with type: ${type}, context: ${context}`);
     console.log(`openFeedbackModal called with type: ${type}, context: ${context}`);
     // Set hidden fields
     $('feedbackType').value = type;
