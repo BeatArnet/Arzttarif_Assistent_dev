@@ -321,6 +321,7 @@
         }
         #infoModalDetailOverlay { z-index: 10010; }
         #infoModalNestedOverlay { z-index: 10020; }
+        #inputModalOverlay { z-index: 10030; }
         .info-modal {
             background: var(--background-color);
             padding: 25px;
@@ -472,8 +473,25 @@
         </div>
     </div>
 
+    <!-- Input Modal -->
+    <div id="inputModalOverlay" class="info-modal-overlay" style="display:none;">
+        <div id="inputModal" class="info-modal">
+            <button id="inputModalClose" class="modal-close">&times;</button>
+            <div id="inputModalContent">
+                <h2 id="inputModalTitle">Eingaben</h2>
+                <div id="inputModalInfo" style="background-color: #f0f0f0; border: 1px solid #ccc; padding: 10px; margin-bottom: 15px; border-radius: 4px;">
+                    <!-- Non-editable info will be populated here -->
+                </div>
+                <form id="inputModalForm">
+                    <!-- Input fields will be added here -->
+                </form>
+            </div>
+        </div>
+    </div>
+
 
     <div class="top-info">
+         <button id="inputBtn" style="margin-right: 15px; padding: 5px 10px; font-size: 0.9em;">Eingaben</button>
          <button id="globalFeedbackBtn" style="margin-right: 15px; padding: 5px 10px; font-size: 0.9em;">Feedback</button>
         <div class="language-select">
             <label id="langLabel" for="languageSelect">Sprache:</label>

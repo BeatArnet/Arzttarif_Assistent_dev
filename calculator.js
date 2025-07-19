@@ -1642,6 +1642,7 @@ async function handleFeedbackSubmit(e) {
 // ─── 6 · Event-Listener und Initialisierung ────────────────────────────────
 document.addEventListener("DOMContentLoaded", function() {
     // ... bestehende Listener ...
+    makeModalDraggable($('inputModal'));
     const uiField = $("userInput");
     const icdField = $("icdInput");
     const gtinField = $("gtinInput");
@@ -1676,7 +1677,33 @@ document.addEventListener("DOMContentLoaded", function() {
     $('feedbackModalClose').addEventListener('click', () => hideModal('feedbackModalOverlay'));
     $('feedbackForm').addEventListener('submit', handleFeedbackSubmit);
 
+    // --- Listeners for new Input Modal ---
+    $('inputBtn').addEventListener('click', () => openInputModal());
+    $('inputModalClose').addEventListener('click', () => hideModal('inputModalOverlay'));
 });
+
+function openInputModal() {
+    // Populate non-editable info
+    const userInput = $('userInput').value.trim();
+    const icdInput = $("icdInput").value.trim();
+    const gtinInput = ($("gtinInput") ? $("gtinInput").value.trim() : "");
+    const useIcd = $('useIcdCheckbox')?.checked ?? true;
+    const age = $('ageInput')?.value || 'N/A';
+    const gender = $('genderSelect')?.value || 'N/A';
+
+    const infoHtml = `
+        <p><strong>Leistungsbeschreibung:</strong> ${escapeHtml(userInput)}</p>
+        <p><strong>ICD-Codes:</strong> ${escapeHtml(icdInput)}</p>
+        <p><strong>GTINs:</strong> ${escapeHtml(gtinInput)}</p>
+        <p><strong>ICD berücksichtigen:</strong> ${useIcd}</p>
+        <p><strong>Alter:</strong> ${escapeHtml(age)}</p>
+        <p><strong>Geschlecht:</strong> ${escapeHtml(gender)}</p>
+    `;
+    $('inputModalInfo').innerHTML = infoHtml;
+
+    // Show modal
+    showModal('inputModalOverlay', '');
+}
 
 // Mache die Hauptfunktion global verfügbar
 window.getBillingAnalysis = getBillingAnalysis;
