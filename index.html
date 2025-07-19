@@ -408,6 +408,8 @@
         #qualityLink { color: var(--primary); text-decoration:none; }
         #qualityLink:hover { text-decoration: underline; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        #feedbackContainer label { margin-top: 10px; }
+        #feedbackStatus { font-weight: bold; margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -500,7 +502,7 @@
         <!-- Content will be inserted by JavaScript -->
     </div>
 
-    <button id="feedbackButton" onclick="toggleFeedback()">Feedback geben</button>
+    <button id="feedbackButton" type="button">Feedback geben</button>
     <div id="feedbackContainer" style="display:none; margin-top:15px;">
         <label for="feedbackCategory" id="fbCategoryLabel">Kategorie:</label>
         <select id="feedbackCategory">
@@ -513,7 +515,7 @@
         <input type="text" id="feedbackCode">
         <label for="feedbackText" id="fbMessageLabel">Nachricht:</label>
         <textarea id="feedbackText" rows="3"></textarea>
-        <button onclick="sendFeedback()" id="fbSubmitButton">Absenden</button>
+        <button id="fbSubmitButton" type="button">Absenden</button>
         <div id="feedbackStatus" style="margin-top:10px;"></div>
     </div>
 
@@ -736,6 +738,8 @@
             if(selB) selB.selectedIndex=0;
         }
         document.getElementById('languageSelect').addEventListener('change',e=>applyLanguage(e.target.value));
+        document.getElementById('feedbackButton').addEventListener('click',toggleFeedback);
+        document.getElementById('fbSubmitButton').addEventListener('click',sendFeedback);
         document.addEventListener('DOMContentLoaded',initLanguage);
 
         function toggleFeedback(){
