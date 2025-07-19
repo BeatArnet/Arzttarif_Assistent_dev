@@ -749,7 +749,12 @@
             const payload = {
                 category: document.getElementById('feedbackCategory').value,
                 code: document.getElementById('feedbackCode').value,
-                message: document.getElementById('feedbackText').value
+                message: document.getElementById('feedbackText').value,
+                user_input: (typeof lastUserInput !== 'undefined' ? lastUserInput : document.getElementById('userInput').value),
+                pauschale: (typeof selectedPauschaleDetails === 'object' && selectedPauschaleDetails ? selectedPauschaleDetails.Pauschale : null),
+                einzelleistungen: Array.isArray(lastBackendResponse?.abrechnung?.leistungen) ? lastBackendResponse.abrechnung.leistungen : [],
+                begruendung_llm1: lastBackendResponse?.llm_ergebnis_stufe1?.begruendung_llm || '',
+                begruendung_llm2: JSON.stringify(lastBackendResponse?.llm_ergebnis_stufe2 || {})
             };
             try{
                 const resp = await fetch('/api/submit-feedback', {

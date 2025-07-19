@@ -1977,12 +1977,32 @@ def submit_feedback() -> Any:
     category = data.get("category", "Allgemein")
     code = (data.get("code") or "").strip()
     message = data.get("message", "")
+    user_input = data.get("user_input", "")
+    pauschale = data.get("pauschale")
+    einzelleistungen = data.get("einzelleistungen", [])
+    begruendung1 = data.get("begruendung_llm1", "")
+    begruendung2 = data.get("begruendung_llm2", "")
 
     title_parts = [category]
     if code:
         title_parts.append(code)
     title = " - ".join(title_parts)
-    body = f"**Kategorie:** {category}\n" + (f"**Code:** {code}\n" if code else "") + f"\n{message}"
+    body_lines = [f"**Kategorie:** {category}"]
+    if code:
+        body_lines.append(f"**Code:** {code}")
+    if user_input:
+        body_lines.append(f"**User Input:** {user_input}")
+    if pauschale:
+        body_lines.append(f"**Pauschale:** {pauschale}")
+    if einzelleistungen:
+        body_lines.append("**Einzelleistungen:** " + ", ".join(map(str, einzelleistungen)))
+    if begruendung1:
+        body_lines.append("**Begründung LLM Stufe 1:**\n" + begruendung1)
+    if begruendung2:
+        body_lines.append("**Begründung LLM Stufe 2:**\n" + begruendung2)
+    body_lines.append("")
+    body_lines.append(message)
+    body = "\n".join(body_lines)
 
     issue_url = f"https://api.github.com/repos/{repo}/issues"
     headers = {
