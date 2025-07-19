@@ -69,10 +69,12 @@ Inhalt der `.env`-Datei:
 ```env
 GEMINI_API_KEY="DEIN_GEMINI_API_KEY"
 GITHUB_TOKEN="DEIN_GITHUB_TOKEN"
-GITHUB_REPO="USER/REPO"
+GITHUB_REPO="BeatArnet/Arzttarif-Assistent"
 ```
 Ersetze `DEIN_GEMINI_API_KEY` durch deinen Schlüssel.
-Wenn du Feedback automatisch als GitHub-Issue erfassen möchtest, musst du zusätzlich `GITHUB_TOKEN` und `GITHUB_REPO` setzen. `GITHUB_REPO` sollte im Format `benutzername/repository` angegeben werden. **Der bereitgestellte Token läuft am 19.07.2026 ab.**
+Wenn du Feedback automatisch als GitHub-Issue erfassen möchtest, musst du zusätzlich `GITHUB_TOKEN` und `GITHUB_REPO` setzen. `GITHUB_REPO` sollte im Format `BeatArnet/Arzttarif-Assistent` angegeben werden. **Der bereitgestellte Token läuft am 19.07.2026 ab.**
+A personal access token (classic) "Für Feedback durch alle User im Arzttarif Assistenten" with repo scope was recently added to your account. Visit https://github.com/settings/tokens for more information.
+To see this and other security events for your account, visit https://github.com/settings/security-log
 
 **3.6. Anwendung lokal starten**
 ```bash
