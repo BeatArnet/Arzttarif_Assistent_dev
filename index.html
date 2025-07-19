@@ -399,14 +399,17 @@
         .top-info {
             position: absolute;
             top: 10px;
-            left: 0;
-            right: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 1600px;
             padding: 0 10px;
             display: flex;
             align-items: center;
             gap: 10px;
             font-size: 0.85em;
             color: #555;
+            box-sizing: border-box;
         }
         .top-info button { margin-top: 0; }
         #qualityLink { color: var(--primary); text-decoration:none; }
