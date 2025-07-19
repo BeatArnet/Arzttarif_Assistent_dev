@@ -408,6 +408,13 @@
         #qualityLink { color: var(--primary); text-decoration:none; }
         #qualityLink:hover { text-decoration: underline; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        #feedbackContainer label { margin-top: 10px; }
+        #feedbackStatus { font-weight: bold; margin-top: 10px; }
+
+        /* Feedback Modal */
+        #feedbackModal { width: 400px; height: auto; max-height: 80vh; }
+        #feedbackModalBody { display: flex; flex-direction: column; gap: 10px; }
+        #feedbackModal textarea { width: 100%; resize: vertical; }
 </style>
 </head>
 <body>
@@ -500,6 +507,36 @@
         <!-- Content will be inserted by JavaScript -->
     </div>
 
+    <button id="feedbackButton" type="button">Feedback geben</button>
+    <div id="feedbackModalOverlay" class="info-modal-overlay" style="display:none;">
+        <div id="feedbackModal" class="info-modal" style="width:400px;height:auto;top:20vh;left:calc(50% - 200px);">
+            <button id="feedbackModalClose" class="modal-close">&times;</button>
+            <h2 id="feedbackModalTitle">Provide Feedback</h2>
+            <div id="feedbackModalBody">
+                <label for="feedbackCategory" id="fbCategoryLabel">Kategorie:</label>
+                <select id="feedbackCategory">
+                    <option value="Allgemein">Allgemein</option>
+                    <option value="Leistungsbeschreibung">Leistungsbeschreibung</option>
+                    <option value="Pauschale">Pauschale</option>
+                    <option value="Einzelleistung">Einzelleistung</option>
+                </select>
+                <label for="feedbackCode" id="fbCodeLabel">Code (optional):</label>
+                <input type="text" id="feedbackCode">
+                <label for="feedbackText" id="fbMessageLabel">Nachricht:</label>
+                <textarea id="feedbackText" rows="3"></textarea>
+                <details id="fbContextDetails">
+                    <summary id="fbContextLabel">Kontext</summary>
+                    <pre id="fbContextPre" style="white-space:pre-wrap;"></pre>
+                </details>
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <button id="fbSubmitButton" type="button">Absenden</button>
+                    <button id="fbCancelButton" type="button">Abbrechen</button>
+                </div>
+                <div id="feedbackStatus" style="margin-top:10px;"></div>
+            </div>
+        </div>
+    </div>
+
     <script src="calculator.js"></script>
     <script>
         const translations = {
@@ -535,7 +572,16 @@
                 testExample: 'Beispiel testen',
                 testAll: 'Alle Beispiele testen',
                 pass: 'OK',
-                fail: 'Fehler'
+                fail: 'Fehler',
+                feedbackButton: 'Feedback geben',
+                fbCategory: 'Kategorie:',
+                fbCode: 'Code (optional):',
+                fbMessage: 'Nachricht:',
+                fbSubmit: 'Absenden',
+                fbCancel: 'Abbrechen',
+                feedbackTitle: 'Feedback geben',
+                fbContext: 'Kontext',
+                fbThanks: 'Vielen Dank für das Feedback!'
             },
             fr: {
                 langLabel: 'Langue :',
@@ -570,7 +616,16 @@
                 testExample: 'Tester exemple',
                 testAll: 'Tester tous les exemples',
                 pass: 'OK',
-                fail: 'Erreur'
+                fail: 'Erreur',
+                feedbackButton: 'Envoyer un feedback',
+                fbCategory: 'Catégorie:',
+                fbCode: 'Code (optionnel):',
+                fbMessage: 'Message:',
+                fbSubmit: 'Envoyer',
+                fbCancel: 'Annuler',
+                feedbackTitle: 'Envoyer un feedback',
+                fbContext: 'Contexte',
+                fbThanks: 'Merci pour votre feedback!'
             },
             it: {
                 langLabel: 'Lingua:',
@@ -604,7 +659,16 @@
                 testExample: 'Prova esempio',
                 testAll: 'Testa tutti gli esempi',
                 pass: 'OK',
-                fail: 'Errore'
+                fail: 'Errore',
+                feedbackButton: 'Invia feedback',
+                fbCategory: 'Categoria:',
+                fbCode: 'Codice (opzionale):',
+                fbMessage: 'Messaggio:',
+                fbSubmit: 'Invia',
+                fbCancel: 'Annulla',
+                feedbackTitle: 'Invia feedback',
+                fbContext: 'Contesto',
+                fbThanks: 'Grazie per il feedback!'
             }
         };
         let examplesData = [];
@@ -657,6 +721,22 @@
             document.getElementById('spinner').textContent = t.loading;
             const qLink = document.getElementById('qualityLink');
             if(qLink) qLink.textContent = t.qualityLink;
+            const fbBtn = document.getElementById('feedbackButton');
+            if(fbBtn) fbBtn.textContent = t.feedbackButton;
+            const fbCat = document.getElementById('fbCategoryLabel');
+            if(fbCat) fbCat.textContent = t.fbCategory;
+            const fbCode = document.getElementById('fbCodeLabel');
+            if(fbCode) fbCode.textContent = t.fbCode;
+            const fbMsg = document.getElementById('fbMessageLabel');
+            if(fbMsg) fbMsg.textContent = t.fbMessage;
+            const fbSub = document.getElementById('fbSubmitButton');
+            if(fbSub) fbSub.textContent = t.fbSubmit;
+            const fbCan = document.getElementById('fbCancelButton');
+            if(fbCan) fbCan.textContent = t.fbCancel;
+            const fbTitle = document.getElementById('feedbackModalTitle');
+            if(fbTitle) fbTitle.textContent = t.feedbackTitle;
+            const fbCtx = document.getElementById('fbContextLabel');
+            if(fbCtx) fbCtx.textContent = t.fbContext;
             const out = document.getElementById('output');
             if(out){
                 const prev = translations[prevLang] || translations['de'];
@@ -691,7 +771,74 @@
             if(selB) selB.selectedIndex=0;
         }
         document.getElementById('languageSelect').addEventListener('change',e=>applyLanguage(e.target.value));
+        document.getElementById('feedbackButton').addEventListener('click',toggleFeedback);
+        document.getElementById('fbSubmitButton').addEventListener('click',sendFeedback);
+        document.getElementById('fbCancelButton').addEventListener('click',toggleFeedback);
+        document.getElementById('feedbackModalClose').addEventListener('click',toggleFeedback);
+        document.getElementById('feedbackModalOverlay').addEventListener('click',e=>{if(e.target.id==='feedbackModalOverlay'&&!isResizing)toggleFeedback();});
         document.addEventListener('DOMContentLoaded',initLanguage);
+
+        function toggleFeedback(){
+            const overlay = document.getElementById('feedbackModalOverlay');
+            if(!overlay) return;
+            if(overlay.style.display === 'none' || overlay.style.display===''){
+                updateFeedbackContext();
+                overlay.style.display='block';
+                makeModalDraggable(document.getElementById('feedbackModal'));
+            }else{
+                overlay.style.display='none';
+            }
+        }
+
+        function updateFeedbackContext(){
+            const ctx = {
+                url: window.location.href,
+                userAgent: navigator.userAgent,
+                screen: `${window.screen.width}x${window.screen.height}`,
+                inputs: {
+                    userInput: document.getElementById('userInput').value,
+                    icdInput: document.getElementById('icdInput').value,
+                    gtinInput: document.getElementById('gtinInput').value,
+                    useIcd: document.getElementById('useIcdCheckbox').checked
+                }
+            };
+            document.getElementById('fbContextPre').textContent = JSON.stringify(ctx, null, 2);
+        }
+
+        async function sendFeedback(){
+            const status = document.getElementById('feedbackStatus');
+            if(status) status.textContent = '';
+            const payload = {
+                category: document.getElementById('feedbackCategory').value,
+                code: document.getElementById('feedbackCode').value,
+                message: document.getElementById('feedbackText').value,
+                user_input: (typeof lastUserInput !== 'undefined' ? lastUserInput : document.getElementById('userInput').value),
+                pauschale: (typeof selectedPauschaleDetails === 'object' && selectedPauschaleDetails ? selectedPauschaleDetails.Pauschale : null),
+                einzelleistungen: Array.isArray(lastBackendResponse?.abrechnung?.leistungen) ? lastBackendResponse.abrechnung.leistungen : [],
+                begruendung_llm1: lastBackendResponse?.llm_ergebnis_stufe1?.begruendung_llm || '',
+                begruendung_llm2: JSON.stringify(lastBackendResponse?.llm_ergebnis_stufe2 || {}),
+                context: JSON.parse(document.getElementById('fbContextPre').textContent || '{}')
+            };
+            try{
+                const resp = await fetch('/api/submit-feedback', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                let data = {};
+                try { data = await resp.json(); } catch(_) {}
+                if(resp.ok){
+                    if(status) status.textContent = translations[currentLang].fbThanks;
+                    document.getElementById('feedbackText').value = '';
+                    document.getElementById('feedbackModalOverlay').style.display='none';
+                } else {
+                    const msg = data.error || translations[currentLang].fail;
+                    if(status) status.textContent = msg;
+                }
+            }catch(e){
+                if(status) status.textContent = translations[currentLang].fail;
+            }
+        }
     </script>
 </body>
 </html>
