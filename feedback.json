@@ -1,0 +1,46 @@
+[
+  {
+    "timestamp_utc": "2025-07-19T07:00:44.363321Z",
+    "type": "pauschale",
+    "context": "N/A",
+    "comment": "Das ist ein erweiterter Test. Das Analyseergebnis sollte mitgespeichert werden.",
+    "userInput_snapshot": "Konsultation 25 min, Patient 6 Jahre alt",
+    "analysis_result": {
+      "llm_ergebnis_stufe1": {
+        "identified_leistungen": [],
+        "extracted_info": {},
+        "begruendung_llm": "Fehler: API Key nicht konfiguriert.",
+        "ranking_candidates": [
+          "AA.00.0080",
+          "JE.00.0030",
+          "AM.10.0060",
+          "AM.10.0070",
+          "AM.10.0080"
+        ]
+      },
+      "regel_ergebnisse_details": [
+        {
+          "lkn": null,
+          "initiale_menge": 0,
+          "regelpruefung": {
+            "abrechnungsfaehig": false,
+            "fehler": [
+              "Keine LKN vom LLM identifiziert/validiert."
+            ]
+          },
+          "finale_menge": 0
+        }
+      ],
+      "abrechnung": {
+        "type": "Error",
+        "message": "Keine abrechenbaren TARDOC-Leistungen nach Regelprüfung gefunden."
+      },
+      "llm_ergebnis_stufe2": {
+        "mapping_results": []
+      },
+      "evaluated_pauschalen": [],
+      "fallback_pauschale_search": true
+    },
+    "status": "new"
+  }
+]

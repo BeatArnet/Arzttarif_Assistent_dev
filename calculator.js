@@ -18,6 +18,7 @@ let dignitaetenMap = {}; // For mapping dignity codes to text
 // Zusätzliche Pauschalen-Infos
 let selectedPauschaleDetails = null;
 let evaluatedPauschalenList = [];
+let currentAnalysisResult = null; // NEU: Globale Variable für das letzte Ergebnis
 
 // Dynamische Übersetzungen
 const DYN_TEXT = {
@@ -1020,7 +1021,8 @@ async function getBillingAnalysis() {
         // console.log("[getBillingAnalysis] Raw Response vom Backend erhalten:", rawResponseText.substring(0, 500) + "..."); // Gekürzt loggen
         if (!res.ok) { throw new Error(`Server antwortete mit ${res.status}`); }
         backendResponse = JSON.parse(rawResponseText);
-        console.log("[getBillingAnalysis] Backend-Antwort geparst.");
+        currentAnalysisResult = backendResponse; // Speichere das gesamte Ergebnis global
+        console.log("[getBillingAnalysis] Backend-Antwort geparst und global gespeichert.");
         console.log("[getBillingAnalysis] Empfangene Backend-Daten (Ausschnitt):", {
             begruendung_llm_stufe1: backendResponse?.llm_ergebnis_stufe1?.begruendung_llm}); // Logge spezifisch die Begründung       
         // console.log("[getBillingAnalysis] Empfangene Backend-Daten:", JSON.stringify(backendResponse, null, 2)); // Detailliertes Log
@@ -1406,7 +1408,11 @@ function displayPauschale(abrechnungsObjekt) {
     }
 
     let summary_main_status = conditions_met_structured ? `<span style="color:green;">${tDyn('logicOk')}</span>` : `<span style="color:red;">${tDyn('logicNotOk')}</span>`;
-    let html = `<details open><summary>${tDyn('pauschaleDetails')}: ${pauschaleCode} ${summary_main_status}</summary>${detailsContent}</details>`;
+    
+    // Create feedback button HTML
+    const feedbackButtonHtml = `<button class="feedback-btn" data-type="pauschale" data-context="${pauschaleCode}" style="float: right; margin-left: 10px;">${tDyn('feedback')}</button>`;
+
+    let html = `<details open><summary>${tDyn('pauschaleDetails')}: ${pauschaleCode} ${summary_main_status}${feedbackButtonHtml}</summary>${detailsContent}</details>`;
     return html;
 }
 
@@ -1465,9 +1471,12 @@ function displayTardocTable(tardocLeistungen, ruleResultsDetailsList = []) {
         gesamtTP += total_tp;
         const detailsSummaryStyle = hasHintForThisLKN ? ' class="rule-hint-trigger"' : '';
 
+        // Add a feedback button for each LKN row
+        const lknFeedbackBtn = `<button class="feedback-btn" data-type="einzel_lkn" data-context="${escapeHtml(lkn)}" style="margin-left: 5px; padding: 1px 4px; font-size: 0.8em;">?</button>`;
+
         tardocTableBody += `
             <tr>
-                <td>${escapeHtml(lkn)}</td><td>${escapeHtml(name)}</td>
+                <td>${escapeHtml(lkn)}${lknFeedbackBtn}</td><td>${escapeHtml(name)}</td>
                 <td>${al.toFixed(2)}</td><td>${ipl.toFixed(2)}</td>
                 <td>${anzahl}</td><td>${total_tp.toFixed(2)}</td>
                 <td>${regelnHtml ? `<details><summary${detailsSummaryStyle}>${tDyn('thRegeln')}</summary>${regelnHtml}</details>` : tDyn('none')}</td>
@@ -1475,7 +1484,8 @@ function displayTardocTable(tardocLeistungen, ruleResultsDetailsList = []) {
     }
 
     const overallSummaryClass = hasHintsOverall ? ' class="rule-hint-trigger"' : '';
-    let html = `<details open><summary ${overallSummaryClass}>${tDyn('tardocDetails')} (${tardocLeistungen.length} Positionen)</summary>`;
+    const tardocFeedbackBtn = `<button class="feedback-btn" data-type="tardoc" data-context="TARDOC-Abrechnung" style="float: right; margin-left: 10px;">${tDyn('feedback')}</button>`;
+    let html = `<details open><summary ${overallSummaryClass}>${tDyn('tardocDetails')} (${tardocLeistungen.length} Positionen)${tardocFeedbackBtn}</summary>`;
     html += `
         <table border="1" style="border-collapse: collapse; width: 100%; margin-bottom: 10px;">
             <thead><tr><th>${tDyn('thLkn')}</th><th>${tDyn('thLeistung')}</th><th>${tDyn('thAl')}</th><th>${tDyn('thIpl')}</th><th>${tDyn('thAnzahl')}</th><th>${tDyn('thTotal')}</th><th>${tDyn('thRegeln')}</th></tr></thead>
@@ -1522,8 +1532,102 @@ function processTardocLookup(lkn) {
 }
 
 
-// ─── 5 · Enter-Taste als Default für Return ─────────────────
+// ─── 5 · Feedback-Funktionalität ───────────────────────────────────────────
+function openFeedbackModal(type, context = '', description = '') {
+    // Set hidden fields
+    $('feedbackType').value = type;
+    $('feedbackContext').value = context;
+    $('feedbackUserInput').value = $('userInput').value; // Snapshot of user input
+
+    // For general feedback, we don't want to send the last analysis result
+    if (type === 'general') {
+        // We don't clear the global variable, but we'll check for type in the submit handler
+    }
+
+    // Set description
+    let finalDescription = '';
+    const t = (key, ctx) => (translations[currentLang] && translations[currentLang][key]) ? translations[currentLang][key].replace('{context}', ctx) : key;
+
+    switch(type) {
+        case 'general':
+            finalDescription = t('feedbackTypeGeneral');
+            break;
+        case 'pauschale':
+            finalDescription = `${t('feedbackTypePauschale')} <b>${escapeHtml(context)}</b>`;
+            break;
+        case 'tardoc':
+             finalDescription = `${t('feedbackTypeTardoc')}`;
+             break;
+        case 'einzel_lkn':
+            finalDescription = `${t('feedbackTypeLKN')} <b>${escapeHtml(context)}</b>`;
+            break;
+    }
+    $('feedbackDescription').innerHTML = finalDescription;
+
+
+    // Reset form state
+    $('feedbackComment').value = '';
+    const msgArea = $('feedback-message-area');
+    msgArea.style.display = 'none';
+    msgArea.textContent = '';
+    $('submitFeedbackBtn').disabled = false;
+
+    // Show modal
+    showModal('feedbackModalOverlay');
+}
+
+async function handleFeedbackSubmit(e) {
+    e.preventDefault();
+    const btn = $('submitFeedbackBtn');
+    btn.disabled = true;
+
+    const feedbackType = $('feedbackType').value;
+    const payload = {
+        type: feedbackType,
+        context: $('feedbackContext').value,
+        userInput: $('feedbackUserInput').value,
+        comment: $('feedbackComment').value,
+        lang: currentLang,
+        analysisResult: feedbackType !== 'general' ? currentAnalysisResult : null
+    };
+
+    const msgArea = $('feedback-message-area');
+    const t = (key) => (translations[currentLang] && translations[currentLang][key]) || key;
+
+    try {
+        const response = await fetch('/api/feedback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const errData = await response.json();
+            throw new Error(errData.error || `HTTP ${response.status}`);
+        }
+
+        msgArea.textContent = t('feedbackSuccess');
+        msgArea.style.color = 'var(--accent)';
+        msgArea.style.display = 'block';
+
+        // Close modal after a short delay
+        setTimeout(() => {
+            hideModal('feedbackModalOverlay');
+        }, 2500);
+
+    } catch (error) {
+        console.error('Feedback submission failed:', error);
+        msgArea.textContent = `${t('feedbackError')} (${error.message})`;
+        msgArea.style.color = 'var(--danger)';
+        msgArea.style.display = 'block';
+        btn.disabled = false; // Re-enable button on error
+    }
+}
+
+
+// ─── 6 · Event-Listener und Initialisierung ────────────────────────────────
 document.addEventListener("DOMContentLoaded", function() {
+    // ... bestehende Listener ...
     const uiField = $("userInput");
     const icdField = $("icdInput");
     const gtinField = $("gtinInput");
@@ -1531,16 +1635,14 @@ document.addEventListener("DOMContentLoaded", function() {
     function handleEnter(e) {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-             // Prüfe, ob Daten geladen wurden (mindestens der Leistungskatalog)
              if (Array.isArray(data_leistungskatalog) && data_leistungskatalog.length > 0) {
                   getBillingAnalysis();
              } else {
                   console.log("Daten noch nicht geladen, warte...");
                   const button = $('analyzeButton');
-                  if(button && !button.disabled) { // Nur ändern, wenn nicht schon deaktiviert
+                  if(button && !button.disabled) {
                      const originalText = button.textContent;
                      button.textContent = "Lade Daten...";
-                     // Optional: Nach kurzer Zeit wieder zurücksetzen, falls das Laden hängt
                      setTimeout(() => {
                          if (button.textContent === "Lade Daten...") {
                              button.textContent = originalText;
@@ -1554,6 +1656,22 @@ document.addEventListener("DOMContentLoaded", function() {
     if (uiField) uiField.addEventListener("keydown", handleEnter);
     if (icdField) icdField.addEventListener("keydown", handleEnter);
     if (gtinField) gtinField.addEventListener("keydown", handleEnter);
+
+    // --- Neue Listener für Feedback ---
+    $('globalFeedbackBtn').addEventListener('click', () => openFeedbackModal('general'));
+    $('feedbackModalClose').addEventListener('click', () => hideModal('feedbackModalOverlay'));
+    $('feedbackForm').addEventListener('submit', handleFeedbackSubmit);
+
+     // Listener für dynamisch erstellte Feedback-Buttons im Output
+    $('output').addEventListener('click', function(e) {
+        const target = e.target.closest('.feedback-btn');
+        if (target) {
+            e.preventDefault();
+            const type = target.dataset.type;
+            const context = target.dataset.context;
+            openFeedbackModal(type, context);
+        }
+    });
 });
 
 // Mache die Hauptfunktion global verfügbar

@@ -448,7 +448,31 @@
         </div>
     </div>
 
+    <!-- Feedback Modal -->
+    <div id="feedbackModalOverlay" class="info-modal-overlay" style="display:none;">
+        <div id="feedbackModal" class="info-modal">
+            <button id="feedbackModalClose" class="modal-close">&times;</button>
+            <h2 id="feedbackModalTitle">Feedback geben</h2>
+            <form id="feedbackForm">
+                <input type="hidden" id="feedbackType" name="type">
+                <input type="hidden" id="feedbackContext" name="context">
+                <input type="hidden" id="feedbackUserInput" name="userInput">
+
+                <p id="feedbackDescription"></p>
+
+                <label for="feedbackComment" id="feedbackCommentLabel">Ihr Kommentar:</label>
+                <textarea id="feedbackComment" name="comment" rows="6" required></textarea>
+
+                <div id="feedback-message-area" style="margin-top: 10px; display: none;"></div>
+
+                <button type="submit" id="submitFeedbackBtn">Feedback absenden</button>
+            </form>
+        </div>
+    </div>
+
+
     <div class="top-info">
+         <button id="globalFeedbackBtn" style="margin-right: 15px; padding: 5px 10px; font-size: 0.9em;">Feedback</button>
         <div class="language-select">
             <label id="langLabel" for="languageSelect">Sprache:</label>
             <select id="languageSelect">
@@ -535,7 +559,17 @@
                 testExample: 'Beispiel testen',
                 testAll: 'Alle Beispiele testen',
                 pass: 'OK',
-                fail: 'Fehler'
+                fail: 'Fehler',
+                feedback: 'Feedback',
+                feedbackGive: 'Feedback geben',
+                feedbackComment: 'Ihr Kommentar:',
+                feedbackSubmit: 'Feedback absenden',
+                feedbackSuccess: 'Vielen Dank für Ihr Feedback!',
+                feedbackError: 'Fehler beim Senden des Feedbacks. Bitte versuchen Sie es später erneut.',
+                feedbackTypeGeneral: 'Allgemeines Feedback zur Anwendung.',
+                feedbackTypePauschale: 'Feedback zur Pauschale',
+                feedbackTypeTardoc: 'Feedback zur TARDOC-Abrechnung',
+                feedbackTypeLKN: 'Feedback zur Einzelleistung'
             },
             fr: {
                 langLabel: 'Langue :',
@@ -570,7 +604,17 @@
                 testExample: 'Tester exemple',
                 testAll: 'Tester tous les exemples',
                 pass: 'OK',
-                fail: 'Erreur'
+                fail: 'Erreur',
+                feedback: 'Feedback',
+                feedbackGive: 'Donner un feedback',
+                feedbackComment: 'Votre commentaire :',
+                feedbackSubmit: 'Envoyer le feedback',
+                feedbackSuccess: 'Merci pour votre feedback !',
+                feedbackError: "Erreur lors de l'envoi du feedback. Veuillez réessayer plus tard.",
+                feedbackTypeGeneral: "Feedback général sur l'application.",
+                feedbackTypePauschale: 'Feedback sur le forfait',
+                feedbackTypeTardoc: 'Feedback sur la facturation TARDOC',
+                feedbackTypeLKN: 'Feedback sur la prestation individuelle'
             },
             it: {
                 langLabel: 'Lingua:',
@@ -604,7 +648,17 @@
                 testExample: 'Prova esempio',
                 testAll: 'Testa tutti gli esempi',
                 pass: 'OK',
-                fail: 'Errore'
+                fail: 'Errore',
+                feedback: 'Feedback',
+                feedbackGive: 'Dare un feedback',
+                feedbackComment: 'Il suo commento:',
+                feedbackSubmit: 'Inviare il feedback',
+                feedbackSuccess: 'Grazie per il suo feedback!',
+                feedbackError: "Errore durante l'invio del feedback. Si prega di riprovare più tardi.",
+                feedbackTypeGeneral: "Feedback generale sull'applicazione.",
+                feedbackTypePauschale: 'Feedback sul forfait',
+                feedbackTypeTardoc: 'Feedback sulla fatturazione TARDOC',
+                feedbackTypeLKN: 'Feedback sulla prestazione singola'
             }
         };
         let examplesData = [];
@@ -657,6 +711,13 @@
             document.getElementById('spinner').textContent = t.loading;
             const qLink = document.getElementById('qualityLink');
             if(qLink) qLink.textContent = t.qualityLink;
+
+            // Update feedback button and modal texts
+            document.getElementById('globalFeedbackBtn').textContent = t.feedback;
+            document.getElementById('feedbackModalTitle').textContent = t.feedbackGive;
+            document.getElementById('feedbackCommentLabel').textContent = t.feedbackComment;
+            document.getElementById('submitFeedbackBtn').textContent = t.feedbackSubmit;
+
             const out = document.getElementById('output');
             if(out){
                 const prev = translations[prevLang] || translations['de'];

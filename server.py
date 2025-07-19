@@ -1202,14 +1202,93 @@ def search_pauschalen(keyword: str) -> List[Dict[str, Any]]:
 
 
 import threading
+import datetime
 
-# Lock for sequential processing
-processing_lock = threading.Lock()
+# --- Globale Locks ---
+# Lock für die Analyse-Funktion, um sequenzielle Verarbeitung sicherzustellen
+analysis_lock = threading.Lock()
+# Separater Lock für den Dateizugriff auf feedback.json
+feedback_lock = threading.Lock()
+
+# --- Feedback Endpunkt ---
+@app.route('/api/feedback', methods=['POST'])
+def handle_feedback():
+    if not request.is_json:
+        return jsonify({"error": "Request must be JSON"}), 400
+    data = request.get_json()
+    if not data or not isinstance(data, dict):
+        return jsonify({"error": "Invalid or empty JSON provided"}), 400
+
+    # 1. Validierung der Eingabedaten
+    feedback_type = data.get('type')
+    feedback_context = data.get('context')
+    feedback_comment = data.get('comment')
+    user_input_snapshot = data.get('userInput')
+    analysis_result = data.get('analysisResult') # NEU
+
+    if not all([feedback_type, feedback_comment]):
+        return jsonify({"error": "Missing required fields: type, comment"}), 400
+
+    allowed_types = ['general', 'pauschale', 'tardoc', 'einzel_lkn']
+    if feedback_type not in allowed_types:
+        return jsonify({"error": f"Invalid feedback type. Must be one of {allowed_types}"}), 400
+    if feedback_type != 'general' and not feedback_context:
+         return jsonify({"error": "Field 'context' is required for non-general feedback"}), 400
+
+    # 2. Erstelle das Feedback-Objekt
+    feedback_entry = {
+        'timestamp_utc': datetime.datetime.utcnow().isoformat() + 'Z',
+        'type': feedback_type,
+        'context': feedback_context,
+        'comment': feedback_comment,
+        'userInput_snapshot': user_input_snapshot,
+        'analysis_result': analysis_result, # NEU
+        'status': 'new' # Standardstatus
+    }
+
+    # 3. Speichere das Feedback atomar in die JSON-Datei
+    feedback_file = Path("data/feedback.json")
+    with feedback_lock:
+        try:
+            if feedback_file.is_file() and feedback_file.stat().st_size > 0:
+                with open(feedback_file, 'r', encoding='utf-8') as f:
+                    try:
+                        feedback_list = json.load(f)
+                        if not isinstance(feedback_list, list):
+                            # Wenn die Datei korrupt ist (keine Liste), starte mit einer neuen Liste
+                            logger.warning(f"Feedback file {feedback_file} does not contain a JSON list. Re-initializing.")
+                            feedback_list = []
+                    except json.JSONDecodeError:
+                         logger.warning(f"Could not decode JSON from {feedback_file}. Re-initializing.")
+                         feedback_list = []
+            else:
+                feedback_list = []
+
+            feedback_list.append(feedback_entry)
+
+            # Atomares Schreiben: Schreibe in eine temporäre Datei und benenne sie um
+            temp_file_path = feedback_file.with_suffix('.tmp')
+            with open(temp_file_path, 'w', encoding='utf-8') as f:
+                json.dump(feedback_list, f, indent=2, ensure_ascii=False)
+            os.replace(temp_file_path, feedback_file)
+
+        except Exception as e:
+            logger.error(f"Error writing to feedback file: {e}", exc_info=True)
+            # Versuche, die temporäre Datei zu löschen, falls sie existiert
+            if temp_file_path.is_file():
+                try:
+                    os.remove(temp_file_path)
+                except OSError as rm_err:
+                    logger.error(f"Could not remove temporary feedback file {temp_file_path}: {rm_err}")
+            return jsonify({"error": "Could not save feedback due to a server error."}), 500
+
+    return jsonify({"message": "Feedback successfully received"}), 201
+
 
 # --- API Endpunkt ---
 @app.route('/api/analyze-billing', methods=['POST'])
 def analyze_billing():
-    with processing_lock:
+    with analysis_lock:
         # Basic request data for logging before full parsing
         data_for_log = request.get_json(silent=True) or {}
         user_input_log = data_for_log.get('inputText', '')[:100]
