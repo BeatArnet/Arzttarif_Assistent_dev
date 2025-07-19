@@ -691,6 +691,17 @@ function displayOutput(html, type = "info") {
     if (!out) { console.error("Output element not found!"); return; }
     out.innerHTML = html;
     // Output-Typ-Klasse wird nicht mehr gesetzt, Styling erfolgt über Klassen im HTML.
+
+    // Add event listener for feedback buttons
+    out.addEventListener('click', function(e) {
+        const target = e.target.closest('.feedback-btn');
+        if (target) {
+            e.preventDefault();
+            const type = target.dataset.type;
+            const context = target.dataset.context;
+            openFeedbackModal(type, context);
+        }
+    });
 }
 
 // --- Mouse Spinner Funktionen ---
@@ -1667,16 +1678,6 @@ document.addEventListener("DOMContentLoaded", function() {
     $('feedbackModalClose').addEventListener('click', () => hideModal('feedbackModalOverlay'));
     $('feedbackForm').addEventListener('submit', handleFeedbackSubmit);
 
-     // Listener für dynamisch erstellte Feedback-Buttons im Output
-    $('output').addEventListener('click', function(e) {
-        const target = e.target.closest('.feedback-btn');
-        if (target) {
-            e.preventDefault();
-            const type = target.dataset.type;
-            const context = target.dataset.context;
-            openFeedbackModal(type, context);
-        }
-    });
 });
 
 // Mache die Hauptfunktion global verfügbar
