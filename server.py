@@ -1248,6 +1248,7 @@ def handle_feedback():
 
     # 3. Speichere das Feedback atomar in die JSON-Datei
     feedback_file = Path("data/feedback.json")
+    temp_file_path = None
     with feedback_lock:
         try:
             if feedback_file.is_file() and feedback_file.stat().st_size > 0:
@@ -1275,7 +1276,7 @@ def handle_feedback():
         except Exception as e:
             logger.error(f"Error writing to feedback file: {e}", exc_info=True)
             # Versuche, die temporäre Datei zu löschen, falls sie existiert
-            if temp_file_path.is_file():
+            if temp_file_path and temp_file_path.is_file():
                 try:
                     os.remove(temp_file_path)
                 except OSError as rm_err:

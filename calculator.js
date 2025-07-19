@@ -72,7 +72,8 @@ const DYN_TEXT = {
         diffTaxpoints: 'Differenz Taxpunkte',
         implantsIncluded: 'Implantate inbegriffen',
         dignitiesLabel: 'Dignitäten',
-        descriptionNotFound: 'Beschreibung nicht gefunden'
+        descriptionNotFound: 'Beschreibung nicht gefunden',
+        feedback: 'Feedback'
     },
     fr: {
         spinnerWorking: 'Vérification en cours...',
@@ -124,7 +125,8 @@ const DYN_TEXT = {
         diffTaxpoints: 'Différence points tarifaires',
         implantsIncluded: 'Implants inclus',
         dignitiesLabel: 'Dignités',
-        descriptionNotFound: 'Description non trouvée'
+        descriptionNotFound: 'Description non trouvée',
+        feedback: 'Feedback'
     },
     it: {
         spinnerWorking: 'Verifica in corso...',
@@ -176,7 +178,8 @@ const DYN_TEXT = {
         diffTaxpoints: 'Differenza punti tariffari',
         implantsIncluded: 'Impianti inclusi',
         dignitiesLabel: 'Dignità',
-        descriptionNotFound: 'Descrizione non trovata'
+        descriptionNotFound: 'Descrizione non trovata',
+        feedback: 'Feedback'
     }
 };
 
@@ -1472,7 +1475,7 @@ function displayTardocTable(tardocLeistungen, ruleResultsDetailsList = []) {
         const detailsSummaryStyle = hasHintForThisLKN ? ' class="rule-hint-trigger"' : '';
 
         // Add a feedback button for each LKN row
-        const lknFeedbackBtn = `<button class="feedback-btn" data-type="einzel_lkn" data-context="${escapeHtml(lkn)}" style="margin-left: 5px; padding: 1px 4px; font-size: 0.8em;">?</button>`;
+        const lknFeedbackBtn = `<button class="feedback-btn" data-type="einzel_lkn" data-context="${escapeHtml(lkn)}" style="margin-left: 5px; padding: 1px 4px; font-size: 0.8em;">${tDyn('feedback')}</button>`;
 
         tardocTableBody += `
             <tr>
